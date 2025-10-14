@@ -1,0 +1,115 @@
+/* src/pages/LoginPage.css */
+
+/* Contenedor principal que centra la caja en la pantalla */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--bg-claro, #f8f9fa);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* La caja blanca única que contiene todo */
+.login-box {
+  width: 100%;
+  max-width: 420px; /* Ancho del panel único */
+  padding: 40px;
+  text-align: center; /* Centra todo el texto y elementos internos */
+  background-color: var(--bg-blanco, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Encabezado con logo y textos */
+.login-header {
+  margin-bottom: 25px;
+}
+
+.sicoena-logo-img {
+  max-width: 150px; /* Tamaño del logo */
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.login-header p {
+  color: var(--color-terciario, #6c757d);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 5px 0 0;
+}
+
+/* Título "Iniciar Sesión" */
+.login-box h3 {
+  color: var(--color-principal, #2c3e50);
+  font-size: 28px;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+/* Formulario */
+.input-group {
+  margin-bottom: 20px;
+  text-align: left; /* Alinea las etiquetas a la izquierda */
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--color-secundario, #525252);
+  font-size: 14px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 15px;
+  border: 1px solid var(--borde-claro, #dee2e6);
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--color-principal, #2c3e50);
+}
+
+.login-button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background-color: var(--color-principal, #2c3e50);
+  color: var(--bg-blanco, #ffffff);
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.login-button:hover {
+  background-color: var(--borde-oscuro, #495057);
+}
+
+/* Enlace y pie de página */
+.forgot-password {
+  display: block;
+  margin-top: 20px;
+  color: var(--color-terciario, #6c757d);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.login-footer {
+  margin-top: 30px;
+  color: var(--borde-medio, #adb5bd);
+  font-size: 12px;
+}

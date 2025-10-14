@@ -1,0 +1,77 @@
+/* Estilos para el contenedor principal del Sidebar */
+.sidebar {
+  width: 260px; /* Ancho fijo para el menú lateral */
+  height: 100vh; /* Ocupa toda la altura de la pantalla */
+  background-color: var(--bg-claro, #f8f9fa); /* Color de fondo claro [cite: 86] */
+  border-right: 1px solid var(--borde-claro, #dee2e6); /* Borde sutil a la derecha [cite: 89] */
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+}
+
+/* Estilo para el encabezado con el nombre SICOENA */
+.sidebar-header {
+  padding: 0 10px 20px 10px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--borde-claro, #dee2e6); /* [cite: 89] */
+}
+
+.sidebar-header h3 {
+  color: var(--color-principal, #2c3e50); /* Color principal oscuro [cite: 81] */
+  margin: 0;
+  font-size: 24px;
+  text-align: center;
+}
+
+/* Estilo para la lista de módulos */
+.sidebar-modules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+[cite_start]/* Títulos de las secciones (MÓDULOS PRINCIPALES, HERRAMIENTAS) [cite: 33, 43] */
+.module-title {
+  color: var(--color-terciario, #6c757d); /* Color de texto secundario [cite: 83] */
+  font-size: 11px; /* [cite: 71] */
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 15px 15px 10px;
+  letter-spacing: 0.5px;
+}
+
+/* Estilo para cada elemento de la lista que contiene un enlace */
+.sidebar-modules li a {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin: 4px 0;
+  text-decoration: none;
+  color: var(--color-secundario, #525252); /* [cite: 82] */
+  font-size: 14px; /* [cite: 69] */
+  border-radius: 6px;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.sidebar-icon {
+  margin-right: 12px; /* Espacio entre el icono y el texto */
+  width: 20px; /* Ancho fijo para asegurar la alineación vertical */
+  text-align: center; /* Centra el icono dentro de su espacio */
+  font-size: 16px; /* Tamaño del icono */
+}
+
+
+/* Efecto al pasar el mouse sobre un enlace */
+.sidebar-modules li a:hover {
+  background-color: var(--bg-gris, #e9ecef); /* Fondo gris claro al pasar el mouse [cite: 87] */
+  color: var(--color-principal, #2c3e50); /* [cite: 81] */
+}
+
+/* Estilo para el enlace activo (la página actual) */
+.sidebar-modules li a.active {
+  background-color: var(--bg-gris, #e9ecef); /* Fondo gris para indicar selección [cite: 87] */
+  font-weight: 600;
+  color: var(--color-principal, #2c3e50);
+}
