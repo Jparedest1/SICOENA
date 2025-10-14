@@ -36,3 +36,52 @@
     transform: rotate(360deg);
   }
 }
+
+.app-container-logged-in {
+  display: flex; /* ¡LA CLAVE! Pone a los hijos (Sidebar y content-area) uno al lado del otro */
+  min-height: 100vh;
+}
+
+.content-area {
+  flex-grow: 1; /* Ocupa el espacio disponible */
+  position: relative; /* Necesario para posicionar el botón de menú */
+  background-color: var(--bg-claro);
+}
+
+.sidebar-toggle-btn {
+  position: absolute; /* Lo posiciona dentro del .content-area */
+  top: 15px;
+  left: 20px;
+  z-index: 100;
+  background-color: var(--bg-blanco, #ffffff);
+  border: 1px solid var(--borde-claro, #dee2e6);
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-principal, #2c3e50);
+  transition: all 0.3s ease-in-out;
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: var(--bg-claro, #f8f9fa);
+}
+
+
+/* --- ¡AQUÍ LA MAGIA! --- */
+/* Estilos para cuando el sidebar está CERRADO */
+
+.app-container-logged-in.sidebar-closed .sidebar {
+  width: 0; /* El sidebar colapsa */
+  padding: 20px 0;
+  overflow: hidden; /* Oculta el contenido que se desborda */
+}
+
+/* Cuando está cerrado, el botón de menú se mueve
+  para alinearse con el Dashboard (que también tiene padding)
+*/
+.app-container-logged-in.sidebar-closed .sidebar-toggle-btn {
+  /* Opcional: si tu dashboard tiene padding, 
+     puedes ajustar el 'left' para que se alinee.
+     Pero 'left: 20px' funciona bien. */
+}

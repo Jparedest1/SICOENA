@@ -3,9 +3,11 @@ import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
 import sicoenaLogo from '../assets/logo_sicoena.png'; // Asegúrate que tu logo esté en src/assets/
 
-const LoginPage = ({ onLoginSuccess }) => {
+const LoginPage = () => {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
+  
+  // Estado para mostrar errores al usuario
   const [error, setError] = useState(null);
 
   /**
@@ -13,18 +15,64 @@ const LoginPage = ({ onLoginSuccess }) => {
    */
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(null);
-    console.log('Simulando login estándar para:', usuario);
-
-        onLoginSuccess();
+    setError(null); // Limpia errores anteriores
+    
+    console.log('Intentando iniciar sesión con:', usuario, contrasena);
+    
+    // --- LÓGICA DE LOGIN ESTÁNDAR ---
+    // Aquí harías una llamada (fetch) a tu backend con el usuario y contraseña
+    // try {
+    //   const res = await fetch('http://TU-BACKEND-API.COM/api/auth/login', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ email: usuario, password: contrasena }),
+    //   });
+    //   if (!res.ok) throw new Error('Usuario o contraseña incorrectos.');
+    //   
+    //   const { miTokenJWT } = await res.json();
+    //   localStorage.setItem('authToken', miTokenJWT);
+    //   window.location.href = '/dashboard';
+    // } catch (err) {
+    //   setError(err.message);
+    // }
   };
 
-    const handleGoogleSuccess = async (credentialResponse) => {
-    setError(null);
-    console.log("Simulando login con Google:", credentialResponse.credential);
-    
-    // 3. ¡YA NO HAY FETCH! Solo llama a la función del padre
-    onLoginSuccess();
+  /**
+   * Maneja el inicio de sesión exitoso con Google
+   * (Google nos da un token, se lo enviamos a nuestro backend)
+   */
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError(null); // Limpia errores anteriores
+    console.log("Token de Google recibido:", credentialResponse.credential);
+
+    try {
+      // Envía el token de Google a TU PROPIO BACKEND para verificación
+      const res = await fetch('http://TU-BACKEND-API.COM/api/auth/google/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Enviamos el token que nos dio Google en el cuerpo
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+
+      // Si el backend dice que no (porque el email no está en tu DB), !res.ok será true
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Este correo no está autorizado en SICOENA.');
+      }
+
+      // Si todo OK, el backend nos da NUESTRO PROPIO TOKEN (JWT)
+      const { miTokenJWT } = await res.json();
+      
+      // Guardamos nuestro token y redirigimos al dashboard
+      localStorage.setItem('authToken', miTokenJWT);
+      window.location.href = '/dashboard'; // Redirección simple
+
+    } catch (err) {
+      console.error('Error en la verificación de Google:', err);
+      setError(err.message); // Muestra el error (ej. "Este correo no está autorizado...")
+    }
   };
 
   /**

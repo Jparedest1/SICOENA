@@ -1,13 +1,15 @@
 /* Estilos para el contenedor principal del Sidebar */
 .sidebar {
-  width: 260px; /* Ancho fijo para el menú lateral */
-  height: 100vh; /* Ocupa toda la altura de la pantalla */
-  background-color: var(--bg-claro, #f8f9fa); /* Color de fondo claro [cite: 86] */
-  border-right: 1px solid var(--borde-claro, #dee2e6); /* Borde sutil a la derecha [cite: 89] */
+  width: 260px; /* Mantiene su ancho */
+  height: 100vh;
+  background-color: var(--bg-claro, #f8f9fa);
+  border-right: 1px solid var(--borde-claro, #dee2e6);
   display: flex;
   flex-direction: column;
   padding: 20px 10px;
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+  box-sizing: border-box;
+  flex-shrink: 0; /* Evita que el sidebar se encoja */
+  transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
 }
 
 /* Estilo para el encabezado con el nombre SICOENA */
@@ -74,4 +76,26 @@
   background-color: var(--bg-gris, #e9ecef); /* Fondo gris para indicar selección [cite: 87] */
   font-weight: 600;
   color: var(--color-principal, #2c3e50);
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin: 4px 0;
+  width: 100%;
+  text-decoration: none;
+  color: var(--color-terciario, #6c757d);
+  font-size: 14px; /* */
+  border-radius: 6px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-principal);
+}
+
+.logout-button:hover {
+  background-color: var(--bg-gris, #e9ecef);
+  color: #c92a2a; /* Rojo para indicar "salir" */
 }

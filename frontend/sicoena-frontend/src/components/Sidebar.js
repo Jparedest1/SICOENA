@@ -6,6 +6,7 @@ import './Sidebar.css';
 
 // 1. Importa el componente de icono
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
 // 2. Importa cada ícono que vas a usar
 import { 
@@ -21,7 +22,7 @@ import {
   faFileAlt
 } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = () => {
+const Sidebar = ({ onLogout, isSidebarOpen }) => {
   return (
     <nav className="sidebar">
       <div className="sidebar-header">
@@ -72,6 +73,11 @@ const Sidebar = () => {
         <li><NavLink to="/logs" className={({isActive}) => isActive ? 'active' : ''}>
           <FontAwesomeIcon icon={faFileAlt} className="sidebar-icon" /> Logs del Sistema
         </NavLink></li>
+        <li>
+          <button onClick={onLogout} className="logout-button">
+            <FontAwesomeIcon icon={faSignOutAlt} className="sidebar-icon" /> Cerrar Sesión
+          </button>
+        </li>
       </ul>
     </nav>
   );
