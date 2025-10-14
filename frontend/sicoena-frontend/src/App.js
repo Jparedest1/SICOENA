@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 // Importa las otras páginas que crearemos
-// import DashboardPage from './pages/DashboardPage';
+import DashboardPage from './pages/DashboardPage';
 // ...
 
 import './App.css';
@@ -22,7 +22,7 @@ function App() {
         <Sidebar />
         <main className="content-area">
           <Routes>
-            {/* <Route path="/dashboard" element={<DashboardPage />} /> */}
+            <Route path="/dashboard" element={<DashboardPage />} />
             {/* Agrega aquí las demás rutas */}
           </Routes>
         </main>
