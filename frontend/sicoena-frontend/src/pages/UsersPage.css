@@ -153,3 +153,39 @@ tbody tr:hover {
 
 .icon-edit { color: #0d6efd; } /* Azul para editar */
 .icon-delete { color: #dc3545; } /* Rojo para eliminar */
+
+/* --- ESTILOS RESPONSIVE --- */
+/* Para Tablets (menos de 992px) */
+@media (max-width: 992px) {
+  .page-header, .filters-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .header-buttons, .filters-bar .search-btn {
+    width: 100%;
+  }
+  
+  .filters-bar input, .filters-bar select {
+    width: 100%;
+  }
+
+  .table-container {
+    overflow-x: auto; /* Permite scroll horizontal en la tabla */
+  }
+
+  table {
+    min-width: 800px; /* Ancho mínimo para forzar el scroll */
+  }
+}
+
+/* Para Móviles (menos de 576px) */
+@media (max-width: 576px) {
+  .page-container {
+    padding: 15px;
+  }
+  .page-header h1 {
+    font-size: 24px;
+  }
+}

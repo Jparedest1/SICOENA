@@ -1,5 +1,5 @@
-/* src/pages/InstitutionsPage.css */
-/* Reutilizamos y adaptamos estilos de UsersPage.css */
+/* src/pages/OrdersPage.css */
+
 .page-container {
   padding: 30px;
 }
@@ -24,6 +24,7 @@
   gap: 10px;
 }
 
+/* Reusing button styles */
 .btn-primary {
   background-color: var(--color-principal);
   color: white;
@@ -33,6 +34,9 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-secondary {
@@ -47,13 +51,13 @@
 }
 
 .btn-tertiary {
-    background: none;
-    border: 1px solid var(--borde-medio);
-    color: var(--color-secundario);
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
+  background: none;
+  border: 1px solid var(--borde-medio);
+  color: var(--color-secundario);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
 }
 
 .filters-bar {
@@ -80,7 +84,8 @@
 }
 
 .stats-cards-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
   gap: 20px;
   margin-bottom: 25px;
 }
@@ -90,7 +95,6 @@
   padding: 20px;
   border-radius: 8px;
   border: 1px solid var(--borde-claro);
-  flex-grow: 1;
   text-align: center;
 }
 
@@ -114,16 +118,16 @@
 }
 
 .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  font-weight: 600;
 }
 
 .table-actions {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 table {
@@ -144,20 +148,11 @@ thead th {
   text-transform: uppercase;
 }
 
-.logo-placeholder {
-    width: 30px;
-    height: 30px;
-    background-color: #f1f3f5;
-    color: var(--borde-medio);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 4px;
-}
-
-.status-badge.activa { background-color: #e6f8f0; color: #2ab57d; }
-.status-badge.inactiva { background-color: #f8f9fa; color: #adb5bd; }
-.status-badge.en-revisión { background-color: #fff9db; color: #fcc419; }
+/* Status Badge Styles */
+.status-badge.entregado { background-color: #e6f8f0; color: #2ab57d; }
+.status-badge.pendiente { background-color: #fff9db; color: #fcc419; }
+.status-badge.en-proceso { background-color: #e7f5ff; color: #339af0; }
+.status-badge.cancelado { background-color: #ffe3e3; color: #e03131; }
 
 .action-buttons { display: flex; gap: 15px; }
 .action-btn { background: none; border: none; cursor: pointer; padding: 5px; font-size: 16px; transition: transform 0.2s; }
@@ -168,35 +163,50 @@ thead th {
 /* --- ESTILOS RESPONSIVE --- */
 /* Para Tablets (menos de 992px) */
 @media (max-width: 992px) {
+  .stats-cards-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 tarjetas por fila */
+  }
+
   .page-header, .filters-bar {
     flex-direction: column;
     align-items: flex-start;
     gap: 15px;
   }
-
-  .header-buttons, .filters-bar .search-btn {
-    width: 100%;
-  }
   
+  .header-buttons, .filters-bar button {
+     width: 100%;
+  }
+
   .filters-bar input, .filters-bar select {
     width: 100%;
   }
 
   .table-container {
-    overflow-x: auto; /* Permite scroll horizontal en la tabla */
+    overflow-x: auto;
   }
-
   table {
-    min-width: 800px; /* Ancho mínimo para forzar el scroll */
+    min-width: 1200px; /* Ancho mínimo para la tabla de inventario/órdenes */
   }
 }
 
-/* Para Móviles (menos de 576px) */
+/* Para Móviles (menos de 768px) */
+@media (max-width: 768px) {
+  .stats-cards-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 tarjetas por fila */
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+/* Para Móviles Pequeños (menos de 576px) */
 @media (max-width: 576px) {
   .page-container {
     padding: 15px;
   }
-  .page-header h1 {
-    font-size: 24px;
+   .stats-cards-container {
+    grid-template-columns: 1fr; /* 1 tarjeta por fila */
   }
 }

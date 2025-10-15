@@ -1,0 +1,157 @@
+/* src/pages/HelpPage.css */
+
+.help-page .page-header {
+  border-bottom: 1px solid var(--borde-claro);
+  margin-bottom: 25px;
+}
+
+.help-page .page-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.help-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Columna principal más ancha que la lateral */
+  gap: 30px;
+  align-items: start;
+}
+
+.help-main-content, .help-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Reutilizamos el estilo de tarjeta de reportes */
+.card-container {
+  background-color: var(--bg-blanco);
+  border: 1px solid var(--borde-claro);
+  border-radius: 8px;
+  padding: 25px;
+}
+
+.card-container h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: var(--color-principal);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- Acordeón de FAQ --- */
+.accordion-item {
+  border-bottom: 1px solid var(--borde-claro);
+}
+.accordion-item:last-child {
+  border-bottom: none;
+}
+
+.accordion-header {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 18px 5px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-secundario);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.accordion-header:hover {
+  color: var(--color-principal);
+}
+
+.chevron-icon {
+  transition: transform 0.3s ease;
+}
+.chevron-icon.open {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  padding: 0 5px 20px 5px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-terciario);
+  animation: fadeInContent 0.4s ease;
+}
+
+@keyframes fadeInContent {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.accordion-content ul {
+    padding-left: 20px;
+    margin: 10px 0 0;
+}
+
+/* --- Guías por Módulo --- */
+.guides-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.guide-item {
+    background-color: #f8f9fa;
+    border: 1px solid var(--borde-claro);
+    padding: 15px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    color: var(--color-secundario);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.guide-item:hover {
+    background-color: #f1f3f5;
+    color: var(--color-principal);
+    border-color: var(--borde-medio);
+}
+
+/* --- Formulario de Soporte --- */
+.support-form .form-group {
+    margin-bottom: 15px;
+}
+.support-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.support-form input, .support-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borde-medio);
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+.support-form .btn-primary {
+    width: 100%;
+    padding: 12px;
+}
+
+/* --- Info del Sistema --- */
+.system-info p {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+.system-info a {
+    color: var(--color-principal);
+    font-weight: 600;
+    text-decoration: none;
+}
+.system-info a:hover {
+    text-decoration: underline;
+}

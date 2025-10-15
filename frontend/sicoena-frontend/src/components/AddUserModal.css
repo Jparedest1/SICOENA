@@ -219,3 +219,114 @@
 .generate-password-btn:hover {
   background-color: #d0ebff;
 }
+
+.input-with-icon {
+    position: relative;
+    width: 100%;
+}
+
+
+.input-with-icon .input-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-terciario);
+    pointer-events: none; /* Asegura que el clic en el icono no interfiera con el input */
+}
+
+/* Punto verde para el helper text de stock mínimo */
+.helper-text .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+.helper-text .dot.green {
+  background-color: #2ab57d; /* Un verde similar al que usamos para ACTIVO */
+}
+
+.modal-header .breadcrumb {
+  font-size: 14px;
+  color: var(--color-tertiario);
+}
+
+/* Number input with plus/minus buttons */
+.number-input-stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--borde-medio);
+  border-radius: 6px;
+}
+
+.number-input-stepper input {
+  border: none;
+  text-align: center;
+  width: 100%;
+  -moz-appearance: textfield; /* Firefox */
+}
+.number-input-stepper input::-webkit-outer-spin-button,
+.number-input-stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-input-stepper button {
+  background-color: #f1f3f5;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  color: var(--color-secundario);
+}
+.number-input-stepper button:first-of-type {
+  border-right: 1px solid var(--borde-medio);
+  border-radius: 5px 0 0 5px;
+}
+.number-input-stepper button:last-of-type {
+  border-left: 1px solid var(--borde-medio);
+  border-radius: 0 5px 5px 0;
+}
+
+/* Product Selection Section */
+.product-selection-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid var(--borde-claro);
+  border-radius: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.product-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-principal);
+}
+
+.product-item label {
+  font-weight: 500;
+  color: var(--color-secundario);
+}
+
+.product-item .product-category {
+  color: var(--color-terciario);
+  font-size: 13px;
+  font-weight: normal;
+}
+
+/* General Search Input Style */
+.search-input {
+  flex-grow: 1;
+}

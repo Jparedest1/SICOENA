@@ -8,14 +8,13 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import UsersPage from './pages/UsersPage';
 import InstitutionsPage from './pages/InstitutionsPage';
-//import InventoryPage from './pages/InventoryPage';
-//import OrdersPage from './pages/OrdersPage';
-//import ReportsPage from './pages/ReportsPage';
-//import SettingsPage from './pages/SettingsPage';
-//import HelpPage from './pages/HelpPage';
-//import BackupsPage from './pages/BackupsPage';
-//import LogsPage from './pages/LogsPage';
-// ...etc
+import InventoryPage from './pages/InventoryPage';
+import OrdersPage from './pages/OrdersPage';
+import ReportsPage from './pages/ReportsPage';
+import SettingsPage from './pages/SettingsPage';
+import HelpPage from './pages/HelpPage';
+import BackupsPage from './pages/BackupsPage';
+import LogsPage from './pages/LogsPage';
 
 import './App.css'; 
 
@@ -76,13 +75,13 @@ function App() {
                 {/* A medida que crees cada página, descomenta su import y su ruta */}
                 <Route path="/usuarios" element={<UsersPage />} />
                 <Route path="/instituciones" element={<InstitutionsPage />} />
-                {/*<Route path="/inventario" element={<InventoryPage />} />
+                <Route path="/inventario" element={<InventoryPage />} />
                 <Route path="/ordenes" element={<OrdersPage />} />
                 <Route path="/reportes" element={<ReportsPage />} />
                 <Route path="/configuracion" element={<SettingsPage />} />
                 <Route path="/ayuda" element={<HelpPage />} />
                 <Route path="/respaldos" element={<BackupsPage />} />
-                <Route path="/logs" element={<LogsPage />} />*/}
+                <Route path="/logs" element={<LogsPage />} />
                 <Route path="*" element={<Navigate to="/dashboard" />} />
               </Routes>
             </main>

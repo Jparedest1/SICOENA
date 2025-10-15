@@ -1,0 +1,119 @@
+/* src/pages/RespaldosPage.css */
+.respaldos-page .page-header {
+  border-bottom: 1px solid var(--borde-claro);
+  margin-bottom: 25px;
+}
+.respaldos-page .page-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.respaldos-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr; /* Columna de acciones más pequeña */
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.card-container {
+  background-color: var(--bg-blanco);
+  border: 1px solid var(--borde-claro);
+  border-radius: 8px;
+  padding: 25px;
+}
+
+.card-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: var(--color-principal);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-container p {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--color-terciario);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.btn-full {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+}
+.btn-primary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.backup-status {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    color: var(--color-principal);
+    font-weight: 500;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group select {
+    padding: 10px;
+    border: 1px solid var(--borde-medio);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.form-group.checkbox-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+.form-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-principal);
+}
+
+.btn-save-section {
+    margin-top: 10px;
+    background-color: var(--bg-claro);
+    border: 1px solid var(--borde-medio);
+    color: var(--color-secundario);
+}
+
+.backup-id {
+    font-family: var(--font-monospace);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-badge.fallido {
+    background-color: #ffe3e3;
+    color: #e03131;
+}
+
+.icon-restore { color: #fcc419; } /* Amarillo/Naranja para restaurar (advertencia) */

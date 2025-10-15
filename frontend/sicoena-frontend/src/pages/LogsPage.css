@@ -1,0 +1,130 @@
+/* src/pages/LogsPage.css */
+.logs-page .page-header {
+  border-bottom: 1px solid var(--borde-claro);
+  margin-bottom: 25px;
+}
+.logs-page .page-header h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.log-filters-bar {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.search-group {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--borde-medio);
+  border-radius: 6px;
+  padding: 0 10px;
+}
+.search-group svg {
+  color: var(--color-terciario);
+}
+.search-group input {
+  width: 100%;
+  border: none;
+  padding: 10px 5px;
+  font-size: 14px;
+}
+.search-group input:focus {
+  outline: none;
+}
+
+.log-filters-bar select {
+  padding: 10px;
+  border: 1px solid var(--borde-medio);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* --- Tabla de Logs --- */
+.log-table-container {
+  overflow-x: auto;
+}
+.log-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.log-table-container th, 
+.log-table-container td {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--borde-claro);
+  vertical-align: top;
+}
+.log-table-container thead th {
+  background-color: var(--bg-claro);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.log-table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.log-timestamp {
+  font-family: var(--font-monospace);
+  color: var(--color-terciario);
+  white-space: nowrap;
+}
+
+.log-level-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+}
+.level-info { background-color: #339af0; }    /* Azul */
+.level-warn { background-color: #fcc419; }    /* Amarillo */
+.level-error { background-color: #e03131; }   /* Rojo */
+.level-debug { background-color: #868e96; }   /* Gris */
+
+.log-message {
+  font-weight: 500;
+}
+
+.log-context pre {
+  margin: 0;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  background-color: #f1f3f5;
+  padding: 8px;
+  border-radius: 4px;
+  white-space: pre-wrap; /* Asegura que el JSON no desborde la celda */
+  word-break: break-all;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-terciario);
+}
+
+/* Colores para las filas */
+.log-level-warn { background-color: #fff9db; }
+.log-level-error { background-color: #ffe3e3; }
+
+/* --- ESTILOS RESPONSIVE --- */
+
+@media (max-width: 768px) {
+  .log-filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .log-table-container {
+      overflow-x: auto;
+  }
+  
+  .log-table-container table {
+      min-width: 800px;
+  }
+}

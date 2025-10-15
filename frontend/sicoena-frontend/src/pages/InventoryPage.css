@@ -1,0 +1,366 @@
+/* src/pages/InventoryPage.css */
+
+/* Reutilizando y extendiendo estilos base de otras páginas */
+.inventory-page-container {
+  padding: 30px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--borde-claro);
+  padding-bottom: 15px;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--color-principal);
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primary {
+  background-color: var(--color-principal);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-primary:hover {
+    background-color: var(--borde-oscuro);
+}
+
+.btn-secondary {
+  background-color: white;
+  color: var(--color-secundario);
+  border: 1px solid var(--borde-medio);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+    background-color: #f1f3f5;
+}
+
+.btn-tertiary {
+    background: none;
+    border: 1px solid var(--borde-medio);
+    color: var(--color-secundario);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+.btn-tertiary:hover {
+    background-color: #f1f3f5;
+}
+
+/* --- Alerta de Stock Bajo --- */
+.low-stock-alert {
+  background-color: #fff3cd; /* Amarillo claro */
+  color: #856404; /* Texto amarillo oscuro */
+  border: 1px solid #ffeeba;
+  padding: 15px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.low-stock-alert .alert-icon {
+  font-size: 24px;
+  color: #ffc107; /* Amarillo */
+}
+
+.low-stock-alert p {
+  margin: 0;
+  flex-grow: 1;
+}
+
+/* --- Tarjetas de Estadísticas --- */
+.stats-cards-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.stat-card-item {
+  background-color: var(--bg-blanco);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--borde-claro);
+  flex-grow: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.stat-card-icon {
+    font-size: 30px;
+    color: var(--color-principal);
+    margin-bottom: 10px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-principal);
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-terciario);
+  text-transform: uppercase;
+}
+
+/* --- Barra de Filtros --- */
+.filters-bar {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background-color: var(--bg-blanco);
+  border: 1px solid var(--borde-claro);
+  border-radius: 8px;
+  margin-bottom: 25px;
+  align-items: center;
+  flex-wrap: wrap; /* Permite que los elementos salten de línea en pantallas pequeñas */
+}
+
+.filters-bar .search-input {
+  flex-grow: 2; /* Ocupa más espacio que los selects */
+  min-width: 250px; /* Ancho mínimo para el input de búsqueda */
+}
+
+.filters-bar .search-btn {
+    background-color: var(--color-principal);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.filters-bar select {
+  flex-grow: 1;
+  min-width: 150px; /* Ancho mínimo para los selects */
+}
+
+.filters-bar input,
+.filters-bar select {
+  padding: 10px;
+  border: 1px solid var(--borde-medio);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+
+/* --- Tabla de Productos --- */
+.table-container {
+  background-color: var(--bg-blanco);
+  border-radius: 8px;
+  border: 1px solid var(--borde-claro);
+  overflow-x: auto; /* Permite scroll horizontal si la tabla es muy ancha */
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--borde-claro);
+}
+
+.table-actions {
+    display: flex;
+    gap: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--borde-claro); /* Solo border inferior */
+  vertical-align: middle; /* Alinea el contenido verticalmente */
+}
+
+thead th {
+  background-color: var(--bg-claro);
+  color: var(--color-terciario);
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.product-image-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--borde-claro);
+}
+
+.image-placeholder {
+    width: 40px;
+    height: 40px;
+    background-color: #f1f3f5;
+    color: var(--color-terciario);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    font-size: 20px;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.activo { background-color: #e6f8f0; color: #2ab57d; }
+.status-badge.inactivo { background-color: #f8f9fa; color: #adb5bd; }
+
+.low-stock-cell {
+    font-weight: 600;
+    color: #e03131; /* Rojo para stock bajo */
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.action-btn:hover {
+  transform: scale(1.2);
+}
+
+.icon-edit { color: #0d6efd; }
+.icon-delete { color: #dc3545; }
+
+/* --- Paginación --- */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    font-size: 14px;
+    color: var(--color-terciario);
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.page-btn {
+    background-color: var(--bg-blanco);
+    border: 1px solid var(--borde-medio);
+    color: var(--color-secundario);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.page-btn.active, .page-btn:hover {
+    background-color: var(--color-principal);
+    color: white;
+    border-color: var(--color-principal);
+}
+
+/* --- ESTILOS RESPONSIVE --- */
+/* Para Tablets (menos de 992px) */
+@media (max-width: 992px) {
+  .stats-cards-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 tarjetas por fila */
+  }
+
+  .page-header, .filters-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .header-buttons, .filters-bar button {
+     width: 100%;
+  }
+
+  .filters-bar input, .filters-bar select {
+    width: 100%;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+  table {
+    min-width: 1200px; /* Ancho mínimo para la tabla de inventario/órdenes */
+  }
+}
+
+/* Para Móviles (menos de 768px) */
+@media (max-width: 768px) {
+  .stats-cards-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 tarjetas por fila */
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+/* Para Móviles Pequeños (menos de 576px) */
+@media (max-width: 576px) {
+  .page-container {
+    padding: 15px;
+  }
+   .stats-cards-container {
+    grid-template-columns: 1fr; /* 1 tarjeta por fila */
+  }
+}
