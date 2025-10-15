@@ -37,15 +37,16 @@
   }
 }
 
-.app-container-logged-in {
-  display: flex; /* ¡LA CLAVE! Pone a los hijos (Sidebar y content-area) uno al lado del otro */
-  min-height: 100vh;
+.app-main-layout {
+  display: flex;
+  /* Ya no necesita min-height, el header está fuera */
 }
 
 .content-area {
-  flex-grow: 1; /* Ocupa el espacio disponible */
-  position: relative; /* Necesario para posicionar el botón de menú */
-  background-color: var(--bg-claro);
+  flex-grow: 1;
+  position: relative; 
+  /* ¡Elimina el padding-left si lo tenías! */
+  /* El DashboardPage ya tiene su propio padding */
 }
 
 .sidebar-toggle-btn {
@@ -71,17 +72,23 @@
 /* --- ¡AQUÍ LA MAGIA! --- */
 /* Estilos para cuando el sidebar está CERRADO */
 
-.app-container-logged-in.sidebar-closed .sidebar {
-  width: 0; /* El sidebar colapsa */
-  padding: 20px 0;
-  overflow: hidden; /* Oculta el contenido que se desborda */
+.app-main-layout.sidebar-closed .sidebar {
+  margin-left: -260px; /* Desliza el sidebar fuera de la vista */
 }
 
 /* Cuando está cerrado, el botón de menú se mueve
   para alinearse con el Dashboard (que también tiene padding)
 */
-.app-container-logged-in.sidebar-closed .sidebar-toggle-btn {
+.app-main-layout.sidebar-closed .sidebar-toggle-btn {
   /* Opcional: si tu dashboard tiene padding, 
      puedes ajustar el 'left' para que se alinee.
      Pero 'left: 20px' funciona bien. */
+}
+
+#my-tooltip {
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+  background-color: #ffffff !important;
+  color: #333 !important;
 }

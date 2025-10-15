@@ -1,4 +1,7 @@
+// Archivo: src/pages/DashboardPage.js
+
 import React from 'react';
+import { Link } from 'react-router-dom'; // <-- 1. IMPORTA Link
 import './DashboardPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -9,12 +12,12 @@ import {
   faDatabase, 
   faExclamationTriangle, 
   faUsers, 
-  faLink, // Usado para Sesiones Activas
+  faLink,
   faChartBar, 
   faBell 
 } from '@fortawesome/free-solid-svg-icons';
 
-// --- Tarjeta de Acción Rápida (Componente local) ---
+// --- Tarjeta de Acción Rápida (sin cambios) ---
 const ActionCard = ({ title, icon }) => {
   return (
     <div className="action-card">
@@ -24,17 +27,17 @@ const ActionCard = ({ title, icon }) => {
   );
 };
 
-// --- Tarjeta de Estadística (Componente local) ---
-const StatCard = ({ title, value, detail, icon, iconBgColor }) => {
+// --- Tarjeta de Estadística (sin cambios) ---
+const StatCard = ({ title, value, detail, icon, iconBgColor, iconColor }) => {
   return (
     <div className="stat-card">
+      <div className="stat-icon-wrapper" style={{ backgroundColor: iconBgColor }}>
+        <FontAwesomeIcon icon={icon} className="stat-icon" style={{ color: iconColor }} />
+      </div>
       <div className="stat-info">
         <span className="stat-title">{title}</span>
         <span className="stat-value">{value}</span>
         {detail && <span className="stat-detail">{detail}</span>}
-      </div>
-      <div className="stat-icon-wrapper" style={{ backgroundColor: iconBgColor }}>
-        <FontAwesomeIcon icon={icon} className="stat-icon" />
       </div>
     </div>
   );
@@ -51,43 +54,59 @@ const DashboardPage = () => {
 
       {/* --- Sección de Acciones Rápidas --- */}
       <div className="quick-actions-grid">
-        <ActionCard title="Nuevo Usuario" icon={faUserPlus} />
-        <ActionCard title="Nueva Institución" icon={faBuilding} />
-        <ActionCard title="Nuevo Producto" icon={faBox} />
-        <ActionCard title="Generar Reporte" icon={faFileAlt} />
-        <ActionCard title="Crear Respaldo" icon={faDatabase} />
-        <ActionCard title="Ver Alertas" icon={faExclamationTriangle} />
+        {/* 2. ENVUELVE CADA TARJETA CON UN COMPONENTE Link */}
+        <Link to="/usuarios" className="action-link">
+          <ActionCard title="Nuevo Usuario" icon={faUserPlus} />
+        </Link>
+        <Link to="/instituciones" className="action-link">
+          <ActionCard title="Nueva Institución" icon={faBuilding} />
+        </Link>
+        <Link to="/inventario" className="action-link">
+          <ActionCard title="Nuevo Producto" icon={faBox} />
+        </Link>
+        <Link to="/reportes" className="action-link">
+          <ActionCard title="Generar Reporte" icon={faFileAlt} />
+        </Link>
+        <Link to="/respaldos" className="action-link">
+          <ActionCard title="Crear Respaldo" icon={faDatabase} />
+        </Link>
+        <Link to="/alertas" className="action-link">
+          <ActionCard title="Ver Alertas" icon={faExclamationTriangle} />
+        </Link>
       </div>
 
       {/* --- Sección de Estadísticas --- */}
       <div className="stats-grid">
+        {/* (Esta sección no necesita cambios) */}
         <StatCard 
           title="Usuarios Registrados"
           value="7"
           detail="+1% este mes"
           icon={faUsers}
-          iconBgColor="#e7eafc" // Azul claro
+          iconBgColor="#e6e8fa"
+          iconColor="#4d5de2"
         />
         <StatCard 
           title="Sesiones Activas"
           value="3"
           detail="Usuarios conectados"
           icon={faLink}
-          iconBgColor="#e6fcf0" // Verde claro
+          iconBgColor="#e6f8f0"
+          iconColor="#2ab57d"
         />
         <StatCard 
           title="Reportes Generados"
           value="25"
-          detail="Este mes"
           icon={faChartBar}
-          iconBgColor="#fdeee7" // Naranja claro
+          iconBgColor="#fdf0e7"
+          iconColor="#f19a62"
         />
         <StatCard 
           title="Alertas del Sistema"
           value="7"
-          detail="Pendientes"
           icon={faBell}
-          iconBgColor="#fef8e7" // Amarillo claro
+          iconBgColor="#feefef"
+          iconColor="#e65353"
         />
       </div>
     </div>

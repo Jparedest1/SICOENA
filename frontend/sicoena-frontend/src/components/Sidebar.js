@@ -1,12 +1,7 @@
-// src/components/Sidebar.js
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
-
-// 1. Importa el componente de icono
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
 // 2. Importa cada ícono que vas a usar
 import { 
@@ -22,15 +17,10 @@ import {
   faFileAlt
 } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ onLogout, isSidebarOpen }) => {
+const Sidebar = ({ onLogout }) => {
   return (
     <nav className="sidebar">
-      <div className="sidebar-header">
-        <h3>SICOENA</h3>
-      </div>
-      <ul className="sidebar-modules">
-        <li className='module-title'>MÓDULOS PRINCIPALES</li>
-        
+      <ul className="sidebar-modules">            
         {/* 3. Usa el componente FontAwesomeIcon */}
         <li><NavLink to="/dashboard" className={({isActive}) => isActive ? 'active' : ''}>
           <FontAwesomeIcon icon={faTachometerAlt} className="sidebar-icon" /> Dashboard
@@ -73,11 +63,6 @@ const Sidebar = ({ onLogout, isSidebarOpen }) => {
         <li><NavLink to="/logs" className={({isActive}) => isActive ? 'active' : ''}>
           <FontAwesomeIcon icon={faFileAlt} className="sidebar-icon" /> Logs del Sistema
         </NavLink></li>
-        <li>
-          <button onClick={onLogout} className="logout-button">
-            <FontAwesomeIcon icon={faSignOutAlt} className="sidebar-icon" /> Cerrar Sesión
-          </button>
-        </li>
       </ul>
     </nav>
   );

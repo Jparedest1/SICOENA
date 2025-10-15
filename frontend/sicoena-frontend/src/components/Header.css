@@ -1,0 +1,263 @@
+.top-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 25px;
+  height: 60px;
+  background-color: var(--color-principal, #2c3e50);
+  color: #ffffff;
+  border-bottom: 1px solid var(--borde-oscuro, #495057);
+}
+
+/* --- Lado Izquierdo --- */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navbar-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.navbar-logo img {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* --- Centro --- */
+.navbar-center {
+  flex-grow: 1;
+  max-width: 500px;
+  margin: 0 15px 0 5px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background-color: var(--borde-oscuro, #495057);
+  border-radius: 6px;
+  padding: 0 10px;
+}
+
+.search-bar .search-icon {
+  color: var(--borde-medio, #adb5bd);
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.search-bar input::placeholder {
+  color: var(--borde-medio, #adb5bd);
+}
+
+.search-bar input:focus {
+  outline: none;
+}
+
+/* --- Lado Derecho --- */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.quick-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.quick-icons a {
+  color: var(--borde-medio, #adb5bd);
+  font-size: 18px;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.quick-icons a:hover {
+  color: #ffffff;
+}
+
+.notification-bell .notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #0d6efd; /* Azul de notificaciones */
+  color: white;
+  border-radius: 50%;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.user-info span {
+  font-size: 14px;
+  font-weight: 500;
+}
+.user-info .user-id {
+  font-size: 11px;
+  color: var(--borde-medio, #adb5bd);
+}
+
+.navbar-logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--borde-medio, #adb5bd);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  transition: color 0.2s;
+}
+
+.navbar-logout-btn:hover {
+  color: #e65353; /* Rojo al pasar el mouse */
+}
+
+/* Botón de toggle del sidebar con animación */
+.navbar-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto hover con fondo animado */
+.navbar-toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(0, 123, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.navbar-toggle-btn:hover::before {
+  width: 120%;
+  height: 120%;
+}
+
+.navbar-toggle-btn:hover {
+  color: #007bff;
+  transform: scale(1.1);
+  background: rgba(0, 123, 255, 0.05);
+}
+
+/* Animación de pulsación al hacer click */
+.navbar-toggle-btn:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Animación del ícono de barras */
+.navbar-toggle-btn svg {
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.navbar-toggle-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+/* Animación alternativa: efecto de rebote */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.navbar-toggle-btn:hover svg {
+  animation: bounce 0.6s ease;
+}
+
+/* Efecto de onda al hacer click */
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+.navbar-toggle-btn:active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(0, 123, 255, 0.3);
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes logoPulse {
+  0% {
+    /* Sombra inicial (sutil) */
+    filter: drop-shadow(0 0 3px rgba(135, 206, 250, 0.4));
+  }
+  50% {
+    /* Sombra más intensa a la mitad de la animación */
+    filter: drop-shadow(0 0 10px rgba(135, 206, 250, 0.8));
+  }
+  100% {
+    /* Vuelve a la sombra inicial */
+    filter: drop-shadow(0 0 3px rgba(135, 206, 250, 0.4));
+  }
+}
+
+.navbar-logo .logo-image {
+  height: 55px;
+  width: auto;
+  display: block;
+  
+  animation: logoPulse 4s infinite ease-in-out; /* dura 4s, se repite infinitamente */
+  
+  /* Prepara el logo para la transición de escala */
+  transition: transform 0.3s ease;
+}
+
+/* Efecto al pasar el mouse sobre el logo */
+.navbar-logo .logo-image:hover {
+  transform: scale(1.1); /* Agranda el logo un 10% */
+  cursor: pointer;
+}

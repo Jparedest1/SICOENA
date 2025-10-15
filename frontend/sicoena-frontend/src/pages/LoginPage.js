@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
-import sicoenaLogo from '../assets/logo_sicoena.png'; // Asegúrate que tu logo esté en src/assets/
+import sicoenaLogo from '../assets/logo_sicoena.png';
 
 const LoginPage = ({ onLoginSuccess }) => {
   const [usuario, setUsuario] = useState('');

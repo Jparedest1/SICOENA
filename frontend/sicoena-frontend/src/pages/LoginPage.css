@@ -28,9 +28,9 @@
 }
 
 .sicoena-logo-img {
-  max-width: 150px; /* Tamaño del logo */
+  max-width: 250px; /* Tamaño del logo */
   height: auto;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 
 .login-header p {
@@ -78,7 +78,7 @@
 }
 
 .login-button {
-  width: 100%;
+  width: 50%;
   padding: 14px;
   margin-top: 10px;
   background-color: var(--color-principal, #2c3e50);
@@ -158,5 +158,5 @@
   La librería de Google genera un div, así que lo seleccionamos.
 */
 .google-login-button-container > div {
-  width: 100% !important;
+  width: 75% !important;
 }

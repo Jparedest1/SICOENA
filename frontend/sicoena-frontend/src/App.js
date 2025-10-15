@@ -1,25 +1,27 @@
-// src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
-// Importa el ícono del menú (hamburger)
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
-
-// Importa tus componentes
+import { Tooltip } from 'react-tooltip';
+import 'react-tooltip/dist/react-tooltip.css';
+import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-// import UsersPage from './pages/UsersPage'; 
-// ...etc.
+//import UsersPage from './pages/UsersPage';
+//import InstitutionsPage from './pages/InstitutionsPage';
+//import InventoryPage from './pages/InventoryPage';
+//import OrdersPage from './pages/OrdersPage';
+//import ReportsPage from './pages/ReportsPage';
+//import SettingsPage from './pages/SettingsPage';
+//import HelpPage from './pages/HelpPage';
+//import BackupsPage from './pages/BackupsPage';
+//import LogsPage from './pages/LogsPage';
+// ...etc
 
-import './App.css'; // Asegúrate que App.css esté importado
+import './App.css'; 
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  // --- ¡NUEVO ESTADO! ---
-  // 1. Estado para controlar la visibilidad del Sidebar. Por defecto, visible.
+  // El estado del sidebar sigue viviendo aquí
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -38,15 +40,15 @@ function App() {
     localStorage.removeItem('fakeAuthToken');
     setIsLoggedIn(false);
   };
-
-  // --- ¡NUEVA FUNCIÓN! ---
-  // 2. Función para cambiar el estado del sidebar
+  
+  // La función de toggle sigue viviendo aquí
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   return (
     <Router>
+      <Tooltip id="my-tooltip" variant="light" placement="bottom" offset={10} style={{ boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)' }}/>
       {!isLoggedIn ? (
         // --- SIN LOGUEAR ---
         <Routes>
@@ -55,29 +57,37 @@ function App() {
         </Routes>
       ) : (
         // --- SÍ LOGUEADO ---
-        
-        // 3. Añadimos una clase condicional al contenedor principal
-        <div 
-          className={isSidebarOpen ? "app-container-logged-in" : "app-container-logged-in sidebar-closed"}
-        >
-          {/* 4. Le pasamos el estado al Sidebar para que sepa si está abierto */}
-          <Sidebar onLogout={handleLogout} isSidebarOpen={isSidebarOpen} />
+        // Usamos un Fragment (<>) para renderizar Header y el layout principal
+        <>
+          {/* 1. Renderiza el Header y pásale las funciones */}
+          <Header onLogout={handleLogout} toggleSidebar={toggleSidebar} />
           
-          <main className="content-area">
+          {/* 2. El layout principal ahora se llama 'app-main-layout' */}
+          <div 
+            className={isSidebarOpen ? "app-main-layout" : "app-main-layout sidebar-closed"}
+          >
+            {/* 3. El Sidebar ya NO necesita el prop isSidebarOpen */}
+            <Sidebar onLogout={handleLogout} />
             
-            {/* 5. Añadimos el botón para controlar el sidebar */}
-            <button onClick={toggleSidebar} className="sidebar-toggle-btn">
-              <FontAwesomeIcon icon={faBars} />
-            </button>
-            
-            <Routes>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              {/* <Route path="/usuarios" element={<UsersPage />} /> */}
-              {/* <Route path="/instituciones" element={<InstitutionsPage />} /> */}
-              <Route path="*" element={<Navigate to="/dashboard" />} />
-            </Routes>
-          </main>
-        </div>
+            <main className="content-area">
+              {/* 4. ¡El botón de toggle ya NO va aquí! */}
+              <Routes>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                {/* A medida que crees cada página, descomenta su import y su ruta */}
+                {/*<Route path="/usuarios" element={<UsersPage />} />
+                <Route path="/instituciones" element={<InstitutionsPage />} />
+                <Route path="/inventario" element={<InventoryPage />} />
+                <Route path="/ordenes" element={<OrdersPage />} />
+                <Route path="/reportes" element={<ReportsPage />} />
+                <Route path="/configuracion" element={<SettingsPage />} />
+                <Route path="/ayuda" element={<HelpPage />} />
+                <Route path="/respaldos" element={<BackupsPage />} />
+                <Route path="/logs" element={<LogsPage />} />*/}
+                <Route path="*" element={<Navigate to="/dashboard" />} />
+              </Routes>
+            </main>
+          </div>
+        </>
       )}
     </Router>
   );
