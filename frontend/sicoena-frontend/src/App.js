@@ -6,8 +6,8 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-//import UsersPage from './pages/UsersPage';
-//import InstitutionsPage from './pages/InstitutionsPage';
+import UsersPage from './pages/UsersPage';
+import InstitutionsPage from './pages/InstitutionsPage';
 //import InventoryPage from './pages/InventoryPage';
 //import OrdersPage from './pages/OrdersPage';
 //import ReportsPage from './pages/ReportsPage';
@@ -74,9 +74,9 @@ function App() {
               <Routes>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 {/* A medida que crees cada página, descomenta su import y su ruta */}
-                {/*<Route path="/usuarios" element={<UsersPage />} />
+                <Route path="/usuarios" element={<UsersPage />} />
                 <Route path="/instituciones" element={<InstitutionsPage />} />
-                <Route path="/inventario" element={<InventoryPage />} />
+                {/*<Route path="/inventario" element={<InventoryPage />} />
                 <Route path="/ordenes" element={<OrdersPage />} />
                 <Route path="/reportes" element={<ReportsPage />} />
                 <Route path="/configuracion" element={<SettingsPage />} />

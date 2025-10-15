@@ -1,0 +1,155 @@
+/* src/pages/UsersPage.css */
+.users-page-container {
+  padding: 30px;
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--borde-claro);
+  padding-bottom: 15px;
+}
+
+.users-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--color-principal);
+}
+
+.add-user-btn {
+  background-color: var(--color-principal);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-user-btn:hover {
+  background-color: var(--borde-oscuro);
+}
+
+.filters-bar {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  background-color: var(--bg-blanco);
+  border: 1px solid var(--borde-claro);
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.filters-bar input,
+.filters-bar select {
+  padding: 10px;
+  border: 1px solid var(--borde-medio);
+  border-radius: 6px;
+  font-size: 14px;
+  flex-grow: 1;
+}
+
+.filters-bar .search-btn {
+  background-color: var(--color-principal);
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.users-table-container {
+  background-color: var(--bg-blanco);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--borde-claro);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--borde-claro);
+}
+
+thead th {
+  background-color: var(--bg-claro);
+  color: var(--color-terciario);
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.activo {
+  background-color: #e6f8f0;
+  color: #2ab57d;
+}
+
+.status-badge.inactivo {
+  background-color: #f1f3f5;
+  color: #868e96;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-size: 14px;
+}
+
+.edit-btn { color: #0d6efd; }
+.delete-btn { color: #dc3545; }
+
+.action-buttons {
+  display: flex;
+  gap: 15px; /* Aumenta el espacio entre iconos */
+  align-items: center;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 16px; /* Aumenta el tamaño del icono */
+  transition: transform 0.2s;
+}
+
+.action-btn:hover {
+  transform: scale(1.2); /* Efecto de zoom al pasar el mouse */
+}
+
+.icon-edit { color: #0d6efd; } /* Azul para editar */
+.icon-delete { color: #dc3545; } /* Rojo para eliminar */
