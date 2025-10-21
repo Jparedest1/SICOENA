@@ -14,7 +14,7 @@ exports.login = async (req, res) => {
   try {
     // 1. Buscar usuario por email en la tabla 'usuario' y seleccionar 'contraseña'
     const [users] = await db.query(
-      'SELECT id_usuario, nombres, apellidos, correo, contraseña, rol, estado FROM usuario WHERE correo = ? AND estado = "ACTIVO"', // Correct table and column names
+      'SELECT * FROM usuario WHERE correo = ? AND estado = "ACTIVO"', // Correct table and column names
       [email]
     );
 
