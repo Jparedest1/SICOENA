@@ -1,5 +1,3 @@
-// src/pages/LoginPage.js
-
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
@@ -53,13 +51,12 @@ const LoginPage = ({ onLoginSuccess }) => {
   /**
    * Handles successful Google login (sends Google token to backend)
    */
-  const handleGoogleSuccess = async (credentialResponse) => {
+const handleGoogleSuccess = async (credentialResponse) => {
     setError(null);
     setIsLoading(true);
     
     try {
-      // Send the Google token to your backend for verification and login/registration
-      const response = await fetch(`${API_URL}/auth/google/verify`, { // Use your actual Google verification endpoint
+      const response = await fetch(`${API_URL}/auth/google/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,20 +64,23 @@ const LoginPage = ({ onLoginSuccess }) => {
         body: JSON.stringify({ token: credentialResponse.credential }),
       });
 
-      const data = await response.json();
+      const data = await response.json(); // Intenta leer el JSON incluso si hay error
 
       if (!response.ok) {
-        // Handle backend errors (e.g., email not registered in your system)
-        throw new Error(data.message || 'Error al iniciar sesión con Google.');
+        // --- AQUÍ MANEJA EL ERROR ---
+        // Si el backend envió un 403 con el mensaje específico, 'data.message' lo contendrá
+        throw new Error(data.message || `Error ${response.status}: No se pudo iniciar sesión con Google.`); 
       }
 
-      // Google login successful, backend sends back your app's token
+      // Si la respuesta es OK (200), procede como antes
       localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userData', JSON.stringify(data.user)); // Store basic user data
+      localStorage.setItem('userData', JSON.stringify(data.user));
       onLoginSuccess();
 
     } catch (err) {
-      setError(err.message);
+      // El mensaje de error (incluyendo el "Solicite acceso...") se mostrará
+      setError(err.message); 
+      console.error('Error en login Google:', err);
     } finally {
       setIsLoading(false);
     }

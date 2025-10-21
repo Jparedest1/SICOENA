@@ -7,12 +7,9 @@ const db = require('./config/db'); // Descomentarás esto después
 const app = express();
 const PORT = process.env.PORT || 5001; // Usa el puerto de .env o 5001 por defecto
 
-// --- Middlewares Esenciales ---
-// Habilita CORS para permitir peticiones desde tu frontend
+
 app.use(cors()); // Puedes configurarlo más específicamente después
-// Permite que Express entienda JSON enviado en el cuerpo de las peticiones
 app.use(express.json());
-// Permite que Express entienda datos de formularios (opcional, pero útil)
 app.use(express.urlencoded({ extended: true }));
 
 // --- Rutas ---

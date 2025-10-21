@@ -7,8 +7,10 @@ const router = express.Router();
 // Ruta para login (POST /api/auth/login)
 router.post('/login', authController.login);
 
+// --- AÑADE ESTA LÍNEA ---
+// Ruta para verificar el token de Google (POST /api/auth/google/verify)
+router.post('/google/verify', authController.googleVerify); // Asegúrate de crear esta función en el controlador
 
 // Aquí podrías añadir rutas para /register, /forgot-password, etc.
-// Y la ruta para el callback de Google OAuth
 
 module.exports = router;
