@@ -12,7 +12,7 @@ exports.login = async (req, res) => {
 
   try {
     // 1. Buscar usuario por email
-    const [users] = await db.query('SELECT * FROM usuarios WHERE email = ? AND estado = "ACTIVO"', [email]);
+    const [users] = await db.query('SELECT * FROM usuario WHERE correo = ? AND estado = "ACTIVO"', [email]);
 
     if (users.length === 0) {
       return res.status(401).json({ message: 'Credenciales inválidas o usuario inactivo.' });
@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
     );
 
     // Actualizar última conexión (opcional, buena práctica)
-    await db.query('UPDATE usuarios SET ultima_conexion = NOW() WHERE id = ?', [user.id]);
+    await db.query('UPDATE usuario SET ultima_conexion = NOW() WHERE id = ?', [user.id]);
 
     // 4. Enviar el token al cliente
     res.status(200).json({

@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 // Controlador para obtener todos los usuarios (ejemplo simple)
 exports.getAllUsers = async (req, res) => {
   try {
-    const [rows, fields] = await db.query('SELECT id, nombre, email, rol, estado FROM usuarios WHERE estado = "ACTIVO"');
+    const [rows, fields] = await db.query('SELECT id, nombre, email, rol, estado FROM usuario WHERE estado = "ACTIVO"');
     res.status(200).json(rows);
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
@@ -28,7 +28,7 @@ exports.createUser = async (req, res) => {
         const password_hash = await bcrypt.hash(password, salt); // Crea el hash
 
         const [result] = await db.query(
-            'INSERT INTO usuarios (nombre, email, password_hash, rol, cui, telefono) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO usuario (nombre, email, password_hash, rol, cui, telefono) VALUES (?, ?, ?, ?, ?, ?)',
             [nombre, email, password_hash, rol || 'Usuario', cui, telefono]
         );
 

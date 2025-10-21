@@ -8,7 +8,7 @@ const authRoutes = require('./authRoutes'); // Rutas para login
 
 const router = express.Router();
 
-router.use('/usuarios', userRoutes);
+router.use('/usuario', userRoutes);
 router.use('/auth', authRoutes); // Monta las rutas de autenticación en /api/auth
 // router.use('/instituciones', institutionRoutes);
 // router.use('/productos', productRoutes);

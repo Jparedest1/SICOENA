@@ -20,7 +20,7 @@ exports.protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // 3. (Opcional pero recomendado) Verifica que el usuario del token aún existe y está activo
-    const [users] = await db.query('SELECT id, rol, estado FROM usuarios WHERE id = ?', [decoded.userId]);
+    const [users] = await db.query('SELECT id, rol, estado FROM usuario WHERE id = ?', [decoded.userId]);
 
     if (users.length === 0 || users[0].estado !== 'ACTIVO') {
       return res.status(401).json({ message: 'No autorizado. Usuario no encontrado o inactivo.' });
