@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Header.css';
-import sicoenaLogo from '../assets/logo_sicoena.png';
+import sicoenaLogo from '../assets/logo-sicoena.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBars, 

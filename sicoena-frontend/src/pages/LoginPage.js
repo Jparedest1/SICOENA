@@ -1,34 +1,93 @@
+// src/pages/LoginPage.js
+
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
-import sicoenaLogo from '../assets/logo_sicoena.png';
+import sicoenaLogo from '../assets/logo-sicoena.png'; 
+
+// Define your backend API base URL
+const API_URL = 'http://localhost:5000/api'; 
 
 const LoginPage = ({ onLoginSuccess }) => {
-  const [usuario, setUsuario] = useState('');
+  const [usuario, setUsuario] = useState(''); // Corresponds to 'email' in backend
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // To show loading state
 
   /**
-   * Maneja el inicio de sesión estándar (formulario)
+   * Handles standard form login
    */
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
-    console.log('Simulando login estándar para:', usuario);
-
-        onLoginSuccess();
-  };
-
-    const handleGoogleSuccess = async (credentialResponse) => {
-    setError(null);
-    console.log("Simulando login con Google:", credentialResponse.credential);
+    setIsLoading(true);
     
-    // 3. ¡YA NO HAY FETCH! Solo llama a la función del padre
-    onLoginSuccess();
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: usuario, password: contrasena }), // Send email and password
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle errors from the backend (like invalid credentials)
+        throw new Error(data.message || 'Error al iniciar sesión.');
+      }
+
+      // Login successful, backend sends back a token
+      localStorage.setItem('authToken', data.token); // Store the token
+      localStorage.setItem('userData', JSON.stringify(data.user)); // Store basic user data (optional)
+      onLoginSuccess(); // Notify App.js to update state and redirect
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false); // Stop loading indicator
+    }
   };
 
   /**
-   * Maneja un error durante el flujo de Google
+   * Handles successful Google login (sends Google token to backend)
+   */
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError(null);
+    setIsLoading(true);
+    
+    try {
+      // Send the Google token to your backend for verification and login/registration
+      const response = await fetch(`${API_URL}/auth/google/verify`, { // Use your actual Google verification endpoint
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle backend errors (e.g., email not registered in your system)
+        throw new Error(data.message || 'Error al iniciar sesión con Google.');
+      }
+
+      // Google login successful, backend sends back your app's token
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.user)); // Store basic user data
+      onLoginSuccess();
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Handles Google login errors
    */
   const handleGoogleError = () => {
     setError('El inicio de sesión con Google falló. Por favor, intente de nuevo.');
@@ -47,23 +106,25 @@ const LoginPage = ({ onLoginSuccess }) => {
 
         <h3>Iniciar Sesión</h3>
 
-        {/* --- CONTENEDOR DE ERROR --- */}
+        {/* --- Error Message --- */}
         {error && (
           <div className="login-error-message">
             {error}
           </div>
         )}
 
-        {/* --- FORMULARIO ESTÁNDAR --- */}
+        {/* --- Standard Form --- */}
         <form onSubmit={handleLogin}>
+          {/* ... (input fields for usuario/email and contrasena) ... */}
           <div className="input-group">
             <label>Usuario (Email)</label>
             <input 
               type="email" 
-              placeholder="Ingrese su usuario"
+              placeholder="Ingrese su correo electrónico"
               value={usuario}
               onChange={(e) => setUsuario(e.target.value)} 
               required
+              disabled={isLoading} // Disable fields while loading
             />
           </div>
           <div className="input-group">
@@ -74,27 +135,27 @@ const LoginPage = ({ onLoginSuccess }) => {
               value={contrasena}
               onChange={(e) => setContrasena(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
-          <button type="submit" className="login-button">Ingresar al Sistema</button>
+          <button type="submit" className="login-button" disabled={isLoading}>
+            {isLoading ? 'Ingresando...' : 'Ingresar al Sistema'}
+          </button>
           <a href="#" className="forgot-password">¿Olvidó su contraseña?</a>
         </form>
 
-        {/* --- DIVISOR "O" --- */}
-        <div className="login-divider">
-          <span>o</span>
-        </div>
+        <div className="login-divider"><span>o</span></div>
 
-        {/* --- BOTÓN DE GOOGLE --- */}
+        {/* --- Google Button --- */}
         <div className="google-login-button-container">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
-            useOneTap={false} // Para que no aparezca automáticamente
+            useOneTap={false} 
             shape="rectangular"
             theme="outline"
             size="large"
-            width="100%" // Esto es clave para que se ajuste
+            width="100%" 
           />
         </div>
 
