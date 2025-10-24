@@ -163,7 +163,6 @@ exports.updateUser = async (req, res) => {
             email, 
             rol || 'Usuario', // Rol por defecto si no se envía
             telefono || null, 
-            cui || null,
             estado ? estado.toUpperCase() : 'ACTIVO', // Estado actualizado o por defecto
             userId // El ID del usuario a actualizar
         ]);
