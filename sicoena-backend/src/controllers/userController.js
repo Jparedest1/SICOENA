@@ -70,28 +70,38 @@ exports.createUser = async (req, res) => {
 // --- getAllUsers --- (Parece correcto, solo asegúrate que CONCAT maneje bien apellidos NULL)
 exports.getAllUsers = async (req, res) => {
   try {
-    // --- LECTURA DE QUERY PARAMETERS ---
-    const searchTerm = req.query.search || ''; // Obtiene el término de búsqueda (o string vacío)
-    const roleFilter = req.query.rol; // Obtiene el filtro de rol (será undefined si no se envía)
+    const searchTerm = req.query.search || '';
+    const roleFilter = req.query.rol;
+    const statusFilter = req.query.estado; // <-- LEE EL NUEVO PARÁMETRO
 
-    // --- CONSTRUCCIÓN DINÁMICA DE LA CONSULTA ---
+    // Base de la consulta
     let sql = `
-      SELECT 
-        id_usuario as id, 
-        CONCAT(nombres, ' ', COALESCE(apellidos, '')) as nombre, 
-        correo as email, 
-        rol, 
-        estado, 
-        ultima_conexion 
-      FROM usuario 
-      WHERE estado = "ACTIVO" 
-    `;
-    const params = []; // Array para los valores seguros
-
+      SELECT
+        id_usuario as id,
+        CONCAT(nombres, ' ', COALESCE(apellidos, '')) as nombre,
+        correo as email,
+        rol,
+        estado,
+        ultima_conexion
+      FROM usuario
+      WHERE 1=1
+    `; // Empezamos con WHERE 1=1 para añadir AND fácilmente
+    const params = [];
+// --- AÑADE FILTRO DE ESTADO ---
+    // Si se recibe un estado (y no es 'todos'), se añade a la consulta
+    // Asegúrate de validar o usar solo 'ACTIVO' o 'INACTIVO'
+    if (statusFilter && (statusFilter.toUpperCase() === 'ACTIVO' || statusFilter.toUpperCase() === 'INACTIVO')) {
+        sql += ` AND estado = ?`;
+        params.push(statusFilter.toUpperCase());
+    } else {
+        // Comportamiento por defecto si no se especifica estado o es inválido: mostrar solo activos
+        // O podrías eliminar esta línea si quieres mostrar todos por defecto cuando no se filtra por estado
+        sql += ` AND estado = 'ACTIVO'`;
+    }
     // Añade condición de búsqueda si searchTerm no está vacío
     if (searchTerm) {
       sql += ` AND (nombres LIKE ? OR apellidos LIKE ? OR correo LIKE ?)`;
-      const searchTermLike = `%${searchTerm}%`; // Prepara el término para LIKE
+      const searchTermLike = `%${searchTerm}%`;
       params.push(searchTermLike, searchTermLike, searchTermLike);
     }
 
@@ -101,11 +111,10 @@ exports.getAllUsers = async (req, res) => {
       params.push(roleFilter);
     }
 
-    sql += ` ORDER BY id_usuario DESC`; // Mantiene el orden
+    sql += ` ORDER BY id_usuario DESC`;
 
-    // --- EJECUCIÓN DE LA CONSULTA CON PARÁMETROS ---
-    const [rows] = await db.query(sql, params); 
-    
+    const [rows] = await db.query(sql, params);
+
     res.status(200).json(rows);
 
   } catch (error) {

@@ -19,24 +19,29 @@ const UsersPage = () => {
 
   // --- NUEVOS ESTADOS PARA FILTROS ---
   const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('todos'); // Valor inicial 'todos'
+  const [roleFilter, setRoleFilter] = useState('todos');
+  const [statusFilter, setStatusFilter] = useState('ACTIVO'); // <-- NUEVO ESTADO (por defecto muestra activos)
 
   // --- MODIFICACIÓN: fetchUsers ahora acepta parámetros ---
   // Usamos useCallback para memorizar la función y evitar re-renders innecesarios
-  const fetchUsers = useCallback(async (currentSearchTerm = '', currentRoleFilter = 'todos') => {
+const fetchUsers = useCallback(async (
+    currentSearchTerm = '',
+    currentRoleFilter = 'todos',
+    currentStatusFilter = 'ACTIVO' // <-- NUEVO PARÁMETRO
+  ) => {
     setIsLoading(true);
     setError(null);
     const token = localStorage.getItem('authToken');
 
-    if (!token) {
-      setError('No autorizado. Por favor, inicie sesión.');
-      setIsLoading(false);
-      navigate('/login');
-      return;
+    if (!token) { /* ... (manejo de token ausente) ... */
+        setError('No autorizado. Por favor, inicie sesión.');
+        setIsLoading(false);
+        navigate('/login');
+        return;
     }
 
     // Construye la URL con query parameters
-    let url = `${API_URL}/usuario?`;
+let url = `${API_URL}/usuario?`;
     const params = [];
     if (currentSearchTerm) {
       params.push(`search=${encodeURIComponent(currentSearchTerm)}`);
@@ -44,19 +49,26 @@ const UsersPage = () => {
     if (currentRoleFilter !== 'todos') {
       params.push(`rol=${encodeURIComponent(currentRoleFilter)}`);
     }
+    // --- AÑADE EL FILTRO DE ESTADO SI NO ES 'todos' ---
+    if (currentStatusFilter !== 'todos') {
+        params.push(`estado=${encodeURIComponent(currentStatusFilter)}`);
+    }
     url += params.join('&');
 
     try {
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
 
       if (response.status === 401) {
         localStorage.removeItem('authToken');
         throw new Error('Sesión inválida o expirada. Por favor, inicie sesión de nuevo.');
       }
       if (!response.ok) {
-        throw new Error(`Error al cargar los usuarios (${response.status})`);
+        // Intenta obtener un mensaje de error del backend si es JSON
+        let errorData = { message: `Error al cargar los usuarios (${response.status})` };
+        try {
+            errorData = await response.json();
+        } catch(e) { /* No hacer nada si no es JSON */ }
+        throw new Error(errorData.message);
       }
 
       const data = await response.json();
@@ -69,7 +81,7 @@ const UsersPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [navigate]); // navigate es una dependencia estable
+  }, [navigate]);
 
   // --- Carga inicial de usuarios ---
   useEffect(() => {
@@ -78,8 +90,7 @@ const UsersPage = () => {
 
   // --- NUEVA FUNCIÓN: Se activa al hacer clic en Buscar ---
   const handleSearch = () => {
-    // Llama a fetchUsers con los valores actuales de los estados
-    fetchUsers(searchTerm, roleFilter);
+    fetchUsers(searchTerm, roleFilter, statusFilter); // <-- Pasa el filtro de estado
   };
 
   // --- (handleEdit, handleDelete, handleAddNewUser, handleSaveUser sin cambios significativos) ---
@@ -176,75 +187,78 @@ const UsersPage = () => {
     <div className="users-page-container">
       <div className="users-header">
         <h1>Gestión de Usuarios</h1>
-        <button className="add-user-btn" onClick={handleAddNewUser}>
-          Nuevo Usuario
-        </button>
+        <button className="add-user-btn" onClick={handleAddNewUser}>Nuevo Usuario</button>
       </div>
 
       {error && <div className="page-error-message">{error}</div>}
 
-      {/* --- Barra de Filtros con estados y onChange --- */}
       <div className="filters-bar">
-         <input 
-            type="text" 
-            placeholder="Buscar usuario..." 
+         <input
+            type="text"
+            placeholder="Buscar usuario..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)} // Actualiza estado
+            onChange={(e) => setSearchTerm(e.target.value)}
             />
-        <select 
-            value={roleFilter} 
-            onChange={(e) => setRoleFilter(e.target.value)} // Actualiza estado
+        <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
             >
-          <option value="todos">Todos los roles</option>
-          {/* Asegúrate que estos 'value' coincidan con los de tu BD */}
+          <option value="todos">Todos los Roles</option>
           <option value="Administrador">Administrador</option>
           <option value="Usuario">Usuario</option>
         </select>
-        {/* Llama a handleSearch al hacer clic */}
-        <button className="search-btn" onClick={handleSearch}> 
+        {/* --- NUEVO SELECT PARA ESTADO --- */}
+        <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            >
+          {/* <option value="todos">Todos los Estados</option> */} {/* Opcional: si quieres mostrar todos */}
+          <option value="ACTIVO">Activos</option>
+          <option value="INACTIVO">Inactivos</option>
+        </select>
+        <button className="search-btn" onClick={handleSearch}>
             <FontAwesomeIcon icon={faSearch} /> Buscar
         </button>
       </div>
 
       <div className="users-table-container">
-        {isLoading ? (
-          <p>Cargando usuarios...</p> 
-        ) : (
+        {isLoading ? ( <p>Cargando usuarios...</p> ) : (
           <table>
             <thead>
               <tr>
-              <th>ID</th><th>NOMBRE</th><th>EMAIL</th><th>ROL</th><th>ESTADO</th><th>ÚLTIMA CONEXIÓN</th><th>ACCIONES</th>
-            </tr>
+                <th>ID</th><th>NOMBRE</th><th>EMAIL</th><th>ROL</th><th>ESTADO</th><th>ÚLTIMA CONEXIÓN</th><th>ACCIONES</th>
+              </tr>
             </thead>
             <tbody>
-              {/* --- Mapea sobre 'users' que ahora está filtrado --- */}
               {users.map((user) => (
                 <tr key={user.id}>
                   <td>{user.id}</td>
-                <td>{user.nombre}</td>
-                <td>{user.email}</td>
-                <td>{user.rol}</td>
-                <td>
-                  <span className={`status-badge ${user.estado.toLowerCase()}`}>
-                    {user.estado}
-                  </span>
-                </td>
-                <td>{user.ultima_conexion ? new Date(user.ultima_conexion).toLocaleString('sv-SE') : 'N/A'}</td>
+                  <td>{user.nombre}</td>
+                  <td>{user.email}</td>
+                  <td>{user.rol}</td>
+                  <td>
+                    <span className={`status-badge ${user.estado?.toLowerCase()}`}> {/* Añadí ? por seguridad */}
+                      {user.estado}
+                    </span>
+                  </td>
+                  <td>{user.ultima_conexion ? new Date(user.ultima_conexion).toLocaleString('sv-SE') : 'N/A'}</td>
                   <td>
                     <div className="action-buttons">
                       <button className="action-btn icon-edit" title="Editar" onClick={() => handleEdit(user)}>
                         <FontAwesomeIcon icon={faEdit} />
                       </button>
+                      {/* El botón de eliminar/desactivar solo tiene sentido para usuarios activos */}
                       {user.estado === 'ACTIVO' && (
                         <button className="action-btn icon-delete" title="Desactivar" onClick={() => handleDelete(user.id)}>
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
                       )}
+                      {/* Podrías añadir un botón para reactivar si estás viendo inactivos */}
+                      {/* {user.estado === 'INACTIVO' && ( <button>Reactivar</button> )} */}
                     </div>
                   </td>
                 </tr>
               ))}
-              {/* Mensaje si no hay resultados */}
               {users.length === 0 && !isLoading && (
                   <tr>
                       <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
@@ -261,7 +275,7 @@ const UsersPage = () => {
         <AddUserModal
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveUser}
-          currentUser={currentUserToEdit} 
+          currentUser={currentUserToEdit}
         />
       )}
     </div>

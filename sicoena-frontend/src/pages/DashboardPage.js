@@ -5,8 +5,8 @@ import { Link, useNavigate } from 'react-router-dom'; // Importa useNavigate
 import './DashboardPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faUserPlus, faBuilding, faBox, faFileAlt, faDatabase, 
-  faExclamationTriangle, faUsers, faUserCheck, faUserTimes, faChartBar, faBell // Changed faLink to faUserCheck, faUserTimes
+  faUserPlus, faBuilding, faBox, faFileAlt, faDatabase, faTruck,
+  faExclamationTriangle, faUserCheck, faUserTimes, faChartBar, faBell // Changed faLink to faUserCheck, faUserTimes
 } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = 'http://localhost:5000/api'; // Asegúrate que esta sea tu URL base
@@ -98,20 +98,20 @@ const [stats, setStats] = useState({
 
       {/* --- Sección de Acciones Rápidas (sin cambios en la lógica) --- */}
       <div className="quick-actions-grid">
-        <Link to="/usuario" className="action-link"> {/* Corregido a /usuario */}
-          <ActionCard title="Nuevo Usuario" icon={faUserPlus} />
+        <Link to="/usuarios" className="action-link"> {/* Corregido a /usuario */}
+          <ActionCard title="Usuarios" icon={faUserPlus} />
         </Link>
         <Link to="/instituciones" className="action-link">
-          <ActionCard title="Nueva Institución" icon={faBuilding} />
+          <ActionCard title="Instituciones" icon={faBuilding} />
         </Link>
         <Link to="/inventario" className="action-link">
-          <ActionCard title="Nuevo Producto" icon={faBox} />
+          <ActionCard title="Inventario" icon={faBox} />
+        </Link>
+        <Link to="/ordenes" className="action-link">
+          <ActionCard title="Entregas" icon={faTruck} />
         </Link>
         <Link to="/reportes" className="action-link">
           <ActionCard title="Generar Reporte" icon={faFileAlt} />
-        </Link>
-        <Link to="/respaldos" className="action-link">
-          <ActionCard title="Crear Respaldo" icon={faDatabase} />
         </Link>
         <Link to="/alertas" className="action-link"> {/* Asegúrate de tener esta ruta si es necesaria */}
           <ActionCard title="Ver Alertas" icon={faExclamationTriangle} />

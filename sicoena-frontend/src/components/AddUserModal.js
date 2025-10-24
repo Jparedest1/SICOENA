@@ -153,7 +153,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
                   <option value="" disabled>Seleccionar rol</option>
                   <option value="Administrador">Administrador</option>
                   <option value="Usuario">Usuario</option>
-                  <option value="Operador">Operador</option> {/* Added Operator role */}
                 </select>
                 <small className="helper-text">Seleccione el rol que tendrá el usuario en el sistema</small>
               </div>

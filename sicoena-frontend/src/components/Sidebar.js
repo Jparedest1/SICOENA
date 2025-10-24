@@ -39,7 +39,7 @@ const Sidebar = ({ onLogout }) => {
         </NavLink></li>
         
         <li><NavLink to="/ordenes" className={({isActive}) => isActive ? 'active' : ''}>
-          <FontAwesomeIcon icon={faTruck} className="sidebar-icon" /> Gestión de Órdenes
+          <FontAwesomeIcon icon={faTruck} className="sidebar-icon" /> Gestión de Entregas
         </NavLink></li>
         
         <li><NavLink to="/reportes" className={({isActive}) => isActive ? 'active' : ''}>
