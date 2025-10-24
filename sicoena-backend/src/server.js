@@ -1,15 +1,27 @@
 // src/server.js
-require('dotenv').config(); // Carga las variables de .env al inicio
+require('dotenv').config(); 
 const express = require('express');
-const cors = require('cors');
-const db = require('./config/db'); // Descomentarás esto después
+const cors = require('cors'); 
+const db = require('./config/db'); 
 
 const app = express();
-const PORT = process.env.PORT || 5001; // Usa el puerto de .env o 5001 por defecto
+const PORT = process.env.PORT || 5001;
 
+// --- CONFIGURACIÓN CORS SIMPLIFICADA Y CORRECTA ---
+const corsOptions = {
+  origin: 'http://localhost:3000', // URL de tu frontend
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'], // Asegúrate que Authorization esté aquí
+  optionsSuccessStatus: 204 // Opcional: Responde rápido a OPTIONS
+};
 
-app.use(cors()); // Puedes configurarlo más específicamente después
-app.use(express.json());
+// Aplica el middleware CORS ANTES de tus rutas
+// La librería 'cors' manejará automáticamente las peticiones OPTIONS (preflight)
+app.use(cors(corsOptions)); 
+// --- FIN CONFIGURACIÓN CORS ---
+
+// --- Middlewares Esenciales ---
+app.use(express.json()); // Debe ir después de CORS si necesitas procesar JSON en OPTIONS (raro)
 app.use(express.urlencoded({ extended: true }));
 
 // --- Rutas ---
@@ -17,19 +29,10 @@ app.get('/', (req, res) => {
   res.send('¡API de SICOENA funcionando!');
 });
 
-// Aquí irán las rutas principales de tu API (ej: /api/usuarios, /api/productos)
 const mainRoutes = require('./routes/index');
-app.use('/api', mainRoutes);
+app.use('/api', mainRoutes); // Tus rutas principales van DESPUÉS de app.use(cors())
 
 // --- Iniciar el Servidor ---
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  // Aquí podrías añadir una prueba de conexión a la BD
 });
-
-// Configuración CORS más específica (reemplaza 'http://localhost:3000' con la URL de tu frontend)
-const corsOptions = {
-  origin: 'http://localhost:3000', // Permite solo a tu frontend
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
