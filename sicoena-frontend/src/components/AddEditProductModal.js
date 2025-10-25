@@ -3,22 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import './AddUserModal.css'; // Reutilizamos el CSS genérico del modal
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faCalendarAlt } from '@fortawesome/free-solid-svg-icons'; // Iconos para las secciones
+import { faCog, faCalendarAlt} from '@fortawesome/free-solid-svg-icons'; // Iconos para las secciones
 
 const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
-  // --- Estados para todos los campos del formulario ---
+  // --- Estados del formulario ---
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [unidad, setUnidad] = useState('');
-  const [precioUni, setPrecioUni] = useState(''); // Cambiado a string para manejar el 'Q 0.00'
-  const [stockInicial, setStockInicial] = useState(''); // Nuevo campo
-  
+  const [unidad, setUnidad] = useState(''); // Estado para Unidad de Medida
+  const [precioUni, setPrecioUni] = useState('');
+  const [stockInicial, setStockInicial] = useState(''); // Usado como stock_actual al guardar
+
   const [stockMin, setStockMin] = useState('');
-  const [fechaVencimiento, setFechaVencimiento] = useState(''); // Nuevo campo
-  const [proveedor, setProveedor] = useState(''); // Nuevo campo
-  
-  const [descripcion, setDescripcion] = useState(''); // Nuevo campo
-  const [estado, setEstado] = useState('ACTIVO'); // Este se mantiene aunque no esté en la imagen
+  const [fechaVencimiento, setFechaVencimiento] = useState('');
+  const [proveedor, setProveedor] = useState(''); // Estado para Proveedor (ID)
+  const [bodega, setBodega] = useState('');       // Estado para Bodega/Almacén (ID)
+
+  const [descripcion, setDescripcion] = useState('');
+  const [perecedero, setPerecedero] = useState(false); // <-- ESTADO PARA PERECEDERO (BOOLEANO)
+  const [estado, setEstado] = useState('ACTIVO');
 
   const isEditMode = currentProduct !== null;
 
@@ -26,44 +28,52 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
     if (isEditMode) {
       setNombre(currentProduct.nombre || '');
       setCategoria(currentProduct.categoria || '');
-      setUnidad(currentProduct.unidad || '');
-      setPrecioUni(currentProduct.precio_uni ? `Q ${currentProduct.precio_uni.toFixed(2)}` : 'Q 0.00'); // Formatea
-      setStockInicial(currentProduct.stock_actual || ''); // En edición, stock_actual es el "stock inicial" del producto.
-      
+      setUnidad(currentProduct.unidad || ''); // <-- Usa 'unidad'
+      setPrecioUni(currentProduct.precio_uni ? `Q ${currentProduct.precio_uni.toFixed(2)}` : 'Q 0.00');
+      setStockInicial(currentProduct.stock_actual || ''); // En edición, usa stock_actual
+
       setStockMin(currentProduct.stock_min || '');
-      setFechaVencimiento(currentProduct.fecha_vencimiento || ''); // Asume que este campo existe en mockProducts
-      setProveedor(currentProduct.proveedor || ''); // Asume que este campo existe en mockProducts
-      
-      setDescripcion(currentProduct.descripcion || ''); // Asume que este campo existe en mockProducts
+      setFechaVencimiento(currentProduct.fecha_vencimiento || '');
+      setProveedor(currentProduct.proveedor || ''); // Asume que currentProduct tiene proveedor (ID)
+      setBodega(currentProduct.almacen || '');     // Asume que currentProduct tiene almacen (ID bodega)
+
+      setDescripcion(currentProduct.descripcion || '');
+      setPerecedero(Boolean(currentProduct.perecedero)); // <-- Usa 'perecedero'
       setEstado(currentProduct.estado || 'ACTIVO');
     } else {
-      // Valores por defecto para un nuevo producto
+      // Valores por defecto
       setPrecioUni('Q 0.00');
       setStockInicial('0');
       setStockMin('0');
+      setPerecedero(false); // <-- Default para perecedero
       setEstado('ACTIVO');
+      setUnidad('');      // <-- Default para unidad
+      setProveedor('');   // <-- Default para proveedor
+      setBodega('');      // <-- Default para bodega
     }
   }, [currentProduct, isEditMode]);
 
-  const handleSubmit = (e) => {
+const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Limpia el formato de precio para guardar como número
-    const cleanPrecio = parseFloat(precioUni.replace('Q ', '')).toFixed(2);
-    const initialStockNum = Number(stockInicial);
 
+    const cleanPrecio = parseFloat(String(precioUni).replace(/[^0-9.]/g, '')) || 0;
+    const initialStockNum = Number(stockInicial) || 0;
+    const minStockNum = Number(stockMin) || 0;
+
+    // Objeto que se pasa a onSave (handleSaveProduct en InventoryPage)
     const productData = {
       nombre,
       categoria,
-      unidad,
-      precio_uni: Number(cleanPrecio),
-      stock_actual: initialStockNum, // Usamos stockInicial como stock_actual al guardar
-      stock_min: Number(stockMin),
+      unidad: unidad,             // <-- CORREGIDO: usa el estado 'unidad'
+      precio_uni: cleanPrecio,
+      stock_actual: initialStockNum,
+      stock_min: minStockNum,
       fecha_vencimiento: fechaVencimiento,
-      proveedor,
+      proveedor: proveedor,       // <-- CORREGIDO: usa el estado 'proveedor'
+      almacen: bodega,            // <-- CORREGIDO: usa el estado 'bodega'
       descripcion,
-      estado,
-      valor_total: initialStockNum * Number(cleanPrecio), // Recalcula valor total
+      perecedero: perecedero,     // <-- CORREGIDO: usa el estado 'perecedero'
+      estado: estado.toUpperCase(),
     };
     onSave(productData);
   };
@@ -93,10 +103,10 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
           <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
-          
+
           {/* --- INFORMACIÓN BÁSICA --- */}
           <div className="form-section">
-            <h3>INFORMACIÓN BÁSICA</h3>
+            {/* ... (Nombre, Categoría) ... */}
             <div className="form-group">
               <label htmlFor="nombre">Nombre del Producto *</label>
               <input type="text" id="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ingrese el nombre del producto" required />
@@ -109,40 +119,40 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
                   <option value="" disabled>Seleccionar categoría</option>
                   <option value="Verdura">Verdura</option>
                   <option value="Fruta">Fruta</option>
-                  <option value="Lácteo">Lácteo</option>
-                  <option value="Grano">Grano</option>
-                  {/* Agrega más categorías si es necesario */}
+                  {/* ... */}
                 </select>
                 <small className="helper-text">Categoría a la que pertenece el producto</small>
               </div>
               <div className="form-group">
-                <label htmlFor="unidad">Unidad de Medida *</label>
-                <select id="unidad" value={unidad} onChange={(e) => setUnidad(e.target.value)} required>
-                  <option value="" disabled>Seleccionar unidad</option>
-                  <option value="Unidad">Unidad</option>
-                  <option value="Libra">Libra</option>
-                  <option value="Quintal">Quintal</option>
-                  <option value="Saco">Saco</option>
-                </select>
-                <small className="helper-text">Unidad en la que se mide el producto</small>
+                  <label htmlFor="unidad">Unidad de Medida *</label>
+                  {/* Asegúrate que el select actualice el estado 'unidad' */}
+                  <select id="unidad" value={unidad} onChange={(e) => setUnidad(e.target.value)} required>
+                      <option value="" disabled>Seleccionar unidad</option>
+                      <option value="Unidad">Unidad</option>
+                      <option value="Libra">Libra</option>
+                      {/* ... */}
+                  </select>
+                  <small className="helper-text">Unidad en la que se mide el producto</small>
               </div>
             </div>
-            <div className="form-row">
+            {/* ... (Precio Unitario, Stock Inicial) ... */}
+             <div className="form-row">
                 <div className="form-group">
                     <label htmlFor="precioUni">Precio Unitario *</label>
                     <input type="text" id="precioUni" value={precioUni} onChange={handlePriceChange} onBlur={handlePriceChange} placeholder="Q 0.00" required />
                     <small className="helper-text">Precio por unidad de medida</small>
                 </div>
                 <div className="form-group">
-                    <label htmlFor="stockInicial">Stock Inicial *</label>
+                    <label htmlFor="stockInicial">Stock Inicial/Actual *</label> {/* Etiqueta actualizada */}
                     <input type="number" id="stockInicial" value={stockInicial} onChange={(e) => setStockInicial(e.target.value)} placeholder="0" required />
-                    <small className="helper-text">Cantidad inicial en inventario</small>
+                    <small className="helper-text">Cantidad actual en inventario</small>
                 </div>
             </div>
           </div>
 
           {/* --- CONFIGURACIÓN DE INVENTARIO --- */}
           <div className="form-section">
+            {/* ... (Stock Mínimo, Fecha Vencimiento) ... */}
             <h3><FontAwesomeIcon icon={faCog} className="section-icon" /> CONFIGURACIÓN DE INVENTARIO</h3>
             <div className="form-row">
                 <div className="form-group">
@@ -154,25 +164,69 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
                     <label htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
                     <div className="input-with-icon">
                         <input type="date" id="fechaVencimiento" value={fechaVencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} />
+                        <FontAwesomeIcon icon={faCalendarAlt} className="input-icon" />
                     </div>
                     <small className="helper-text">Fecha de vencimiento (si aplica)</small>
                 </div>
             </div>
-            <div className="form-group">
-                <label htmlFor="proveedor">Proveedor</label>
-                <input type="text" id="proveedor" value={proveedor} onChange={(e) => setProveedor(e.target.value)} placeholder="Nombre del proveedor" />
-                <small className="helper-text">Proveedor principal del producto</small>
+            <div className="form-row"> {/* Nueva fila para Proveedor y Bodega */}
+                <div className="form-group">
+                    <label htmlFor="proveedor">Proveedor</label>
+                    {/* Debería ser un select que actualice el estado 'proveedor' */}
+                    <select id="proveedor" value={proveedor} onChange={(e) => setProveedor(e.target.value)}>
+                        <option value="" disabled>Seleccionar Proveedor</option>
+                        <option value="1">Proveedor A (ID: 1)</option> {/* Ejemplo */}
+                        <option value="2">Proveedor B (ID: 2)</option> {/* Ejemplo */}
+                    </select>
+                    <small className="helper-text">Proveedor principal del producto</small>
+                </div>
+                <div className="form-group">
+                    <label htmlFor="bodega">Bodega *</label>
+                     {/* Debería ser un select que actualice el estado 'bodega' */}
+                    <select id="bodega" value={bodega} onChange={(e) => setBodega(e.target.value)} required>
+                        <option value="" disabled>Seleccionar Bodega</option>
+                        <option value="1">Bodega Principal (ID: 1)</option> {/* Ejemplo */}
+                        <option value="2">Bodega Secundaria (ID: 2)</option> {/* Ejemplo */}
+                    </select>
+                    <small className="helper-text">Bodega donde se almacena</small>
+                </div>
+            </div>
+            {/* --- Checkbox para Perecedero --- */}
+             <div className="form-group checkbox-group" style={{ marginTop: '20px' }}>
+                <input
+                    type="checkbox"
+                    id="perecedero"
+                    checked={perecedero}
+                    onChange={(e) => setPerecedero(e.target.checked)}
+                 />
+                <label htmlFor="perecedero">¿Es Perecedero?</label>
+                <small className="helper-text">Marcar si el producto tiene fecha de vencimiento</small>
             </div>
           </div>
 
           {/* --- DESCRIPCIÓN --- */}
           <div className="form-section">
-            <h3>DESCRIPCIÓN</h3>
+             {/* ... (Textarea Descripción) ... */}
+              <h3>DESCRIPCIÓN</h3>
             <div className="form-group">
-              <textarea id="descripcion" rows="4" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción detallada del producto, ingredientes, características especiales, etc."></textarea>
+              <textarea id="descripcion" rows="4" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción detallada del producto..."></textarea>
               <small className="helper-text">Información detallada sobre el producto (opcional)</small>
             </div>
           </div>
+
+          {/* --- Estado (Opcional si quieres editarlo aquí) --- */}
+           {isEditMode && (
+                <div className="form-section">
+                     <h3>Estado</h3>
+                    <div className="form-group">
+                        <label htmlFor="estado">Estado Actual del Producto</label>
+                        <select id="estado" value={estado} onChange={(e) => setEstado(e.target.value)}>
+                            <option value="ACTIVO">Activo</option>
+                            <option value="INACTIVO">Inactivo</option>
+                        </select>
+                    </div>
+                </div>
+            )}
 
           <div className="modal-footer">
             <button type="button" className="btn-cancel" onClick={onClose}>Cancelar</button>
