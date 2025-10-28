@@ -7,8 +7,9 @@ const institutionRoutes = require('./institutionRoutes');
 const productRoutes = require('./productRoutes');
 const movementRoutes = require('./movementRoutes');
 const authRoutes = require('./authRoutes');
-const proveedorRoutes = require('./proveedorRoutes'); 
-const bodegaRoutes = require('./bodegaRoutes');      
+const proveedorRoutes = require('./proveedorRoutes');
+const bodegaRoutes = require('./bodegaRoutes');
+const settingsRoutes = require('./settingsRoutes');
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.use('/producto', productRoutes);
 router.use('/movimientos', movementRoutes);
 router.use('/proveedor', proveedorRoutes);
 router.use('/bodega', bodegaRoutes);
+router.use('/settings', settingsRoutes);
 router.get('/dashboard/stats', protect, dashboardController.getStats);
 
 module.exports = router;

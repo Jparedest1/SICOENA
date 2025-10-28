@@ -21,14 +21,10 @@ exports.getAllProducts = async (req, res) => {
         const params = [];
 
         // Filtro de Estado (Asume columna 'estado' VARCHAR o TINYINT)
-        if (estado && (estado.toUpperCase() === 'ACTIVO' || estado.toUpperCase() === 'INACTIVO')) {
-             sql += ` AND p.estado = ?`;
-             params.push(estado.toUpperCase()); // Guarda como ACTIVO/INACTIVO si es VARCHAR
-             // Si es TINYINT, usa: params.push(estado.toUpperCase() === 'ACTIVO' ? 1 : 0);
-        } else {
-             sql += ` AND p.estado = 'ACTIVO'`; // Default a activos
-             // Si es TINYINT, usa: sql += ` AND p.estado = 1`;
-        }
+        if (estado && estado !== 'todos' && (estado.toUpperCase() === 'ACTIVO' || estado.toUpperCase() === 'INACTIVO')) {
+     sql += ` AND p.estado = ?`;
+     params.push(estado.toUpperCase());
+} 
 
         // Filtro de Búsqueda (nombre, descripción, categoría)
         if (search) {

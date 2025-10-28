@@ -168,3 +168,40 @@
         flex-direction: column;
     }
 }
+
+.settings-message {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
+.settings-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.settings-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.required {
+  color: #e74c3c;
+  margin-left: 2px;
+}
+
+.form-group small {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-top: 4px;
+  display: block;
+}
+
+.btn-save-section:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
