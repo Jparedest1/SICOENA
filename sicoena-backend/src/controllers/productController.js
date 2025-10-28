@@ -198,5 +198,20 @@ exports.updateProductStatus = async (req, res) => {
     }
 };
 
+exports.getProductCategories = async (req, res) => {
+    try {
+        // Consulta para obtener las categorías únicas y no nulas
+        const [rows] = await db.query(
+            'SELECT DISTINCT categoria FROM producto WHERE categoria IS NOT NULL AND categoria != "" ORDER BY categoria ASC'
+        );
+        // Extrae solo los nombres de categoría del resultado
+        const categories = rows.map(row => row.categoria);
+        res.status(200).json(categories); // Devuelve un array de strings ['Fruta', 'Verdura', ...]
+
+    } catch (error) {
+        console.error("Error al obtener categorías de producto:", error);
+        res.status(500).json({ message: 'Error interno del servidor al obtener categorías.' });
+    }
+};
 // --- (Opcional) Obtener Producto por ID ---
 // exports.getProductById = async (req, res) => { ... }

@@ -5,6 +5,7 @@ const { protect, restrictTo } = require('../middleware/authMiddleware'); // Midd
 
 const router = express.Router();
 
+router.get('/categorias', protect, productController.getProductCategories);
 // GET /api/producto - Obtener todos los productos (con filtros)
 router.get('/', protect, productController.getAllProducts);
 

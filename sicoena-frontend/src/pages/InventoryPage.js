@@ -1,16 +1,19 @@
-// src/pages/InventoryPage.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './InventoryPage.css'; // Asegúrate de tener los estilos
+import './InventoryPage.css';
 import AddEditProductModal from '../components/AddEditProductModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faBox, faBoxes, faClipboardList, faChartLine, faExclamationTriangle, faBarcode, faSearch, faCoins } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faBox, faBoxes, faClipboardList, faChartLine, faExclamationTriangle, faBarcode, faSearch, faFilePdf, faFileExcel, faCoins } from '@fortawesome/free-solid-svg-icons';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import ExcelJS from 'exceljs'; // Importa exceljs
+import { saveAs } from 'file-saver'; // Importa file-saver
+
 
 const API_URL = 'http://localhost:5000/api'; // URL de tu backend
 
 const InventoryPage = () => {
-  const [products, setProducts] = useState([]); // Inicia vacío
+  const [products, setProducts] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProductToEdit, setCurrentProductToEdit] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,12 +22,13 @@ const InventoryPage = () => {
 
   // --- Estados para filtros ---
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('todos');
-  const [warehouseFilter, setWarehouseFilter] = useState('todos'); // Mapea a id_bodega
-  const [statusFilter, setStatusFilter] = useState('ACTIVO'); // Mapea a estado
-  const [stockFilter, setStockFilter] = useState('todos'); // 'bajo' o 'todos'
-
-  // --- FUNCIÓN PARA OBTENER PRODUCTOS ---
+  const [categoryFilter, setCategoryFilter] = useState('todos'); // Valor inicial 'todos'
+  const [warehouseFilter, setWarehouseFilter] = useState('todos'); // Valor inicial 'todos'
+  const [statusFilter, setStatusFilter] = useState('ACTIVO');    // Valor inicial 'ACTIVO'
+  const [stockFilter, setStockFilter] = useState('todos');    // Valor inicial 'todos'
+  const [categoriesList, setCategoriesList] = useState([]);
+  
+  // --- FUNCIÓN PARA OBTENER PRODUCTOS (con filtros) ---
   const fetchProducts = useCallback(async (
       currentSearch = '',
       currentCategory = 'todos',
@@ -44,13 +48,13 @@ const InventoryPage = () => {
     }
 
     // Construye URL con query parameters (usa nombres de backend)
-    let url = `${API_URL}/producto?`; // Endpoint de productos
+    let url = `${API_URL}/producto?`;
     const params = [];
     if (currentSearch) params.push(`search=${encodeURIComponent(currentSearch)}`);
     if (currentCategory !== 'todos') params.push(`categoria=${encodeURIComponent(currentCategory)}`);
-    if (currentWarehouse !== 'todos') params.push(`bodega=${encodeURIComponent(currentWarehouse)}`); // id_bodega
-    if (currentStatus !== 'todos') params.push(`estado=${encodeURIComponent(currentStatus)}`);
-    if (currentStock === 'bajo') params.push(`stock=bajo`); // Indica al backend filtrar por stock bajo
+    if (currentWarehouse !== 'todos') params.push(`bodega=${encodeURIComponent(currentWarehouse)}`);
+    if (currentStatus !== 'todos') params.push(`estado=${encodeURIComponent(currentStatus)}`); // Envía 'ACTIVO' o 'INACTIVO'
+    if (currentStock === 'bajo') params.push(`stock=bajo`);
     url += params.join('&');
 
     try {
@@ -59,26 +63,21 @@ const InventoryPage = () => {
       if (!response.ok) { /* ... (manejo otros errores fetch) ... */ }
 
       const data = await response.json();
-
-      // Mapea los datos del backend a la estructura del frontend
       const mappedData = data.map(prod => ({
-          id: prod.id_producto, // id_producto -> id
-          nombre: prod.nombre_producto, // nombre_producto -> nombre
+          id: prod.id_producto,
+          nombre: prod.nombre_producto,
           categoria: prod.categoria,
-          stock_actual: prod.stock_disponible, // stock_disponible -> stock_actual
-          stock_min: prod.stock_minimo, // stock_minimo -> stock_min
-          unidad: prod.unidad_medida, // unidad_medida -> unidad (¿ajustar tipo?)
-          precio_uni: parseFloat(prod.precio_unitario) || 0, // precio_unitario -> precio_uni
-          fecha_vencimiento: prod.fecha_vencimiento ? prod.fecha_vencimiento.split('T')[0] : null, // Formato YYYY-MM-DD
-          proveedor: prod.id_proveedor, // Guardamos el ID por ahora
+          stock_actual: prod.stock_disponible,
+          stock_min: prod.stock_minimo,
+          unidad: prod.unidad_medida,
+          precio_uni: parseFloat(prod.precio_unitario) || 0,
+          fecha_vencimiento: prod.fecha_vencimiento ? prod.fecha_vencimiento.split('T')[0] : null,
+          proveedor: prod.id_proveedor,
           descripcion: prod.descripcion,
-          perecedero: Boolean(prod.perecedero), // tinyint -> boolean
-          // Asume que el backend también devuelve id_bodega y estado
-          almacen: prod.id_bodega, // Guardamos el ID de la bodega
-          estado: prod.estado || 'ACTIVO', // Estado (asumiendo que existe)
-          // Calcula valor_total en el frontend
+          perecedero: Boolean(prod.perecedero),
+          almacen: prod.id_bodega, // ID Bodega
+          estado: prod.estado || 'ACTIVO', // Asegura un valor
           valor_total: (parseFloat(prod.precio_unitario) || 0) * (prod.stock_disponible || 0),
-          // Puedes necesitar campos adicionales del backend aquí
       }));
       setProducts(mappedData);
 
@@ -88,14 +87,35 @@ const InventoryPage = () => {
 
   // Carga inicial
   useEffect(() => {
-    fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
+    const fetchCategories = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return; // No intentar si no hay token
+
+      try {
+        const response = await fetch(`${API_URL}/producto/categorias`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          throw new Error('Error al cargar categorías');
+        }
+        const data = await response.json();
+        setCategoriesList(data); // Guarda las categorías en el estado
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+        // Opcional: mostrar un error específico para categorías
+        // setError(prev => prev ? `${prev}\nError al cargar categorías.` : 'Error al cargar categorías.');
+      }
+    };
+
+    fetchCategories();
+    fetchProducts(); // Carga inicial de productos
   }, [fetchProducts]);
 
   // --- BUSCAR/FILTRAR ---
   const handleSearch = () => {
+    // Llama a fetchProducts con los valores *actuales* de los estados de filtro
     fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
   };
-
   // --- EDITAR ---
   const handleEdit = (product) => {
     // Pasa el objeto mapeado del frontend al modal
@@ -178,6 +198,122 @@ const InventoryPage = () => {
     } catch (err) { setError(err.message); }
   };
 
+    const handleExportPDF = () => {
+  if (products.length === 0) {
+    alert("No hay datos para exportar.");
+    return;
+  }
+
+  const doc = new jsPDF();
+  doc.text("Reporte de Inventario - SICOENA", 14, 16);
+
+  const head = [[
+    'ID', 'Producto', 'Categoría', 'Stock Disp.', 'Stock Min.',
+    'Unidad Med.', 'Precio Uni.', 'Valor Total', 'Bodega', 'Perecedero',
+    'Fec. Venc.', 'Estado'
+  ]];
+
+  const body = products.map(p => [
+    p.id,
+    p.nombre,
+    p.categoria,
+    p.stock_actual,
+    p.stock_min,
+    p.unidad,
+    `Q${Number(p.precio_uni ?? 0).toFixed(2)}`,
+    `Q${Number(p.valor_total ?? 0).toFixed(2)}`,
+    `Bodega ${p.almacen}`,
+    p.perecedero ? 'Sí' : 'No',
+    p.fecha_vencimiento || 'N/A',
+    p.estado
+  ]);
+
+  autoTable(doc, {               // 👈 aquí está el cambio
+    startY: 22,
+    head,
+    body,
+    theme: 'grid',
+    headStyles: { fillColor: [44, 62, 80] },
+    styles: { fontSize: 8 },
+  });
+
+  doc.save(`inventario_sicoena_${new Date().toISOString().slice(0,10)}.pdf`);
+};
+
+  const handleExportExcel = async () => {
+    if (products.length === 0) {
+        alert("No hay datos para exportar.");
+        return;
+    }
+
+    // 1. Crea un nuevo libro de trabajo
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'SICOENA';
+    workbook.lastModifiedBy = 'SICOENA';
+    workbook.created = new Date();
+    workbook.modified = new Date();
+
+    // 2. Añade una hoja de cálculo
+    const worksheet = workbook.addWorksheet('Inventario');
+
+    // 3. Define las columnas (header y key son importantes)
+    // El 'key' debe coincidir con las claves del objeto de datos
+    // 'header' es lo que se mostrará en Excel
+    // 'width' es opcional para ajustar el ancho
+    worksheet.columns = [
+      { header: 'ID Producto', key: 'id', width: 15 },
+      { header: 'Nombre Producto', key: 'nombre', width: 30 },
+      { header: 'Categoría', key: 'categoria', width: 20 },
+      { header: 'Stock Disp.', key: 'stock_actual', width: 15, style: { numFmt: '#,##0' } }, // Formato numérico
+      { header: 'Stock Min.', key: 'stock_min', width: 15, style: { numFmt: '#,##0' } },
+      { header: 'Unidad Med.', key: 'unidad', width: 15 },
+      { header: 'Precio Uni. (Q)', key: 'precio_uni', width: 18, style: { numFmt: '"Q"#,##0.00' } }, // Formato moneda
+      { header: 'Valor Total (Q)', key: 'valor_total', width: 18, style: { numFmt: '"Q"#,##0.00' } },
+      { header: 'ID Bodega', key: 'almacen', width: 15 },
+      { header: 'Perecedero', key: 'perecedero', width: 15 },
+      { header: 'Fecha Venc.', key: 'fecha_vencimiento', width: 18, style: { numFmt: 'yyyy-mm-dd' } }, // Formato fecha
+      { header: 'Estado', key: 'estado', width: 15 }
+    ];
+
+    // 4. Prepara los datos (asegúrate que las claves coincidan con 'key' de las columnas)
+    const dataToExport = products.map(p => ({
+        id: p.id,
+        nombre: p.nombre,
+        categoria: p.categoria,
+        stock_actual: p.stock_actual,
+        stock_min: p.stock_min,
+        unidad: p.unidad,
+        precio_uni: p.precio_uni,
+        valor_total: p.valor_total,
+        almacen: p.almacen, // ID Bodega
+        perecedero: p.perecedero ? 'Sí' : 'No',
+        fecha_vencimiento: p.fecha_vencimiento ? new Date(p.fecha_vencimiento + 'T00:00:00') : 'No Aplica', // Convierte a objeto Date si existe
+        estado: p.estado
+    }));
+
+    // 5. Añade los datos a la hoja
+    worksheet.addRows(dataToExport);
+
+    // 6. (Opcional) Estilo para el encabezado
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+        type: 'pattern',
+        pattern:'solid',
+        fgColor:{argb:'FF2c3e50'} // Color similar al tema oscuro
+    };
+     worksheet.getRow(1).font = { bold: true, color: {argb: 'FFFFFFFF'} }; // Texto blanco
+
+    // 7. Genera el buffer del archivo
+    try {
+      const buffer = await workbook.xlsx.writeBuffer();
+      // 8. Usa file-saver para descargar el archivo
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, `inventario_sicoena_${new Date().toISOString().slice(0,10)}.xlsx`);
+    } catch (error) {
+        console.error("Error al generar el archivo Excel:", error);
+        alert("Hubo un error al generar el archivo Excel.");
+    }
+  };
    // --- Cálculos para estadísticas (AHORA USAN DATOS DEL ESTADO 'products') ---
   const totalProducts = products.length; // Puede ser solo el total de la página actual si hay paginación
   const categories = [...new Set(products.map(p => p.categoria))].length;
@@ -245,7 +381,7 @@ const InventoryPage = () => {
       </div>
 
       {/* --- Barra de Filtros --- */}
-      <div className="filters-bar">
+<div className="filters-bar">
         <input
           type="text"
           placeholder="Buscar producto..."
@@ -253,10 +389,13 @@ const InventoryPage = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        {/* <button className="search-btn"><FontAwesomeIcon icon={faSearch} /></button> */} {/* Botón Aplicar hace la búsqueda */}
+        {/* --- SELECT DE CATEGORÍA DINÁMICO --- */}
         <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
           <option value="todos">Todas las categorías</option>
-          {/* Carga categorías dinámicamente si es posible */}
+          {/* Mapea sobre categoriesList para generar las opciones */}
+          {categoriesList.map(category => (
+            <option key={category} value={category}>{category}</option>
+          ))}
         </select>
         <select value={warehouseFilter} onChange={(e) => setWarehouseFilter(e.target.value)}>
           <option value="todos">Todas las bodegas</option>
@@ -285,10 +424,12 @@ const InventoryPage = () => {
         <div className="table-header">
             <span>Inventario de Productos</span>
             <div className="table-actions">
-                 {/* ... (botones de acciones en lote) ... */}
-                 <button className="btn-tertiary">Acciones en lote</button>
-                <button className="btn-tertiary">Exportar Inventario</button>
-                <button className="btn-tertiary">Códigos de Barras <FontAwesomeIcon icon={faBarcode} /></button>
+                <button className="btn-secondary btn-icon" onClick={handleExportPDF}>
+                    <FontAwesomeIcon icon={faFilePdf} /> Exportar PDF
+                </button>
+                 <button className="btn-secondary btn-icon" onClick={handleExportExcel}>
+                    <FontAwesomeIcon icon={faFileExcel} /> Exportar Excel
+                </button>
             </div>
         </div>
         {isLoading ? ( <p>Cargando productos...</p> ) : (

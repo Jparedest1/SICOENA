@@ -364,3 +364,9 @@ tbody tr:hover {
     grid-template-columns: 1fr; /* 1 tarjeta por fila */
   }
 }
+
+.btn-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espacio entre icono y texto */
+}
