@@ -1,236 +1,295 @@
-// src/components/AddEditProductModal.js
+// sicoena-frontend/src/components/AddEditProductModal.js
 
 import React, { useState, useEffect } from 'react';
-import './AddUserModal.css'; // Reutilizamos el CSS genérico del modal
+import './AddEditProductModal.css'; // ✅ ACTUALIZADO
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faCalendarAlt} from '@fortawesome/free-solid-svg-icons'; // Iconos para las secciones
+import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 
 const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
-  // --- Estados del formulario ---
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [unidad, setUnidad] = useState(''); // Estado para Unidad de Medida
+  const [unidad, setUnidad] = useState('');
   const [precioUni, setPrecioUni] = useState('');
-  const [stockInicial, setStockInicial] = useState(''); // Usado como stock_actual al guardar
-
+  const [stockInicial, setStockInicial] = useState('');
   const [stockMin, setStockMin] = useState('');
   const [fechaVencimiento, setFechaVencimiento] = useState('');
-  const [proveedor, setProveedor] = useState(''); // Estado para Proveedor (ID)
-  const [bodega, setBodega] = useState('');       // Estado para Bodega/Almacén (ID)
-
+  const [proveedor, setProveedor] = useState('');
+  const [bodega, setBodega] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [perecedero, setPerecedero] = useState(false); // <-- ESTADO PARA PERECEDERO (BOOLEANO)
+  const [perecedero, setPerecedero] = useState(false);
   const [estado, setEstado] = useState('ACTIVO');
 
+  const [proveedores, setProveedores] = useState([]);
+  const [bodegas, setBodegas] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+
+  const API_URL = 'http://localhost:5000/api';
   const isEditMode = currentProduct !== null;
+
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      setIsLoadingData(true);
+      try {
+        const proveedoresRes = await fetch(`${API_URL}/proveedor`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (proveedoresRes.ok) {
+          const proveedoresData = await proveedoresRes.json();
+          setProveedores(proveedoresData);
+        }
+
+        const bodegasRes = await fetch(`${API_URL}/bodega`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (bodegasRes.ok) {
+          const bodegasData = await bodegasRes.json();
+          setBodegas(bodegasData);
+        }
+
+        const categoriasRes = await fetch(`${API_URL}/producto/categorias`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (categoriasRes.ok) {
+          const categoriasData = await categoriasRes.json();
+          setCategorias(categoriasData);
+        }
+      } catch (err) {
+        console.error('Error cargando datos del dropdown:', err);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchDropdownData();
+  }, []);
 
   useEffect(() => {
     if (isEditMode) {
       setNombre(currentProduct.nombre || '');
       setCategoria(currentProduct.categoria || '');
-      setUnidad(currentProduct.unidad || ''); // <-- Usa 'unidad'
+      setUnidad(currentProduct.unidad || '');
       setPrecioUni(currentProduct.precio_uni ? `Q ${currentProduct.precio_uni.toFixed(2)}` : 'Q 0.00');
-      setStockInicial(currentProduct.stock_actual || ''); // En edición, usa stock_actual
-
+      setStockInicial(currentProduct.stock_actual || '');
       setStockMin(currentProduct.stock_min || '');
       setFechaVencimiento(currentProduct.fecha_vencimiento || '');
-      setProveedor(currentProduct.proveedor || ''); // Asume que currentProduct tiene proveedor (ID)
-      setBodega(currentProduct.almacen || '');     // Asume que currentProduct tiene almacen (ID bodega)
-
+      setProveedor(currentProduct.proveedor || '');
+      setBodega(currentProduct.almacen || '');
       setDescripcion(currentProduct.descripcion || '');
-      setPerecedero(Boolean(currentProduct.perecedero)); // <-- Usa 'perecedero'
+      setPerecedero(Boolean(currentProduct.perecedero));
       setEstado(currentProduct.estado || 'ACTIVO');
     } else {
-      // Valores por defecto
       setPrecioUni('Q 0.00');
       setStockInicial('0');
       setStockMin('0');
-      setPerecedero(false); // <-- Default para perecedero
+      setFechaVencimiento('');
+      setPerecedero(false);
       setEstado('ACTIVO');
-      setUnidad('');      // <-- Default para unidad
-      setProveedor('');   // <-- Default para proveedor
-      setBodega('');      // <-- Default para bodega
+      setUnidad('');
+      setProveedor('');
+      setBodega('');
+      setNombre('');
+      setCategoria('');
+      setDescripcion('');
     }
   }, [currentProduct, isEditMode]);
 
-const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     const cleanPrecio = parseFloat(String(precioUni).replace(/[^0-9.]/g, '')) || 0;
     const initialStockNum = Number(stockInicial) || 0;
     const minStockNum = Number(stockMin) || 0;
 
-    // Objeto que se pasa a onSave (handleSaveProduct en InventoryPage)
     const productData = {
       nombre,
       categoria,
-      unidad: unidad,             // <-- CORREGIDO: usa el estado 'unidad'
+      unidad,
       precio_uni: cleanPrecio,
       stock_actual: initialStockNum,
       stock_min: minStockNum,
-      fecha_vencimiento: fechaVencimiento,
-      proveedor: proveedor,       // <-- CORREGIDO: usa el estado 'proveedor'
-      almacen: bodega,            // <-- CORREGIDO: usa el estado 'bodega'
+      fecha_vencimiento: fechaVencimiento || null,
+      proveedor: proveedor || null,
+      almacen: bodega,
       descripcion,
-      perecedero: perecedero,     // <-- CORREGIDO: usa el estado 'perecedero'
-      estado: estado.toUpperCase(),
+      perecedero,
+      estado
     };
+
     onSave(productData);
   };
 
-  const handlePriceChange = (e) => {
-    let value = e.target.value;
-    // Remueve todo lo que no sea número o punto, y el "Q "
-    value = value.replace(/[^0-9.]/g, '');
-    if (value === '' || value === '.') {
-      setPrecioUni('Q 0.00');
-    } else {
-      const numValue = parseFloat(value);
-      if (!isNaN(numValue)) {
-        setPrecioUni(`Q ${numValue.toFixed(2)}`);
-      } else {
-        setPrecioUni('Q 0.00'); // En caso de entrada inválida final
-      }
-    }
-  };
-
-
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{isEditMode ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-          <button className="close-btn" onClick={onClose}>&times;</button>
-        </div>
-        <form onSubmit={handleSubmit} className="modal-body">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="modal-close" onClick={onClose}>&times;</button>
+        <h2>{isEditMode ? 'Editar Producto' : 'Añadir Nuevo Producto'}</h2>
 
-          {/* --- INFORMACIÓN BÁSICA --- */}
+        <form onSubmit={handleSubmit}>
+          {/* ===== INFORMACIÓN DEL PRODUCTO ===== */}
           <div className="form-section">
-            {/* ... (Nombre, Categoría) ... */}
-            <div className="form-group">
-              <label htmlFor="nombre">Nombre del Producto *</label>
-              <input type="text" id="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ingrese el nombre del producto" required />
-              <small className="helper-text">Nombre descriptivo del producto</small>
-            </div>
+            <h3>Información del Producto</h3>
+
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="categoria">Categoría *</label>
-                <select id="categoria" value={categoria} onChange={(e) => setCategoria(e.target.value)} required>
-                  <option value="" disabled>Seleccionar categoría</option>
-                  <option value="Verdura">Verdura</option>
-                  <option value="Fruta">Fruta</option>
-                  {/* ... */}
-                </select>
-                <small className="helper-text">Categoría a la que pertenece el producto</small>
+                <label>Nombre <span className="required">*</span></label>
+                <input
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  required
+                  placeholder="Ingrese el nombre del producto"
+                />
               </div>
               <div className="form-group">
-                  <label htmlFor="unidad">Unidad de Medida *</label>
-                  {/* Asegúrate que el select actualice el estado 'unidad' */}
-                  <select id="unidad" value={unidad} onChange={(e) => setUnidad(e.target.value)} required>
-                      <option value="" disabled>Seleccionar unidad</option>
-                      <option value="Unidad">Unidad</option>
-                      <option value="Libra">Libra</option>
-                      {/* ... */}
-                  </select>
-                  <small className="helper-text">Unidad en la que se mide el producto</small>
+                <label>Categoría <span className="required">*</span></label>
+                <select value={categoria} onChange={(e) => setCategoria(e.target.value)} required>
+                  <option value="">Seleccione una categoría</option>
+                  {categorias.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
               </div>
             </div>
-            {/* ... (Precio Unitario, Stock Inicial) ... */}
-             <div className="form-row">
-                <div className="form-group">
-                    <label htmlFor="precioUni">Precio Unitario *</label>
-                    <input type="text" id="precioUni" value={precioUni} onChange={handlePriceChange} onBlur={handlePriceChange} placeholder="Q 0.00" required />
-                    <small className="helper-text">Precio por unidad de medida</small>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="stockInicial">Stock Inicial/Actual *</label> {/* Etiqueta actualizada */}
-                    <input type="number" id="stockInicial" value={stockInicial} onChange={(e) => setStockInicial(e.target.value)} placeholder="0" required />
-                    <small className="helper-text">Cantidad actual en inventario</small>
-                </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Unidad de Medida <span className="required">*</span></label>
+                <select value={unidad} onChange={(e) => setUnidad(e.target.value)} required>
+                  <option value="">Seleccione una unidad</option>
+                  <option value="Unidad">Unidad</option>
+                  <option value="Kilogramo">Kilogramo (kg)</option>
+                  <option value="Litro">Litro (L)</option>
+                  <option value="Metro">Metro (m)</option>
+                  <option value="Caja">Caja</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Descripción</label>
+                <input
+                  type="text"
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  placeholder="Ingrese una descripción"
+                />
+              </div>
             </div>
           </div>
 
-          {/* --- CONFIGURACIÓN DE INVENTARIO --- */}
+          {/* ===== INFORMACIÓN DE PRECIOS Y STOCK ===== */}
           <div className="form-section">
-            {/* ... (Stock Mínimo, Fecha Vencimiento) ... */}
-            <h3><FontAwesomeIcon icon={faCog} className="section-icon" /> CONFIGURACIÓN DE INVENTARIO</h3>
+            <h3>Precios y Stock</h3>
+
             <div className="form-row">
-                <div className="form-group">
-                    <label htmlFor="stockMin">Stock Mínimo</label>
-                    <input type="number" id="stockMin" value={stockMin} onChange={(e) => setStockMin(e.target.value)} placeholder="10" />
-                    <small className="helper-text"><span className="dot green"></span> Nivel de stock para alertas</small>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="fechaVencimiento">Fecha de Vencimiento</label>
-                    <div className="input-with-icon">
-                        <input type="date" id="fechaVencimiento" value={fechaVencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} />
-                        <FontAwesomeIcon icon={faCalendarAlt} className="input-icon" />
-                    </div>
-                    <small className="helper-text">Fecha de vencimiento (si aplica)</small>
-                </div>
-            </div>
-            <div className="form-row"> {/* Nueva fila para Proveedor y Bodega */}
-                <div className="form-group">
-                    <label htmlFor="proveedor">Proveedor</label>
-                    {/* Debería ser un select que actualice el estado 'proveedor' */}
-                    <select id="proveedor" value={proveedor} onChange={(e) => setProveedor(e.target.value)}>
-                        <option value="" disabled>Seleccionar Proveedor</option>
-                        <option value="1">Proveedor A (ID: 1)</option> {/* Ejemplo */}
-                        <option value="2">Proveedor B (ID: 2)</option> {/* Ejemplo */}
-                    </select>
-                    <small className="helper-text">Proveedor principal del producto</small>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="bodega">Bodega *</label>
-                     {/* Debería ser un select que actualice el estado 'bodega' */}
-                    <select id="bodega" value={bodega} onChange={(e) => setBodega(e.target.value)} required>
-                        <option value="" disabled>Seleccionar Bodega</option>
-                        <option value="1">Bodega Principal (ID: 1)</option> {/* Ejemplo */}
-                        <option value="2">Bodega Secundaria (ID: 2)</option> {/* Ejemplo */}
-                    </select>
-                    <small className="helper-text">Bodega donde se almacena</small>
-                </div>
-            </div>
-            {/* --- Checkbox para Perecedero --- */}
-             <div className="form-group checkbox-group" style={{ marginTop: '20px' }}>
+              <div className="form-group">
+                <label>Precio Unitario (Q) <span className="required">*</span></label>
                 <input
+                  type="text"
+                  value={precioUni}
+                  onChange={(e) => setPrecioUni(e.target.value)}
+                  required
+                  placeholder="Q 0.00"
+                />
+              </div>
+              <div className="form-group">
+                <label>Stock Inicial <span className="required">*</span></label>
+                <input
+                  type="number"
+                  value={stockInicial}
+                  onChange={(e) => setStockInicial(e.target.value)}
+                  required
+                  placeholder="0"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Stock Mínimo <span className="required">*</span></label>
+                <input
+                  type="number"
+                  value={stockMin}
+                  onChange={(e) => setStockMin(e.target.value)}
+                  required
+                  placeholder="0"
+                  min="0"
+                />
+              </div>
+              <div className="form-group">
+                <label><FontAwesomeIcon icon={faCalendarAlt} /> Fecha de Vencimiento</label>
+                <input
+                  type="date"
+                  value={fechaVencimiento}
+                  onChange={(e) => setFechaVencimiento(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ===== ALMACENAMIENTO Y PROVEEDOR ===== */}
+          <div className="form-section">
+            <h3>Almacenamiento y Proveedor</h3>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Bodega <span className="required">*</span></label>
+                <select value={bodega} onChange={(e) => setBodega(e.target.value)} required disabled={isLoadingData}>
+                  <option value="">Seleccione una bodega</option>
+                  {bodegas.map((bod) => (
+                    <option key={bod.id_bodega} value={bod.id_bodega}>
+                      {bod.nombre_bodega}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Proveedor</label>
+                <select 
+                  value={proveedor} 
+                  onChange={(e) => setProveedor(e.target.value)}
+                  disabled={isLoadingData}
+                >
+                  <option value="">-- Sin proveedor --</option>
+                  {proveedores.map((prov) => (
+                    <option key={prov.id_proveedor} value={prov.id_proveedor}>
+                      {prov.nombre_proveedor}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group checkbox">
+                <label>
+                  <input
                     type="checkbox"
-                    id="perecedero"
                     checked={perecedero}
                     onChange={(e) => setPerecedero(e.target.checked)}
-                 />
-                <label htmlFor="perecedero">¿Es Perecedero?</label>
-                <small className="helper-text">Marcar si el producto tiene fecha de vencimiento</small>
+                  />
+                  ¿Es perecedero?
+                </label>
+              </div>
+              <div className="form-group">
+                <label>Estado</label>
+                <select value={estado} onChange={(e) => setEstado(e.target.value)}>
+                  <option value="ACTIVO">Activo</option>
+                  <option value="INACTIVO">Inactivo</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* --- DESCRIPCIÓN --- */}
-          <div className="form-section">
-             {/* ... (Textarea Descripción) ... */}
-              <h3>DESCRIPCIÓN</h3>
-            <div className="form-group">
-              <textarea id="descripcion" rows="4" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción detallada del producto..."></textarea>
-              <small className="helper-text">Información detallada sobre el producto (opcional)</small>
-            </div>
-          </div>
-
-          {/* --- Estado (Opcional si quieres editarlo aquí) --- */}
-           {isEditMode && (
-                <div className="form-section">
-                     <h3>Estado</h3>
-                    <div className="form-group">
-                        <label htmlFor="estado">Estado Actual del Producto</label>
-                        <select id="estado" value={estado} onChange={(e) => setEstado(e.target.value)}>
-                            <option value="ACTIVO">Activo</option>
-                            <option value="INACTIVO">Inactivo</option>
-                        </select>
-                    </div>
-                </div>
-            )}
-
-          <div className="modal-footer">
-            <button type="button" className="btn-cancel" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="btn-save">
+          {/* ===== BOTONES ===== */}
+          <div className="modal-buttons">
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary">
               {isEditMode ? 'Guardar Cambios' : 'Crear Producto'}
             </button>
           </div>

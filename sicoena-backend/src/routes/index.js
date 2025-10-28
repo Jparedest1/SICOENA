@@ -1,20 +1,24 @@
-// src/routes/index.js
+// sicoena-backend/src/routes/index.js
 const express = require('express');
 const userRoutes = require('./userRoutes');
-const dashboardController = require('../controllers/dashboardController'); // Crea este archivo
-const { protect } = require('../middleware/authMiddleware'); // Proteger la ruta
-const institutionRoutes = require('./institutionRoutes'); // Importa otras rutas aquí
+const dashboardController = require('../controllers/dashboardController');
+const { protect } = require('../middleware/authMiddleware');
+const institutionRoutes = require('./institutionRoutes');
 const productRoutes = require('./productRoutes');
-// const orderRoutes = require('./orderRoutes');
-const authRoutes = require('./authRoutes'); // Rutas para login
+const movementRoutes = require('./movementRoutes');
+const authRoutes = require('./authRoutes');
+const proveedorRoutes = require('./proveedorRoutes'); 
+const bodegaRoutes = require('./bodegaRoutes');      
 
 const router = express.Router();
 
 router.use('/usuario', userRoutes);
-router.use('/auth', authRoutes); // Monta las rutas de autenticación en /api/auth
+router.use('/auth', authRoutes);
 router.use('/institucion', institutionRoutes);
 router.use('/producto', productRoutes);
-// router.use('/ordenes', orderRoutes);
+router.use('/movimientos', movementRoutes);
+router.use('/proveedor', proveedorRoutes);
+router.use('/bodega', bodegaRoutes);
 router.get('/dashboard/stats', protect, dashboardController.getStats);
 
 module.exports = router;

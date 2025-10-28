@@ -1,15 +1,7 @@
-/* src/components/AddUserModal.css */
-
-/* ... (keep all the existing styles) ... */
-
-/* --- ADD OR MODIFY THESE STYLES --- */
-
-/* Make the modal wider for the new form */
 .modal-content.large {
   max-width: 800px;
 }
 
-/* Style for textareas */
 .form-group textarea {
   width: 100%;
   padding: 10px;
@@ -17,6 +9,6 @@
   border-radius: 6px;
   font-size: 15px;
   box-sizing: border-box;
-  font-family: inherit; /* Use the same font as other inputs */
-  resize: vertical; /* Allow vertical resizing */
+  font-family: inherit;
+  resize: vertical;
 }

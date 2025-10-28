@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './InventoryPage.css';
 import AddEditProductModal from '../components/AddEditProductModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faBox, faBoxes, faClipboardList, faChartLine, faExclamationTriangle, faBarcode, faSearch, faFilePdf, faFileExcel, faCoins } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faBox, faBoxes, faClipboardList, faChartLine, faExclamationTriangle, faSearch, faFilePdf, faFileExcel, faCoins } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs'; // Importa exceljs
@@ -152,51 +152,62 @@ const InventoryPage = () => {
   };
 
   // --- GUARDAR (CREAR/EDITAR) ---
-  const handleSaveProduct = async (productDataFromModal) => {
-    const token = localStorage.getItem('authToken');
-    setError(null);
+const handleSaveProduct = async (productDataFromModal) => {
+  const token = localStorage.getItem('authToken');
+  setError(null);
 
-    // Mapea los datos del modal a los nombres de columna de la BD
-    const payload = {
-        nombre_producto: productDataFromModal.nombre,
-        categoria: productDataFromModal.categoria,
-        unidad_medida: productDataFromModal.unidad, // Ajusta si el tipo es diferente
-        precio_unitario: productDataFromModal.precio_uni,
-        stock_disponible: productDataFromModal.stock_actual, // Modal usa stock_actual
-        stock_minimo: productDataFromModal.stock_min,
-        fecha_vencimiento: productDataFromModal.fecha_vencimiento || null, // Permite nulo
-        id_proveedor: productDataFromModal.proveedor || null, // Asume que el modal devuelve el ID
-        id_bodega: productDataFromModal.almacen || null, // Asume que el modal devuelve el ID
-        descripcion: productDataFromModal.descripcion,
-        perecedero: productDataFromModal.perecedero ? 1 : 0, // Boolean a 1/0
-        estado: productDataFromModal.estado.toUpperCase(), // Asegura mayúsculas
-    };
+  const payload = {
+    nombre_producto: productDataFromModal.nombre,
+    categoria: productDataFromModal.categoria,
+    unidad_medida: productDataFromModal.unidad,
+    precio_unitario: productDataFromModal.precio_uni,
+    stock_disponible: productDataFromModal.stock_actual,
+    stock_minimo: productDataFromModal.stock_min,
+    fecha_vencimiento: productDataFromModal.fecha_vencimiento || null,
+    id_proveedor: productDataFromModal.proveedor || null,
+    id_bodega: productDataFromModal.almacen || null,
+    descripcion: productDataFromModal.descripcion,
+    perecedero: productDataFromModal.perecedero ? 1 : 0,
+    estado: productDataFromModal.estado?.toUpperCase() || 'ACTIVO',
+  };
 
     const url = currentProductToEdit
-                ? `${API_URL}/producto/${currentProductToEdit.id}` // PUT
-                : `${API_URL}/producto`; // POST
-    const method = currentProductToEdit ? 'PUT' : 'POST';
+    ? `${API_URL}/producto/${currentProductToEdit.id}`
+    : `${API_URL}/producto`;
+  const method = currentProductToEdit ? 'PUT' : 'POST';
 
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    let data;
     try {
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      let data;
-      try { data = await response.json(); }
-      catch (e) { throw new Error(`Error ${response.status}: ${response.statusText}`); }
-      if (!response.ok) throw new Error(data.message || `Error al guardar producto.`);
+      data = await response.json();
+    } catch (e) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
 
-      fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter); // Recarga
-      setIsModalOpen(false);
-      alert(`Producto ${currentProductToEdit ? 'actualizado' : 'creado'} con éxito.`);
+    if (!response.ok) {
+      throw new Error(data.message || `Error al guardar producto.`);
+    }
 
-    } catch (err) { setError(err.message); }
-  };
+    fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
+    fetchMovementsToday(); // ← AGREGA ESTA LÍNEA
+    
+    setIsModalOpen(false);
+    alert(`Producto ${currentProductToEdit ? 'actualizado' : 'creado'} con éxito.`);
+
+  } catch (err) {
+    console.error('Error saving product:', err);
+    setError(err.message);
+  }
+};
 
     const handleExportPDF = () => {
   if (products.length === 0) {
@@ -314,6 +325,55 @@ const InventoryPage = () => {
         alert("Hubo un error al generar el archivo Excel.");
     }
   };
+
+  const [movementsToday, setMovementsToday] = useState({
+  entries: 0,
+  exits: 0,
+  total: 0,
+  totalValue: 0
+});
+
+// 2. Función para obtener movimientos
+const fetchMovementsToday = useCallback(async () => {
+  const token = localStorage.getItem('authToken');
+  if (!token) return;
+
+  try {
+    const response = await fetch(`${API_URL}/movimientos/hoy`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!response.ok) throw new Error('Error al obtener movimientos');
+    const data = await response.json();
+    setMovementsToday(data);
+  } catch (err) {
+    console.error('Error fetching movements:', err);
+  }
+}, []);
+
+
+// 3. Llama en useEffect junto con fetchProducts
+useEffect(() => {
+  const fetchCategories = async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_URL}/producto/categorias`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Error al cargar categorías');
+      const data = await response.json();
+      setCategoriesList(data);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    }
+  };
+
+  fetchCategories();
+  fetchMovementsToday();
+  fetchProducts();
+}, [fetchProducts, fetchMovementsToday]);
    // --- Cálculos para estadísticas (AHORA USAN DATOS DEL ESTADO 'products') ---
   const totalProducts = products.length; // Puede ser solo el total de la página actual si hay paginación
   const categories = [...new Set(products.map(p => p.categoria))].length;
@@ -373,10 +433,20 @@ const InventoryPage = () => {
             <span className="stat-value">{isLoading ? '...' : lowStockProductsCount}</span>
             <span className="stat-label">Stock Bajo</span>
         </div>
-         <div className="stat-card-item">
-            <FontAwesomeIcon icon={faChartLine} className="stat-card-icon" />
-            <span className="stat-value">...</span> {/* Simulado o requiere endpoint */}
-            <span className="stat-label">Movimientos Hoy</span>
+         <div className="stat-card-item movements-card">
+          <FontAwesomeIcon icon={faChartLine} className="stat-card-icon" />
+          <div className="movements-content">
+            <div className="movement-stat">
+              <span className="movement-label">Entradas</span>
+              <span className="movement-value in">+{movementsToday.entries}</span>
+            </div>
+            <div className="movement-divider">|</div>
+            <div className="movement-stat">
+              <span className="movement-label">Salidas</span>
+              <span className="movement-value out">-{movementsToday.exits}</span>
+            </div>
+          </div>
+          <span className="stat-label">Movimientos Hoy</span>
         </div>
       </div>
 
@@ -512,5 +582,6 @@ const InventoryPage = () => {
     </div>
   );
 };
+
 
 export default InventoryPage;

@@ -64,30 +64,29 @@ exports.getAllProducts = async (req, res) => {
 
 // --- Crear Producto ---
 exports.createProduct = async (req, res) => {
-    // Extrae los campos de la tabla 'producto' desde req.body
     const {
         nombre_producto,
         descripcion,
         categoria,
         unidad_medida,
         precio_unitario,
-        stock_disponible, // Corresponde a 'stockInicial' del modal
+        stock_disponible,
         stock_minimo,
-        perecedero,        // Espera 1 o 0
+        perecedero,
         fecha_vencimiento,
         id_proveedor,
         id_bodega,
-        estado             // Asume que envías 'ACTIVO' o 'INACTIVO'
+        estado
     } = req.body;
 
     // Validación básica
-    if (!nombre_producto || !categoria || !unidad_medida || precio_unitario === undefined || stock_disponible === undefined || stock_minimo === undefined || !id_bodega) {
+     if (!nombre_producto || !categoria || !unidad_medida || precio_unitario === undefined || stock_disponible === undefined || stock_minimo === undefined || !id_bodega) {
         return res.status(400).json({ message: 'Campos requeridos faltantes (nombre, categoría, unidad, precio, stock inicial, stock mínimo, bodega).' });
     }
-     if (estado && estado.toUpperCase() !== 'ACTIVO' && estado.toUpperCase() !== 'INACTIVO') {
-        return res.status(400).json({ message: 'Estado inválido (debe ser ACTIVO o INACTIVO)'})
+    
+    if (estado && estado.toUpperCase() !== 'ACTIVO' && estado.toUpperCase() !== 'INACTIVO') {
+        return res.status(400).json({ message: 'Estado inválido (debe ser ACTIVO o INACTIVO)' })
     }
-
 
     try {
         const sql = `
@@ -101,24 +100,46 @@ exports.createProduct = async (req, res) => {
             nombre_producto,
             descripcion || null,
             categoria,
-            unidad_medida, // Asegúrate que el frontend envíe el tipo correcto (DECIMAL)
+            unidad_medida,
             precio_unitario,
             stock_disponible,
             stock_minimo,
-            perecedero ? 1 : 0, // Convierte boolean a 1/0
+            perecedero ? 1 : 0,
             fecha_vencimiento || null,
             id_proveedor || null,
             id_bodega,
-            estado ? estado.toUpperCase() : 'ACTIVO' // Default ACTIVO
+            estado ? estado.toUpperCase() : 'ACTIVO'
         ];
 
         const [result] = await db.query(sql, params);
-        res.status(201).json({ id_producto: result.insertId, ...req.body });
+        const productoId = result.insertId;
+
+if (stock_disponible > 0) {
+            const movimientoSql = `
+                INSERT INTO movimiento (
+                    id_producto, 
+                    tipo_movimiento, 
+                    cantidad, 
+                    monto, 
+                    descripcion, 
+                    fecha_movimiento
+                ) VALUES (?, 'ENTRADA', ?, ?, 'Entrada inicial de inventario', NOW())
+            `;
+            
+            const movimientoMonto = stock_disponible * precio_unitario; // Calcula el valor total
+            
+            await db.query(movimientoSql, [productoId, stock_disponible, movimientoMonto]);
+        }
+
+        res.status(201).json({ 
+            id_producto: productoId, 
+            ...req.body 
+        });
 
     } catch (error) {
         console.error("Error al crear producto:", error);
-        if (error.code === 'ER_DUP_ENTRY') { // Si tienes unique keys (ej: nombre_producto?)
-             return res.status(409).json({ message: 'Ya existe un producto con ese nombre o código.' });
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Ya existe un producto con ese nombre o código.' });
         }
         res.status(500).json({ message: 'Error interno del servidor al crear producto.' });
     }

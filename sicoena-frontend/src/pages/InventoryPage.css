@@ -370,3 +370,51 @@ tbody tr:hover {
     align-items: center;
     gap: 8px; /* Espacio entre icono y texto */
 }
+
+.movements-card {
+  position: relative;
+}
+
+.movements-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0;
+  width: 100%;
+}
+
+.movement-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+}
+
+.movement-label {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.movement-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.movement-value.in {
+  color: #27ae60; /* Verde para entradas */
+}
+
+.movement-value.out {
+  color: #e74c3c; /* Rojo para salidas */
+}
+
+.movement-divider {
+  color: #bdc3c7;
+  font-size: 1.5rem;
+  opacity: 0.5;
+}

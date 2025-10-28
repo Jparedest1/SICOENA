@@ -266,7 +266,6 @@
   border: none;
   text-align: center;
   width: 100%;
-  -moz-appearance: textfield; /* Firefox */
 }
 .number-input-stepper input::-webkit-outer-spin-button,
 .number-input-stepper input::-webkit-inner-spin-button {
@@ -326,7 +325,6 @@
   font-weight: normal;
 }
 
-/* General Search Input Style */
 .search-input {
   flex-grow: 1;
 }

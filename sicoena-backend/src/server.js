@@ -2,7 +2,8 @@
 require('dotenv').config(); 
 const express = require('express');
 const cors = require('cors'); 
-const db = require('./config/db'); 
+const db = require('./config/db');
+const movementRoutes = require('./routes/movementRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -17,12 +18,15 @@ const corsOptions = {
 
 // Aplica el middleware CORS ANTES de tus rutas
 // La librería 'cors' manejará automáticamente las peticiones OPTIONS (preflight)
-app.use(cors(corsOptions)); 
-// --- FIN CONFIGURACIÓN CORS ---
+app.use(cors({
+  origin: 'http://localhost:3000', // Tu frontend
+  credentials: true
+}));
 
 // --- Middlewares Esenciales ---
 app.use(express.json()); // Debe ir después de CORS si necesitas procesar JSON en OPTIONS (raro)
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/movimientos', movementRoutes);
 
 // --- Rutas ---
 app.get('/', (req, res) => {
