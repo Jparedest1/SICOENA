@@ -233,3 +233,30 @@ exports.updateUserStatus = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor al actualizar el estado del usuario.' });
     }
 };
+
+exports.getActiveUsers = async (req, res) => {
+    try {
+        // Desactivar caché en la respuesta
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
+        const [users] = await db.query(
+            'SELECT id_usuario, CONCAT(nombres, " ", apellidos) as nombre, correo FROM usuario WHERE estado = ? ORDER BY nombres ASC',
+            ['ACTIVO']
+        );
+
+        res.status(200).json({
+            message: 'Usuarios activos obtenidos exitosamente.',
+            users: users,
+            total: users.length
+        });
+
+    } catch (error) {
+        console.error("Error al obtener usuarios activos:", error);
+        res.status(500).json({ 
+            message: 'Error interno del servidor al obtener usuarios activos.',
+            error: error.message 
+        });
+    }
+};

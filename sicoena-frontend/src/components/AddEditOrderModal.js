@@ -1,7 +1,7 @@
 // src/components/AddEditOrderModal.js
 
 import React, { useState, useEffect } from 'react';
-import './AddUserModal.css'; // Reusing the same modal CSS for a consistent look
+import './AddEditOrderModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBox, faTrash, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 
@@ -11,7 +11,7 @@ const mockEscuelas = {
   "Escuela Oficial Bilingue": 150,
   "Escuela El Castillo AEOUM": 320
 };
-const mockResponsables = ["Juan Pérez", "María García", "Carlos López"];
+
 const mockProducts = [
   { id: 1, name: 'Tomate', category: 'Verdura' },
   { id: 2, name: 'Banano', category: 'Fruta' },
@@ -20,7 +20,6 @@ const mockProducts = [
   { id: 5, name: 'Frijol', category: 'Grano' },
   { id: 6, name: 'Queso', category: 'Lácteo' },
 ];
-
 
 const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   // --- States for all form fields ---
@@ -37,8 +36,19 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   
   const [selectedProducts, setSelectedProducts] = useState([]);
 
+  // --- States for active users loading ---
+  const [activeUsers, setActiveUsers] = useState([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [errorUsers, setErrorUsers] = useState('');
+
   const isEditMode = currentOrder !== null;
 
+  // Cargar usuarios activos cuando el componente se monta
+  useEffect(() => {
+    fetchActiveUsers();
+  }, []);
+
+  // Cargar datos del formulario si estamos en modo edición
   useEffect(() => {
     if (isEditMode) {
       // Populate fields if editing
@@ -66,8 +76,61 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
   }, [escuela]);
 
+  // Función para obtener los usuarios activos del backend
+const fetchActiveUsers = async () => {
+  setIsLoadingUsers(true);
+  setErrorUsers('');
+  try {
+    const response = await fetch('/api/usuario/active', {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    console.log('=== DEBUGGING FETCH ACTIVOS ===');
+    console.log('Status:', response.status);
+    console.log('Response OK?:', response.ok);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response body:', errorText);
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Datos JSON completos:', JSON.stringify(data, null, 2));
+    console.log('data.users:', data.users);
+    console.log('¿Es array data.users?:', Array.isArray(data.users));
+    console.log('Longitud de data.users:', data.users ? data.users.length : 'undefined');
+    
+    // Extrae los usuarios
+    const users = data.users || [];
+    console.log('Users a setear:', users);
+    console.log('Longitud final:', users.length);
+    
+    setActiveUsers(users);
+    console.log('✅ setActiveUsers llamado con:', users);
+    
+  } catch (error) {
+    console.error('❌ Error al obtener usuarios activos:', error);
+    setErrorUsers('No se pudieron cargar los usuarios activos del sistema');
+    setActiveUsers([]);
+  } finally {
+    setIsLoadingUsers(false);
+  }
+};
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validar que se ha seleccionado un responsable
+    if (!responsable) {
+      alert('Por favor, selecciona un responsable de entrega');
+      return;
+    }
+
     const orderData = {
       id: codigoOrden,
       escuela,
@@ -100,6 +163,13 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
           
+          {/* --- Mensaje de error si hay problemas cargando usuarios --- */}
+          {errorUsers && (
+            <div className="error-message" style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#fee', borderRadius: '4px', color: '#c00' }}>
+              ⚠️ {errorUsers}
+            </div>
+          )}
+
           {/* --- INFORMACIÓN DE LA ORDEN --- */}
           <div className="form-section">
             <h3>INFORMACIÓN DE LA ORDEN</h3>
@@ -113,11 +183,28 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
                 <input type="date" id="fechaOrden" value={fechaOrden} onChange={(e) => setFechaOrden(e.target.value)} required />
               </div>
               <div className="form-group">
-                <label htmlFor="responsable">Responsable de Entrega</label>
-                <select id="responsable" value={responsable} onChange={(e) => setResponsable(e.target.value)}>
-                  <option value="" disabled>Seleccionar responsable</option>
-                  {mockResponsables.map(r => <option key={r} value={r}>{r}</option>)}
+                <label htmlFor="responsable">Responsable de Entrega *</label>
+                <select 
+                  id="responsable" 
+                  value={responsable} 
+                  onChange={(e) => setResponsable(e.target.value)}
+                  disabled={isLoadingUsers}
+                  required
+                >
+                  <option value="">
+                    {isLoadingUsers ? 'Cargando usuarios activos...' : 'Seleccionar responsable'}
+                  </option>
+                  {activeUsers.map(user => (
+                    <option key={user.id_usuario} value={user.id_usuario}>
+                      {user.nombre}
+                    </option>
+                  ))}
                 </select>
+                {activeUsers.length === 0 && !isLoadingUsers && (
+                  <small className="helper-text" style={{ color: '#c00', display: 'block', marginTop: '5px' }}>
+                    ⚠️ No hay usuarios activos disponibles en el sistema
+                  </small>
+                )}
               </div>
             </div>
           </div>

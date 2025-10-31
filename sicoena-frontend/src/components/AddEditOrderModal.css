@@ -1,0 +1,214 @@
+/* AddEditOrderModal.css - estilos consistentes con los modales anteriores */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content.order-modal {
+  width: 95%;
+  max-width: 1100px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  padding: 22px;
+  position: relative;
+  max-height: 90vh;
+  overflow: auto;
+  font-family: inherit;
+}
+
+.modal-content.order-modal > h2 {
+  margin: 0 0 18px 0;
+  font-size: 22px;
+  color: #2c3e50;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #7f8c8d;
+  cursor: pointer;
+}
+
+.modal-error {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* Layout grid de dos columnas (maqueta) */
+.order-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+/* columnas internas */
+.order-col { display: flex; flex-direction: column; gap: 12px; }
+
+/* form-group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #2c3e50;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+  padding: 10px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fff;
+}
+
+/* paneles grandes para listas */
+.panel {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 260px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.panel h4 { margin: 0 0 10px 0; font-size: 15px; color: #2c3e50; }
+
+/* listado productos disponibles */
+.product-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px;
+  border-bottom: 1px dashed #f0f0f0;
+}
+
+.product-item:last-child { border-bottom: none; }
+
+.product-info { display:flex; flex-direction: column; gap:6px; }
+.product-name { font-weight: 600; color: #2c3e50; }
+.product-price { color: #7f8c8d; font-size: 13px; }
+
+/* botones pequeños */
+.btn-small {
+  background: #2c3e50;
+  color: #fff;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-small:hover { background:#1e2a38; }
+
+/* selected products table */
+.selected-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.selected-list th,
+.selected-list td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f3f3f3;
+  text-align: left;
+}
+
+.selected-list thead th {
+  font-weight: 700;
+  font-size: 13px;
+  color: #2c3e50;
+}
+
+.qty-input {
+  width: 70px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #bdc3c7;
+  text-align: center;
+}
+
+/* icon button to remove */
+.btn-icon-danger {
+  background: rgba(231, 76, 60, 0.06);
+  color: #e74c3c;
+  border: 1px solid rgba(231,76,60,0.12);
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* acciones del modal */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+/* botones principales coherentes con otros modales */
+.btn-primary {
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #bdc3c7;
+  cursor: pointer;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .order-grid { grid-template-columns: 1fr; }
+  .panel { min-height: 200px; }
+  .modal-content.order-modal { padding: 16px; max-width: 760px; }
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions .btn-primary, .modal-actions .btn-secondary { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .modal-content.order-modal { padding: 12px; max-width: 96%; }
+  .panel { min-height: 160px; }
+  .product-name { font-size: 14px; }
+}

@@ -5,20 +5,19 @@ const { protect, restrictTo } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Ruta GET para obtener todos los usuarios
+// ✅ PRIMERO - Ruta específica SIN protección (para el formulario de órdenes)
+router.get('/active', userController.getActiveUsers);
+
+// ✅ DESPUÉS - Rutas genéricas CON protección
 router.get('/', protect, userController.getAllUsers);
 
 // Ruta POST para crear un usuario
 router.post('/', protect, restrictTo('Administrador'), userController.createUser);
 
-// --- AÑADE ESTA RUTA PARA ACTUALIZAR (EDITAR) ---
-// El ':id' en la ruta captura el ID del usuario desde la URL (req.params.id)
+// Ruta PUT para actualizar (editar) usuario
 router.put('/:id', protect, restrictTo('Administrador'), userController.updateUser); 
-//                                                        ^^^^^^^^^^^^^^ Asegúrate de tener esta función
 
 // Ruta PUT para actualizar solo el estado (soft delete)
 router.put('/:userId/status', protect, restrictTo('Administrador'), userController.updateUserStatus);
-
-// (Puedes añadir GET /:id para obtener un usuario específico si lo necesitas)
 
 module.exports = router;
