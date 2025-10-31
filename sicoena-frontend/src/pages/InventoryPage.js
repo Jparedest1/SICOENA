@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './InventoryPage.css';
 import AddEditProductModal from '../components/AddEditProductModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faBox, faBoxes, faClipboardList, faChartLine, faExclamationTriangle, faBarcode, faSearch, faFilePdf, faFileExcel, faCoins } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faBox, faBoxes, faClipboardList, faChartLine, faExclamationTriangle, faSearch, faFilePdf, faFileExcel, faCoins, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
@@ -24,14 +24,15 @@ const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('todos');
   const [warehouseFilter, setWarehouseFilter] = useState('todos');
-  const [statusFilter, setStatusFilter] = useState('todos'); // ✅ CORRECTO
+  const [statusFilter, setStatusFilter] = useState('todos');
   const [stockFilter, setStockFilter] = useState('todos');
   const [categoriesList, setCategoriesList] = useState([]);
+  
+  // ✅ ESTADO PARA MOVIMIENTOS DEL DÍA
   const [movementsToday, setMovementsToday] = useState({
     entries: 0,
     exits: 0,
-    total: 0,
-    totalValue: 0
+    total: 0
   });
 
   // --- FUNCIÓN PARA OBTENER PRODUCTOS (con filtros) ---
@@ -53,7 +54,6 @@ const InventoryPage = () => {
       return;
     }
 
-    // Construye URL con query parameters
     let url = `${API_URL}/producto?`;
     const params = [];
     if (currentSearch) params.push(`search=${encodeURIComponent(currentSearch)}`);
@@ -106,7 +106,7 @@ const InventoryPage = () => {
     }
   }, [navigate]);
 
-  // --- OBTENER MOVIMIENTOS DEL DÍA ---
+  // ✅ OBTENER MOVIMIENTOS DEL DÍA
   const fetchMovementsToday = useCallback(async () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
@@ -117,8 +117,15 @@ const InventoryPage = () => {
       });
 
       if (!response.ok) throw new Error('Error al obtener movimientos');
+      
       const data = await response.json();
-      setMovementsToday(data);
+      console.log('📊 Movimientos obtenidos:', data);
+      
+      setMovementsToday({
+        entries: data.entries || 0,
+        exits: data.exits || 0,
+        total: data.total || 0
+      });
     } catch (err) {
       console.error('Error fetching movements:', err);
     }
@@ -146,7 +153,7 @@ const InventoryPage = () => {
 
     fetchCategories();
     fetchMovementsToday();
-    fetchProducts('', 'todos', 'todos', 'todos', 'todos'); // ✅ CORRECTO
+    fetchProducts('', 'todos', 'todos', 'todos', 'todos');
   }, [fetchProducts, fetchMovementsToday]);
 
   // --- BUSCAR/FILTRAR ---
@@ -177,6 +184,7 @@ const InventoryPage = () => {
         if (!response.ok) throw new Error('Error al desactivar.');
 
         fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
+        fetchMovementsToday(); // ✅ ACTUALIZAR MOVIMIENTOS
         alert('Producto desactivado.');
       } catch (err) {
         setError(err.message);
@@ -190,7 +198,7 @@ const InventoryPage = () => {
   };
 
   // --- GUARDAR (CREAR/EDITAR) ---
-  const handleSaveProduct = async (productDataFromModal) => {
+const handleSaveProduct = async (productDataFromModal) => {
     const token = localStorage.getItem('authToken');
     setError(null);
 
@@ -233,8 +241,10 @@ const InventoryPage = () => {
 
       if (!response.ok) throw new Error(data.message || `Error al guardar producto.`);
 
+      // ✅ ACTUALIZAR PRODUCTOS Y MOVIMIENTOS
       fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
-      fetchMovementsToday();
+      fetchMovementsToday(); // ← Esto debe estar aquí
+      
       setIsModalOpen(false);
       alert(`Producto ${currentProductToEdit ? 'actualizado' : 'creado'} con éxito.`);
 
@@ -403,17 +413,23 @@ const InventoryPage = () => {
           <span className="stat-value">{isLoading ? '...' : lowStockProductsCount}</span>
           <span className="stat-label">Stock Bajo</span>
         </div>
-        <div className="stat-card-item movements-card">
+        {/* ✅ TARJETA DE MOVIMIENTOS DEL DÍA - ESTILO CONSISTENTE */}
+        <div className="stat-card-item">
           <FontAwesomeIcon icon={faChartLine} className="stat-card-icon" />
-          <div className="movements-content">
-            <div className="movement-stat">
-              <span className="movement-label">Entradas</span>
-              <span className="movement-value in">+{isLoading ? '...' : movementsToday.entries}</span>
+          <div className="movements-info">
+            <div className="movement-item">
+              <FontAwesomeIcon icon={faArrowUp} className="movement-icon in" />
+              <div>
+                <span className="movement-label">Entradas</span>
+                <span className="movement-value">{isLoading ? '...' : movementsToday.entries}</span>
+              </div>
             </div>
-            <div className="movement-divider">|</div>
-            <div className="movement-stat">
-              <span className="movement-label">Salidas</span>
-              <span className="movement-value out">-{isLoading ? '...' : movementsToday.exits}</span>
+            <div className="movement-item">
+              <FontAwesomeIcon icon={faArrowDown} className="movement-icon out" />
+              <div>
+                <span className="movement-label">Salidas</span>
+                <span className="movement-value">{isLoading ? '...' : movementsToday.exits}</span>
+              </div>
             </div>
           </div>
           <span className="stat-label">Movimientos Hoy</span>
@@ -453,9 +469,9 @@ const InventoryPage = () => {
           setSearchTerm('');
           setCategoryFilter('todos');
           setWarehouseFilter('todos');
-          setStatusFilter('todos'); // ✅ CORRECTO
+          setStatusFilter('todos');
           setStockFilter('todos');
-          fetchProducts('', 'todos', 'todos', 'todos', 'todos'); // ✅ CORRECTO
+          fetchProducts('', 'todos', 'todos', 'todos', 'todos');
         }}>Limpiar</button>
       </div>
 

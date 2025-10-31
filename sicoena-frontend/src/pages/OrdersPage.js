@@ -1,22 +1,53 @@
 // src/pages/OrdersPage.js
 
-import React, { useState } from 'react';
-import './OrdersPage.css'; // We'll create this CSS file next
-import AddEditOrderModal from '../components/AddEditOrderModal'; // The modal for this module
+import React, { useState, useEffect } from 'react';
+import './OrdersPage.css';
+import AddEditOrderModal from '../components/AddEditOrderModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
 
-// Mock data based on your screenshot
-const mockOrders = [
-  { id: 'ORD-2025-001', escuela: 'Escuela No. 1 Nivel Primario', menu: 'Menú Especial', alumnos: 280, duracion: '60 días', productos: 6, valor_total: 15680.00, estado: 'ENTREGADO', fecha_creacion: '2025-01-12', fecha_entrega: '2025-01-18', responsable: 'Juan Pérez' },
-  { id: 'ORD-2025-002', escuela: 'Escuela Oficial Bilingue', menu: 'Menú Regular', alumnos: 150, duracion: '30 días', productos: 4, valor_total: 8200.50, estado: 'PENDIENTE', fecha_creacion: '2025-02-01', fecha_entrega: '2025-02-05', responsable: 'María García' },
-  { id: 'ORD-2025-003', escuela: 'Escuela El Castillo AEOUM', menu: 'Menú Reforzado', alumnos: 320, duracion: '45 días', productos: 8, valor_total: 21500.00, estado: 'EN PROCESO', fecha_creacion: '2025-02-10', fecha_entrega: '2025-02-15', responsable: 'Juan Pérez' },
-];
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentOrderToEdit, setCurrentOrderToEdit] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${apiUrl}/api/orden`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener órdenes');
+      }
+
+      const data = await response.json();
+      setOrders(data || []);
+    } catch (err) {
+      console.error('Error al cargar órdenes:', err);
+      setError('No se pudieron cargar las órdenes');
+      setOrders([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleEdit = (order) => {
     setCurrentOrderToEdit(order);
@@ -26,7 +57,7 @@ const OrdersPage = () => {
   const handleDelete = (orderId) => {
     if (window.confirm('¿Está seguro de que desea cancelar esta orden?')) {
       setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, estado: 'CANCELADO' } : order
+        order.id_orden === orderId ? { ...order, estado: 'CANCELADO' } : order
       ));
     }
   };
@@ -36,19 +67,9 @@ const OrdersPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveOrder = (orderData) => {
-    if (currentOrderToEdit) {
-      setOrders(orders.map(order => 
-        order.id === currentOrderToEdit.id ? { ...order, ...orderData } : order
-      ));
-    } else {
-      const newOrder = { 
-        ...orderData, 
-        id: `ORD-2025-00${orders.length + 1}`,
-        fecha_creacion: new Date().toISOString().slice(0, 10),
-      };
-      setOrders([...orders, newOrder]);
-    }
+    const handleSaveOrder = (orderData) => {
+    // Recargar las órdenes después de guardar
+    fetchOrders();
     setIsModalOpen(false);
   };
 
@@ -57,7 +78,24 @@ const OrdersPage = () => {
   const pendingOrders = orders.filter(o => o.estado === 'PENDIENTE').length;
   const deliveredOrders = orders.filter(o => o.estado === 'ENTREGADO').length;
   const inProcessOrders = orders.filter(o => o.estado === 'EN PROCESO').length;
-  const totalValue = orders.reduce((sum, o) => sum + o.valor_total, 0);
+  const totalValue = orders.reduce((sum, o) => sum + (o.valor_total || 0), 0);
+
+  // ✅ FUNCIÓN AUXILIAR para obtener la clase CSS del estado (con validación)
+  const getStatusClass = (estado) => {
+    if (!estado) return 'pending'; // Valor por defecto
+    return estado.toLowerCase().replace(' ', '-');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="page-container orders-page">
+        <div className="page-header">
+          <h1>Gestión de Órdenes de Entrega</h1>
+        </div>
+        <p style={{ textAlign: 'center', padding: '40px' }}>Cargando órdenes...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
@@ -114,60 +152,64 @@ const OrdersPage = () => {
       <div className="table-container">
         <div className="table-header">
             <span>Lista de Ordenes de Entrega</span>
-            <div className="table-actions">
-                <button className="btn-tertiary">Acciones en lote</button>
-                <button className="btn-tertiary">Exportar Lista</button>
-            </div>
         </div>
         <table>
-          <thead>
-            <tr>
-              <th><input type="checkbox" /></th>
-              <th>Código</th>
-              <th>Escuela</th>
-              <th>Menú</th>
-              <th>Alumnos</th>
-              <th>Duración</th>
-              <th>Productos</th>
-              <th>Valor Total</th>
-              <th>Estado</th>
-              <th>F. Creación</th>
-              <th>F. Entrega</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id}>
-                <td><input type="checkbox" /></td>
-                <td>{order.id}</td>
-                <td>{order.escuela}</td>
-                <td>{order.menu}</td>
-                <td>{order.alumnos}</td>
-                <td>{order.duracion}</td>
-                <td>{order.productos} productos</td>
-                <td>Q{order.valor_total.toLocaleString('es-GT')}</td>
-                <td>
-                  <span className={`status-badge ${order.estado.toLowerCase().replace(' ', '-')}`}>
-                    {order.estado}
-                  </span>
-                </td>
-                <td>{order.fecha_creacion}</td>
-                <td>{order.fecha_entrega}</td>
-                <td>
-                  <div className="action-buttons">
-                    <button className="action-btn icon-edit" title="Editar" onClick={() => handleEdit(order)}>
-                      <FontAwesomeIcon icon={faEdit} />
-                    </button>
-                    <button className="action-btn icon-delete" title="Cancelar Orden" onClick={() => handleDelete(order.id)}>
-                      <FontAwesomeIcon icon={faTrash} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  <thead>
+    <tr>
+      <th><input type="checkbox" /></th>
+      <th>Código</th>
+      <th>Escuela</th>
+      <th>Menú</th>
+      <th>Alumnos</th>
+      <th>Duración</th>
+      <th>Valor Total</th>
+      <th>Estado</th>
+      <th>F. Creación</th>
+      <th>F. Entrega</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {orders.map((order) => (
+      <tr key={order.id_orden}>
+        <td><input type="checkbox" /></td>
+        <td><strong>{order.codigo_orden || '-'}</strong></td>
+        <td>{order.nombre_escuela || '-'}</td>
+        <td>{order.nombre_menu || '-'}</td>
+        <td>{order.cantidad_alumnos || '-'}</td>
+        <td>{order.dias_duracion ? `${order.dias_duracion} días` : '-'}</td>
+        <td>Q{(order.valor_total || 0).toLocaleString('es-GT', { minimumFractionDigits: 2 })}</td>
+        <td>
+          <span className={`status-badge ${getStatusClass(order.estado)}`}>
+            {order.estado || 'SIN ESTADO'}
+          </span>
+        </td>
+        <td>
+          {order.fecha_creacion 
+            ? new Date(order.fecha_creacion).toLocaleDateString('es-GT')
+            : '-'
+          }
+        </td>
+        <td>
+          {order.fecha_entrega 
+            ? new Date(order.fecha_entrega).toLocaleDateString('es-GT')
+            : '-'
+          }
+        </td>
+        <td>
+          <div className="action-buttons">
+            <button className="action-btn icon-edit" title="Editar" onClick={() => handleEdit(order)}>
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button className="action-btn icon-delete" title="Cancelar Orden" onClick={() => handleDelete(order.id_orden)}>
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
       </div>
 
       {isModalOpen && (

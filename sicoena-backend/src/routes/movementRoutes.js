@@ -1,20 +1,13 @@
-// sicoena-backend/src/routes/movementRoutes.js
 const express = require('express');
-const router = express.Router();
 const movementController = require('../controllers/movementController');
-const { protect, restrictTo } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
-// --- Rutas Públicas (con autenticación) ---
+const router = express.Router();
 
-// Obtener movimientos del día
 router.get('/hoy', protect, movementController.getMovementsToday);
 
-// Obtener historial de movimientos
-router.get('/historial', protect, movementController.getMovementHistory);
-
-// --- Rutas de Escritura ---
-
-// Crear nuevo movimiento (entrada o salida)
+// Otras rutas...
+router.get('/', protect, movementController.getMovementHistory);
 router.post('/', protect, movementController.createMovement);
 
 module.exports = router;

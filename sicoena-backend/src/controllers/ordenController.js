@@ -7,7 +7,7 @@ exports.createOrder = async (req, res) => {
         codigo_orden, 
         id_escuela, 
         id_menu, 
-        id_responsable,  // Este es id_usuario en tu tabla
+        id_responsable,
         cantidad_alumnos, 
         dias_duracion, 
         fecha_entrega,
@@ -16,33 +16,21 @@ exports.createOrder = async (req, res) => {
         observaciones 
     } = req.body;
 
-    // Validaciones
     if (!codigo_orden || !id_escuela || !id_menu || !id_responsable) {
-        return res.status(400).json({ 
-            message: 'Campos requeridos faltantes.' 
-        });
+        return res.status(400).json({ message: 'Campos requeridos faltantes.' });
     }
 
     if (!productos || productos.length === 0) {
-        return res.status(400).json({ 
-            message: 'Debes seleccionar al menos un producto.' 
-        });
+        return res.status(400).json({ message: 'Debes seleccionar al menos un producto.' });
     }
 
     try {
-        // Insertar la orden (adaptado a tu estructura)
+        // Insertar la orden
         const sqlOrden = `
             INSERT INTO orden (
-                codigo_orden, 
-                id_escuela, 
-                id_menu, 
-                id_usuario,
-                cantidad_alumnos, 
-                dias_duracion, 
-                fecha_entrega, 
-                valor_total, 
-                observaciones, 
-                estado
+                codigo_orden, id_escuela, id_menu, id_usuario,
+                cantidad_alumnos, dias_duracion, fecha_entrega, 
+                valor_total, observaciones, estado
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDIENTE')
         `;
 
@@ -50,7 +38,7 @@ exports.createOrder = async (req, res) => {
             codigo_orden,
             id_escuela,
             id_menu,
-            id_responsable,  // Aquí va id_usuario
+            id_responsable,
             cantidad_alumnos || 0,
             dias_duracion || 1,
             fecha_entrega || null,
@@ -60,8 +48,9 @@ exports.createOrder = async (req, res) => {
 
         const idOrden = resultOrden.insertId;
 
-        // Insertar los productos de la orden
+        // ✅ REGISTRAR MOVIMIENTOS DE SALIDA PARA CADA PRODUCTO
         for (const producto of productos) {
+            // Insertar en orden_producto
             const sqlProducto = `
                 INSERT INTO orden_producto (id_orden, id_producto, cantidad, unidad_medida)
                 VALUES (?, ?, ?, ?)
@@ -72,6 +61,35 @@ exports.createOrder = async (req, res) => {
                 producto.id_producto,
                 producto.cantidad || 1,
                 producto.unidad_medida || 'unidad'
+            ]);
+
+            // ✅ REGISTRAR MOVIMIENTO DE SALIDA
+            const sqlMovimiento = `
+                INSERT INTO movimiento (
+                    id_producto, 
+                    tipo_movimiento, 
+                    cantidad, 
+                    descripcion, 
+                    fecha_movimiento
+                ) VALUES (?, 'SALIDA', ?, ?, NOW())
+            `;
+
+            await db.query(sqlMovimiento, [
+                producto.id_producto,
+                producto.cantidad || 1,
+                `Salida por orden ${codigo_orden}`
+            ]);
+
+            // ✅ ACTUALIZAR STOCK DEL PRODUCTO
+            const sqlUpdateStock = `
+                UPDATE producto 
+                SET stock_disponible = stock_disponible - ? 
+                WHERE id_producto = ?
+            `;
+
+            await db.query(sqlUpdateStock, [
+                producto.cantidad || 1,
+                producto.id_producto
             ]);
         }
 
@@ -84,9 +102,7 @@ exports.createOrder = async (req, res) => {
     } catch (error) {
         console.error("Error al crear orden:", error);
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ 
-                message: 'Ya existe una orden con ese código.' 
-            });
+            return res.status(409).json({ message: 'Ya existe una orden con ese código.' });
         }
         res.status(500).json({ 
             message: 'Error interno del servidor al crear orden.',
@@ -102,28 +118,34 @@ exports.getAllOrders = async (req, res) => {
             SELECT 
                 o.id_orden,
                 o.codigo_orden,
-                e.nombre_escuela,
-                m.nombre as nombre_menu,
-                u.nombres as nombre_responsable,
+                o.id_escuela,
+                o.id_menu,
+                o.id_usuario,
                 o.cantidad_alumnos,
                 o.dias_duracion,
                 o.fecha_entrega,
                 o.fecha_creacion,
                 o.estado,
-                o.valor_total
+                o.valor_total,
+                e.nombre_escuela,
+                m.nombre as nombre_menu,
+                CONCAT(u.nombres, ' ', COALESCE(u.apellidos, '')) as nombre_responsable
             FROM orden o
-            INNER JOIN escuela e ON o.id_escuela = e.id_escuela
-            INNER JOIN menu m ON o.id_menu = m.id_menu
-            INNER JOIN usuario u ON o.id_usuario = u.id_usuario
+            LEFT JOIN escuela e ON o.id_escuela = e.id_escuela
+            LEFT JOIN menu m ON o.id_menu = m.id_menu
+            LEFT JOIN usuario u ON o.id_usuario = u.id_usuario
             ORDER BY o.fecha_creacion DESC
         `);
 
+        console.log('📊 Órdenes obtenidas:', orders);
+        
         res.status(200).json(orders);
 
     } catch (error) {
         console.error("Error al obtener órdenes:", error);
         res.status(500).json({ 
-            message: 'Error interno del servidor al obtener órdenes.' 
+            message: 'Error interno del servidor al obtener órdenes.',
+            error: error.message
         });
     }
 };

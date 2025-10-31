@@ -220,15 +220,30 @@ exports.updateProduct = async (req, res) => {
         id_proveedor, id_bodega, estado
     } = req.body;
 
-    // Validación básica (similar a create)
-     if (!nombre_producto || !categoria || !unidad_medida || precio_unitario === undefined || stock_disponible === undefined || stock_minimo === undefined || !id_bodega) {
+    // Validación básica
+    if (!nombre_producto || !categoria || !unidad_medida || precio_unitario === undefined || stock_disponible === undefined || stock_minimo === undefined || !id_bodega) {
         return res.status(400).json({ message: 'Campos requeridos faltantes.' });
     }
-     if (estado && estado.toUpperCase() !== 'ACTIVO' && estado.toUpperCase() !== 'INACTIVO') {
+    
+    if (estado && estado.toUpperCase() !== 'ACTIVO' && estado.toUpperCase() !== 'INACTIVO') {
         return res.status(400).json({ message: 'Estado inválido.'})
     }
 
     try {
+        // ✅ PRIMERO: Obtener el stock anterior
+        const [existingProduct] = await db.query(
+            'SELECT stock_disponible FROM producto WHERE id_producto = ?',
+            [id]
+        );
+
+        if (existingProduct.length === 0) {
+            return res.status(404).json({ message: 'Producto no encontrado.' });
+        }
+
+        const stockAnterior = existingProduct[0].stock_disponible;
+        const diferencia = stock_disponible - stockAnterior;
+
+        // Actualizar el producto
         const sql = `
             UPDATE producto SET
                 nombre_producto = ?, descripcion = ?, categoria = ?, unidad_medida = ?, precio_unitario = ?,
@@ -248,12 +263,46 @@ exports.updateProduct = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Producto no encontrado.' });
         }
-        res.status(200).json({ message: 'Producto actualizado.', id_producto: id, ...req.body });
+
+        // ✅ REGISTRAR MOVIMIENTO SI HAY CAMBIO DE STOCK
+        if (diferencia !== 0) {
+            const tipoMovimiento = diferencia > 0 ? 'ENTRADA' : 'SALIDA';
+            const cantidadAbsoluta = Math.abs(diferencia);
+
+            const sqlMovimiento = `
+                INSERT INTO movimiento (
+                    id_producto, 
+                    tipo_movimiento, 
+                    cantidad, 
+                    descripcion, 
+                    fecha_movimiento
+                ) VALUES (?, ?, ?, ?, NOW())
+            `;
+
+            const descripcionMovimiento = `${tipoMovimiento} por ajuste de inventario (${stockAnterior} → ${stock_disponible})`;
+
+            await db.query(sqlMovimiento, [
+                id,
+                tipoMovimiento,
+                cantidadAbsoluta,
+                descripcionMovimiento
+            ]);
+
+            console.log(`✅ Movimiento registrado: ${tipoMovimiento} de ${cantidadAbsoluta} unidades del producto ${id}`);
+        }
+
+        res.status(200).json({ 
+            message: 'Producto actualizado.',
+            id_producto: id,
+            movimiento_registrado: diferencia !== 0,
+            tipo_movimiento: diferencia > 0 ? 'ENTRADA' : 'SALIDA',
+            cantidad: Math.abs(diferencia)
+        });
 
     } catch (error) {
         console.error("Error al actualizar producto:", error);
-         if (error.code === 'ER_DUP_ENTRY') {
-             return res.status(409).json({ message: 'Ya existe otro producto con ese nombre o código.' });
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Ya existe otro producto con ese nombre o código.' });
         }
         res.status(500).json({ message: 'Error interno del servidor al actualizar producto.' });
     }

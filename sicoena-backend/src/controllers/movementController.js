@@ -4,61 +4,57 @@ const db = require('../config/db');
 // --- Obtener Movimientos de Hoy (CORREGIDO) ---
 exports.getMovementsToday = async (req, res) => {
     try {
-        // Obtiene la fecha actual del servidor (en la zona horaria correcta)
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const todayFormatted = `${year}-${month}-${day}`;
-
-        console.log('📅 Fecha buscada en cliente:', todayFormatted);
-
-        // Consulta movimientos de hoy agrupados por tipo
-        // IMPORTANTE: Usamos CAST para comparar solo la parte de fecha
+        const today = new Date().toISOString().split('T')[0];
+        
+        console.log(`📅 Buscando movimientos del día: ${today}`);
+        
+        // Obtener movimientos de hoy
         const [movements] = await db.query(`
             SELECT 
-                tipo_movimiento,
-                COUNT(*) as cantidad_registros,
-                SUM(cantidad) as cantidad_total,
-                SUM(monto) as valor_total
-            FROM movimiento
-            WHERE CAST(fecha_movimiento AS DATE) = ?
-            GROUP BY tipo_movimiento
-        `, [todayFormatted]);
+                m.id_movimiento,
+                m.tipo_movimiento,
+                m.cantidad,
+                m.monto,
+                p.nombre_producto,
+                m.fecha_movimiento
+            FROM movimiento m
+            INNER JOIN producto p ON m.id_producto = p.id_producto
+            WHERE CAST(m.fecha_movimiento AS DATE) = ?
+            ORDER BY m.fecha_movimiento DESC
+        `, [today]);
 
-        console.log('📊 Movimientos encontrados (BD):', movements);
+        console.log(`📊 Movimientos encontrados: ${movements.length}`);
 
-        // Procesa los resultados
-        let entries = 0;
-        let exits = 0;
-        let totalEntryValue = 0;
-        let totalExitValue = 0;
+        // Calcular totales
+        let totalEntradas = 0;
+        let totalSalidas = 0;
+        let cantidadEntradas = 0;
+        let cantidadSalidas = 0;
 
-        movements.forEach(mov => {
-            if (mov.tipo_movimiento === 'ENTRADA') {
-                entries = mov.cantidad_total || 0;
-                totalEntryValue = parseFloat(mov.valor_total) || 0;
-            } else if (mov.tipo_movimiento === 'SALIDA') {
-                exits = mov.cantidad_total || 0;
-                totalExitValue = parseFloat(mov.valor_total) || 0;
+        movements.forEach(movement => {
+            if (movement.tipo_movimiento === 'ENTRADA') {
+                totalEntradas += movement.cantidad || 0;
+                cantidadEntradas++;
+            } else if (movement.tipo_movimiento === 'SALIDA') {
+                totalSalidas += movement.cantidad || 0;
+                cantidadSalidas++;
             }
         });
 
-        const response = {
-            entries: parseInt(entries) || 0,
-            exits: parseInt(exits) || 0,
-            total: parseInt(entries) + parseInt(exits) || 0,
-            totalValue: (totalEntryValue + totalExitValue).toFixed(2)
-        };
+        console.log(`✅ Totales: Entradas=${totalEntradas}, Salidas=${totalSalidas}`);
 
-        console.log('✅ Respuesta enviada al frontend:', response);
-        res.status(200).json(response);
+        res.status(200).json({
+            entries: totalEntradas,
+            exits: totalSalidas,
+            total: cantidadEntradas + cantidadSalidas,
+            movements: movements
+        });
 
     } catch (error) {
-        console.error("❌ Error al obtener movimientos del día:", error);
+        console.error("Error al obtener movimientos del día:", error);
         res.status(500).json({ 
-            message: 'Error interno del servidor al obtener movimientos.',
-            error: error.message
+            message: 'Error al obtener movimientos del día.',
+            error: error.message 
         });
     }
 };
