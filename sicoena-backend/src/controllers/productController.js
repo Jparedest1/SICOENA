@@ -58,6 +58,76 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
+exports.getActiveMenus = async (req, res) => {
+    try {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
+        const [menus] = await db.query(
+            'SELECT id_menu, nombre FROM menu WHERE estado = ? ORDER BY nombre ASC',
+            ['ACTIVO']
+        );
+
+        res.status(200).json({
+            message: 'Menús activos obtenidos exitosamente.',
+            menus: menus,
+            total: menus.length
+        });
+
+    } catch (error) {
+        console.error("Error al obtener menús activos:", error);
+        res.status(500).json({ 
+            message: 'Error interno del servidor al obtener menús activos.',
+            error: error.message 
+        });
+    }
+};
+
+exports.getMenuProducts = async (req, res) => {
+    try {
+        const { menuId } = req.params;
+
+        if (!menuId) {
+            return res.status(400).json({ message: 'ID del menú es requerido.' });
+        }
+
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
+        // Consulta que obtiene los productos asociados a un menú
+        const [products] = await db.query(`
+            SELECT 
+                mp.id_menu_producto,
+                p.id_producto,
+                p.nombre_producto,
+                mp.cantidad,
+                mp.unidad_medida,
+                p.categoria,
+                p.stock_disponible,
+                p.estado
+            FROM menu_producto mp
+            INNER JOIN producto p ON mp.id_producto = p.id_producto
+            WHERE mp.id_menu = ?
+            ORDER BY p.nombre_producto ASC
+        `, [menuId]);
+
+        res.status(200).json({
+            message: 'Productos del menú obtenidos exitosamente.',
+            products: products,
+            total: products.length
+        });
+
+    } catch (error) {
+        console.error("Error al obtener productos del menú:", error);
+        res.status(500).json({ 
+            message: 'Error interno del servidor al obtener productos del menú.',
+            error: error.message 
+        });
+    }
+};
+
 // --- Crear Producto ---
 exports.createProduct = async (req, res) => {
     const {

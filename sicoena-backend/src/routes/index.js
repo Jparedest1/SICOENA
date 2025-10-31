@@ -1,4 +1,3 @@
-// sicoena-backend/src/routes/index.js
 const express = require('express');
 const userRoutes = require('./userRoutes');
 const dashboardController = require('../controllers/dashboardController');
@@ -10,6 +9,7 @@ const authRoutes = require('./authRoutes');
 const proveedorRoutes = require('./proveedorRoutes');
 const bodegaRoutes = require('./bodegaRoutes');
 const settingsRoutes = require('./settingsRoutes');
+const ordenRoutes = require('./ordenRoutes');
 
 const router = express.Router();
 
@@ -21,6 +21,7 @@ router.use('/movimientos', movementRoutes);
 router.use('/proveedor', proveedorRoutes);
 router.use('/bodega', bodegaRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/orden', ordenRoutes);
 router.get('/dashboard/stats', protect, dashboardController.getStats);
 
 module.exports = router;

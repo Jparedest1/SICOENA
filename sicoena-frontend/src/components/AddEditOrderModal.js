@@ -1,28 +1,10 @@
-// src/components/AddEditOrderModal.js
-
 import React, { useState, useEffect } from 'react';
 import './AddEditOrderModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBox, faTrash, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 
-// Mock data for dropdowns
-const mockEscuelas = {
-  "Escuela No. 1 Nivel Primario": 280,
-  "Escuela Oficial Bilingue": 150,
-  "Escuela El Castillo AEOUM": 320
-};
-
-const mockProducts = [
-  { id: 1, name: 'Tomate', category: 'Verdura' },
-  { id: 2, name: 'Banano', category: 'Fruta' },
-  { id: 3, name: 'Leche', category: 'Lácteo' },
-  { id: 4, name: 'Arroz', category: 'Grano' },
-  { id: 5, name: 'Frijol', category: 'Grano' },
-  { id: 6, name: 'Queso', category: 'Lácteo' },
-];
-
 const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
-  // --- States for all form fields ---
+  // --- Estados para todos los campos del formulario ---
   const [codigoOrden, setCodigoOrden] = useState('');
   const [fechaOrden, setFechaOrden] = useState(new Date().toISOString().slice(0, 10));
   const [responsable, setResponsable] = useState('');
@@ -36,22 +18,133 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   
   const [selectedProducts, setSelectedProducts] = useState([]);
 
-  // --- States for active users loading ---
+  // --- Estados para datos dinámicos de la base de datos ---
   const [activeUsers, setActiveUsers] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [errorUsers, setErrorUsers] = useState('');
 
-  const isEditMode = currentOrder !== null;
+  const [activeSchools, setActiveSchools] = useState([]);
+  const [isLoadingSchools, setIsLoadingSchools] = useState(false);
+  const [errorSchools, setErrorSchools] = useState('');
 
-  // Cargar usuarios activos cuando el componente se monta
+  const [activeMenus, setActiveMenus] = useState([]);
+  const [isLoadingMenus, setIsLoadingMenus] = useState(false);
+  const [errorMenus, setErrorMenus] = useState('');
+
+  // ✅ AQUÍ DEBEN ESTAR (dentro del componente)
+  const [menuProducts, setMenuProducts] = useState([]);
+  const [isLoadingMenuProducts, setIsLoadingMenuProducts] = useState(false);
+
+  const isEditMode = currentOrder !== null;
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+  // Cargar usuarios activos
+  const fetchActiveUsers = async () => {
+    setIsLoadingUsers(true);
+    setErrorUsers('');
+    try {
+      const response = await fetch(`${apiUrl}/api/usuario/active`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
+      setActiveUsers(data.users || []);
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+      setErrorUsers('No se pudieron cargar los usuarios activos');
+      setActiveUsers([]);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  // Cargar escuelas activas
+  const fetchActiveSchools = async () => {
+    setIsLoadingSchools(true);
+    setErrorSchools('');
+    try {
+      const response = await fetch(`${apiUrl}/api/institucion/active`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
+      setActiveSchools(data.schools || []);
+    } catch (error) {
+      console.error('Error al obtener escuelas:', error);
+      setErrorSchools('No se pudieron cargar las escuelas activas');
+      setActiveSchools([]);
+    } finally {
+      setIsLoadingSchools(false);
+    }
+  };
+
+  // Cargar menús activos
+  const fetchActiveMenus = async () => {
+    setIsLoadingMenus(true);
+    setErrorMenus('');
+    try {
+      const response = await fetch(`${apiUrl}/api/producto/active-menus`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
+      setActiveMenus(data.menus || []);
+    } catch (error) {
+      console.error('Error al obtener menús:', error);
+      setErrorMenus('No se pudieron cargar los menús activos');
+      setActiveMenus([]);
+    } finally {
+      setIsLoadingMenus(false);
+    }
+  };
+
+  // ✅ NUEVA FUNCIÓN - Cargar productos del menú
+  const fetchMenuProducts = async (menuId) => {
+    if (!menuId) {
+      setMenuProducts([]);
+      return;
+    }
+
+    setIsLoadingMenuProducts(true);
+    try {
+      const response = await fetch(`${apiUrl}/api/producto/menu/${menuId}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
+      setMenuProducts(data.products || []);
+      // Auto-seleccionar todos los productos del menú
+      setSelectedProducts(data.products.map(p => p.id_producto) || []);
+    } catch (error) {
+      console.error('Error al obtener productos del menú:', error);
+      setMenuProducts([]);
+    } finally {
+      setIsLoadingMenuProducts(false);
+    }
+  };
+
+  // Cargar todos los datos al montar el componente
   useEffect(() => {
     fetchActiveUsers();
+    fetchActiveSchools();
+    fetchActiveMenus();
   }, []);
 
-  // Cargar datos del formulario si estamos en modo edición
+  // Cargar datos del formulario si está en modo edición
   useEffect(() => {
     if (isEditMode) {
-      // Populate fields if editing
       setCodigoOrden(currentOrder.id || '');
       setFechaOrden(currentOrder.fecha_creacion || new Date().toISOString().slice(0, 10));
       setResponsable(currentOrder.responsable || '');
@@ -60,98 +153,108 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       setDiasDuracion(parseInt(currentOrder.duracion) || 1);
       setCantidadAlumnos(currentOrder.alumnos || 0);
       setFechaEntrega(currentOrder.fecha_entrega || '');
-      // In a real app, you would fetch and set the selected products
     } else {
-      // Set default values for a new order
       setCodigoOrden(`ORD-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`);
     }
   }, [currentOrder, isEditMode]);
 
-  // Auto-fill student count when a school is selected
+  // Auto-completar cantidad de alumnos cuando se selecciona escuela
   useEffect(() => {
-    if (escuela && mockEscuelas[escuela]) {
-      setCantidadAlumnos(mockEscuelas[escuela]);
-    } else {
-      setCantidadAlumnos(0);
-    }
-  }, [escuela]);
-
-  // Función para obtener los usuarios activos del backend
-const fetchActiveUsers = async () => {
-  setIsLoadingUsers(true);
-  setErrorUsers('');
-  try {
-    const response = await fetch('/api/usuario/active', {
-      method: 'GET',
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+    if (escuela) {
+      const selectedSchool = activeSchools.find(s => s.id_escuela == escuela);
+      if (selectedSchool) {
+        setCantidadAlumnos(selectedSchool.cantidad_estudiantes || 0);
       }
-    });
-    
-    console.log('=== DEBUGGING FETCH ACTIVOS ===');
-    console.log('Status:', response.status);
-    console.log('Response OK?:', response.ok);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response body:', errorText);
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
-    
+  }, [escuela, activeSchools]);
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!responsable) {
+    alert('Por favor, selecciona un responsable de entrega');
+    return;
+  }
+  if (!escuela) {
+    alert('Por favor, selecciona una escuela');
+    return;
+  }
+  if (!tipoMenu) {
+    alert('Por favor, selecciona un tipo de menú');
+    return;
+  }
+  if (selectedProducts.length === 0) {
+    alert('Por favor, selecciona al menos un producto');
+    return;
+  }
+
+  try {
+    // Preparar los datos de productos
+    const productosData = menuProducts
+      .filter(p => selectedProducts.includes(p.id_producto))
+      .map(p => ({
+        id_producto: p.id_producto,
+        cantidad: p.cantidad,
+        unidad_medida: p.unidad_medida
+      }));
+
+    // Datos de la orden
+    const orderData = {
+      codigo_orden: codigoOrden,
+      id_escuela: parseInt(escuela),
+      id_menu: parseInt(tipoMenu),
+      id_responsable: parseInt(responsable),
+      cantidad_alumnos: cantidadAlumnos,
+      dias_duracion: diasDuracion,
+      fecha_entrega: fechaEntrega || null,
+      valor_total: 0, // Puedes calcular esto si tienes precios
+      productos: productosData,
+      observaciones: ''
+    };
+
+    console.log('📤 Enviando orden:', orderData);
+
+    // Enviar al backend
+    const response = await fetch(`${apiUrl}/api/orden`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(orderData)
+    });
+
     const data = await response.json();
-    console.log('Datos JSON completos:', JSON.stringify(data, null, 2));
-    console.log('data.users:', data.users);
-    console.log('¿Es array data.users?:', Array.isArray(data.users));
-    console.log('Longitud de data.users:', data.users ? data.users.length : 'undefined');
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Error al crear la orden');
+    }
+
+    console.log('✅ Orden creada:', data);
+    alert('✅ Orden creada exitosamente con código: ' + data.codigo_orden);
     
-    // Extrae los usuarios
-    const users = data.users || [];
-    console.log('Users a setear:', users);
-    console.log('Longitud final:', users.length);
-    
-    setActiveUsers(users);
-    console.log('✅ setActiveUsers llamado con:', users);
-    
+    onClose();
+    onSave(orderData); // Para actualizar la lista en OrdersPage
+
   } catch (error) {
-    console.error('❌ Error al obtener usuarios activos:', error);
-    setErrorUsers('No se pudieron cargar los usuarios activos del sistema');
-    setActiveUsers([]);
-  } finally {
-    setIsLoadingUsers(false);
+    console.error('❌ Error al crear orden:', error);
+    alert('❌ Error: ' + error.message);
   }
 };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Validar que se ha seleccionado un responsable
-    if (!responsable) {
-      alert('Por favor, selecciona un responsable de entrega');
-      return;
-    }
-
-    const orderData = {
-      id: codigoOrden,
-      escuela,
-      menu: tipoMenu,
-      alumnos: cantidadAlumnos,
-      duracion: `${diasDuracion} días`,
-      productos: selectedProducts.length,
-      // In a real app, value would be calculated based on products
-      valor_total: Math.floor(Math.random() * 20000), 
-      estado: isEditMode ? currentOrder.estado : 'PENDIENTE',
-      fecha_creacion: fechaOrden,
-      fecha_entrega: fechaEntrega,
-      responsable,
-    };
-    onSave(orderData);
+  const handleProductSelection = (productId) => {
+    setSelectedProducts(prev => 
+      prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
+    );
   };
 
-  const handleProductSelection = (productId) => {
-      setSelectedProducts(prev => 
-        prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]
-      );
+  // ✅ Manejador para cambio de menú
+  const handleMenuChange = (e) => {
+    const menuId = e.target.value;
+    setTipoMenu(menuId);
+    if (menuId) {
+      fetchMenuProducts(menuId); // Cargar productos del menú
+    }
   };
 
   return (
@@ -163,10 +266,10 @@ const fetchActiveUsers = async () => {
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
           
-          {/* --- Mensaje de error si hay problemas cargando usuarios --- */}
-          {errorUsers && (
+          {/* --- MENSAJES DE ERROR --- */}
+          {(errorUsers || errorSchools || errorMenus) && (
             <div className="error-message" style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#fee', borderRadius: '4px', color: '#c00' }}>
-              ⚠️ {errorUsers}
+              ⚠️ {errorUsers || errorSchools || errorMenus}
             </div>
           )}
 
@@ -192,7 +295,7 @@ const fetchActiveUsers = async () => {
                   required
                 >
                   <option value="">
-                    {isLoadingUsers ? 'Cargando usuarios activos...' : 'Seleccionar responsable'}
+                    {isLoadingUsers ? 'Cargando usuarios...' : 'Seleccionar responsable'}
                   </option>
                   {activeUsers.map(user => (
                     <option key={user.id_usuario} value={user.id_usuario}>
@@ -200,11 +303,6 @@ const fetchActiveUsers = async () => {
                     </option>
                   ))}
                 </select>
-                {activeUsers.length === 0 && !isLoadingUsers && (
-                  <small className="helper-text" style={{ color: '#c00', display: 'block', marginTop: '5px' }}>
-                    ⚠️ No hay usuarios activos disponibles en el sistema
-                  </small>
-                )}
               </div>
             </div>
           </div>
@@ -215,18 +313,40 @@ const fetchActiveUsers = async () => {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="escuela">Escuela *</label>
-                <select id="escuela" value={escuela} onChange={(e) => setEscuela(e.target.value)} required>
-                  <option value="" disabled>Seleccionar una escuela</option>
-                  {Object.keys(mockEscuelas).map(e => <option key={e} value={e}>{e}</option>)}
+                <select 
+                  id="escuela" 
+                  value={escuela} 
+                  onChange={(e) => setEscuela(e.target.value)} 
+                  disabled={isLoadingSchools}
+                  required
+                >
+                  <option value="">
+                    {isLoadingSchools ? 'Cargando escuelas...' : 'Seleccionar una escuela'}
+                  </option>
+                  {activeSchools.map(school => (
+                    <option key={school.id_escuela} value={school.id_escuela}>
+                      {school.nombre_escuela}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="tipoMenu">Tipo de Menú</label>
-                <select id="tipoMenu" value={tipoMenu} onChange={(e) => setTipoMenu(e.target.value)}>
-                  <option value="" disabled>Seleccionar tipo de menú</option>
-                  <option value="Menú Especial">Menú Especial</option>
-                  <option value="Menú Regular">Menú Regular</option>
-                  <option value="Menú Reforzado">Menú Reforzado</option>
+                <label htmlFor="tipoMenu">Tipo de Menú *</label>
+                <select 
+                  id="tipoMenu" 
+                  value={tipoMenu} 
+                  onChange={handleMenuChange}
+                  disabled={isLoadingMenus}
+                  required
+                >
+                  <option value="">
+                    {isLoadingMenus ? 'Cargando menús...' : 'Seleccionar tipo de menú'}
+                  </option>
+                  {activeMenus.map(menu => (
+                    <option key={menu.id_menu} value={menu.id_menu}>
+                      {menu.nombre}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -263,38 +383,48 @@ const fetchActiveUsers = async () => {
 
           {/* --- SELECCIÓN DE PRODUCTOS --- */}
           <div className="form-section">
-              <div className="section-header-with-button">
-                 <h3><FontAwesomeIcon icon={faBox} className="section-icon" /> SELECCIÓN DE PRODUCTOS</h3>
-                 <div className="header-buttons">
-                    <button type="button" className="btn-secondary" onClick={() => setSelectedProducts(mockProducts.map(p => p.id))}>Seleccionar Todo</button>
-                    <button type="button" className="btn-tertiary" onClick={() => setSelectedProducts([])}>
-                        <FontAwesomeIcon icon={faTrash} /> Limpiar Todo
-                    </button>
-                 </div>
+            <div className="section-header-with-button">
+              <h3><FontAwesomeIcon icon={faBox} className="section-icon" /> SELECCIÓN DE PRODUCTOS</h3>
+              <div className="header-buttons">
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  onClick={() => setSelectedProducts(menuProducts.map(p => p.id_producto))}
+                >
+                  Seleccionar Todo
+                </button>
+                <button type="button" className="btn-tertiary" onClick={() => setSelectedProducts([])}>
+                  <FontAwesomeIcon icon={faTrash} /> Limpiar Todo
+                </button>
               </div>
-              <div className="form-row">
-                  <input type="text" placeholder="Buscar productos..." className="search-input"/>
-                  <select>
-                      <option>Todas las categorías</option>
-                      <option>Verdura</option>
-                      <option>Fruta</option>
-                      <option>Lácteo</option>
-                      <option>Grano</option>
-                  </select>
-              </div>
+            </div>
+            
+            {isLoadingMenuProducts ? (
+              <p style={{ padding: '20px', textAlign: 'center' }}>Cargando productos del menú...</p>
+            ) : menuProducts.length === 0 ? (
+              <p style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+                Selecciona un menú para ver los productos disponibles
+              </p>
+            ) : (
               <div className="product-selection-list">
-                  {mockProducts.map(product => (
-                      <div key={product.id} className="product-item">
-                          <input 
-                            type="checkbox" 
-                            id={`product-${product.id}`}
-                            checked={selectedProducts.includes(product.id)}
-                            onChange={() => handleProductSelection(product.id)}
-                          />
-                          <label htmlFor={`product-${product.id}`}>{product.name} <span className="product-category">({product.category})</span></label>
-                      </div>
-                  ))}
+                {menuProducts.map(product => (
+                  <div key={product.id_producto} className="product-item">
+                    <input 
+                      type="checkbox" 
+                      id={`product-${product.id_producto}`}
+                      checked={selectedProducts.includes(product.id_producto)}
+                      onChange={() => handleProductSelection(product.id_producto)}
+                    />
+                    <label htmlFor={`product-${product.id_producto}`}>
+                      {product.nombre_producto} 
+                      <span className="product-category">
+                        ({product.categoria}) - {product.cantidad} {product.unidad_medida}
+                      </span>
+                    </label>
+                  </div>
+                ))}
               </div>
+            )}
           </div>
 
           <div className="modal-footer">

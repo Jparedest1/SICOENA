@@ -273,8 +273,8 @@ const InstitutionsPage = () => {
           <table>
             <thead>
               <tr>
-                <th>Nombre Institucion</th> {/* Ajustado a tabla */}
-                <th>Codigo Institución</th>
+                <th>Codigo Institucion</th> {/* Ajustado a tabla */}
+                <th>Nombre Institución</th>
                 <th>Encargado</th>
                 <th>Dirección</th> {/* Ajustado a tabla */}
                 <th>Teléfono</th> {/* Ajustado a tabla */}

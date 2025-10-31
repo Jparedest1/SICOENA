@@ -49,6 +49,31 @@ exports.getAllSchools = async (req, res) => {
     }
 };
 
+exports.getActiveSchools = async (req, res) => {
+    try {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        
+        const [schools] = await db.query(
+            'SELECT id_escuela, nombre_escuela FROM escuela WHERE estado = ? ORDER BY nombre_escuela ASC',
+            ['ACTIVA']
+        );
+
+        res.status(200).json({
+            message: 'Escuelas activas obtenidas exitosamente.',
+            schools: schools,
+            total: schools.length
+        });
+
+    } catch (error) {
+        console.error("Error al obtener escuelas activas:", error);
+        res.status(500).json({ 
+            message: 'Error interno del servidor al obtener escuelas activas.',
+            error: error.message 
+        });
+    }
+};
 // --- Crear Escuela ---
 exports.createSchool = async (req, res) => {
     // Extrae todos los campos de tu tabla 'escuela' desde req.body
