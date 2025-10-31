@@ -96,7 +96,7 @@ exports.getMenuProducts = async (req, res) => {
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
         
-        // Consulta que obtiene los productos asociados a un menú
+        // ✅ CONSULTA MEJORADA - Incluye precio_unitario
         const [products] = await db.query(`
             SELECT 
                 mp.id_menu_producto,
@@ -106,7 +106,8 @@ exports.getMenuProducts = async (req, res) => {
                 mp.unidad_medida,
                 p.categoria,
                 p.stock_disponible,
-                p.estado
+                p.estado,
+                p.precio_unitario
             FROM menu_producto mp
             INNER JOIN producto p ON mp.id_producto = p.id_producto
             WHERE mp.id_menu = ?

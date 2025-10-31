@@ -165,6 +165,10 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
                   <option value="Litro">Litro (L)</option>
                   <option value="Metro">Metro (m)</option>
                   <option value="Caja">Caja</option>
+                  <option value="Bolsa">Bolsa</option>
+                  <option value="Libra">Libra</option>
+                  <option value="Manojo">Manojo</option>
+                  <option value="Botella">Botella</option>
                 </select>
               </div>
               <div className="form-group">

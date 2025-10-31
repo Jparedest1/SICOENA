@@ -31,7 +31,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   const [isLoadingMenus, setIsLoadingMenus] = useState(false);
   const [errorMenus, setErrorMenus] = useState('');
 
-  // ✅ AQUÍ DEBEN ESTAR (dentro del componente)
   const [menuProducts, setMenuProducts] = useState([]);
   const [isLoadingMenuProducts, setIsLoadingMenuProducts] = useState(false);
 
@@ -107,7 +106,7 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
   };
 
-  // ✅ NUEVA FUNCIÓN - Cargar productos del menú
+  // ✅ Cargar productos del menú
   const fetchMenuProducts = async (menuId) => {
     if (!menuId) {
       setMenuProducts([]);
@@ -169,78 +168,88 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   }, [escuela, activeSchools]);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!responsable) {
-    alert('Por favor, selecciona un responsable de entrega');
-    return;
-  }
-  if (!escuela) {
-    alert('Por favor, selecciona una escuela');
-    return;
-  }
-  if (!tipoMenu) {
-    alert('Por favor, selecciona un tipo de menú');
-    return;
-  }
-  if (selectedProducts.length === 0) {
-    alert('Por favor, selecciona al menos un producto');
-    return;
-  }
-
-  try {
-    // Preparar los datos de productos
-    const productosData = menuProducts
-      .filter(p => selectedProducts.includes(p.id_producto))
-      .map(p => ({
-        id_producto: p.id_producto,
-        cantidad: p.cantidad,
-        unidad_medida: p.unidad_medida
-      }));
-
-    // Datos de la orden
-    const orderData = {
-      codigo_orden: codigoOrden,
-      id_escuela: parseInt(escuela),
-      id_menu: parseInt(tipoMenu),
-      id_responsable: parseInt(responsable),
-      cantidad_alumnos: cantidadAlumnos,
-      dias_duracion: diasDuracion,
-      fecha_entrega: fechaEntrega || null,
-      valor_total: 0, // Puedes calcular esto si tienes precios
-      productos: productosData,
-      observaciones: ''
-    };
-
-    console.log('📤 Enviando orden:', orderData);
-
-    // Enviar al backend
-    const response = await fetch(`${apiUrl}/api/orden`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(orderData)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al crear la orden');
+    e.preventDefault();
+    
+    if (!responsable) {
+      alert('Por favor, selecciona un responsable de entrega');
+      return;
+    }
+    if (!escuela) {
+      alert('Por favor, selecciona una escuela');
+      return;
+    }
+    if (!tipoMenu) {
+      alert('Por favor, selecciona un tipo de menú');
+      return;
+    }
+    if (selectedProducts.length === 0) {
+      alert('Por favor, selecciona al menos un producto');
+      return;
     }
 
-    console.log('✅ Orden creada:', data);
-    alert('✅ Orden creada exitosamente con código: ' + data.codigo_orden);
-    
-    onClose();
-    onSave(orderData); // Para actualizar la lista en OrdersPage
+    try {
+      // Preparar los datos de productos
+      const productosData = menuProducts
+        .filter(p => selectedProducts.includes(p.id_producto))
+        .map(p => ({
+          id_producto: p.id_producto,
+          cantidad: p.cantidad,
+          unidad_medida: p.unidad_medida
+        }));
 
-  } catch (error) {
-    console.error('❌ Error al crear orden:', error);
-    alert('❌ Error: ' + error.message);
-  }
-};
+      // ✅ Calcular valor total
+      const valorTotal = menuProducts
+        .filter(p => selectedProducts.includes(p.id_producto))
+        .reduce((sum, p) => {
+          const precioUnitario = parseFloat(p.precio_unitario) || 0;
+          const cantidad = parseFloat(p.cantidad) || 0;
+          const subtotal = precioUnitario * cantidad * diasDuracion * cantidadAlumnos;
+          return sum + subtotal;
+        }, 0);
+
+      // Datos de la orden
+      const orderData = {
+        codigo_orden: codigoOrden,
+        id_escuela: parseInt(escuela),
+        id_menu: parseInt(tipoMenu),
+        id_responsable: parseInt(responsable),
+        cantidad_alumnos: cantidadAlumnos,
+        dias_duracion: diasDuracion,
+        fecha_entrega: fechaEntrega || null,
+        valor_total: valorTotal,
+        productos: productosData,
+        observaciones: ''
+      };
+
+      console.log('📤 Enviando orden:', orderData);
+
+      // Enviar al backend
+      const response = await fetch(`${apiUrl}/api/orden`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al crear la orden');
+      }
+
+      console.log('✅ Orden creada:', data);
+      alert('✅ Orden creada exitosamente con código: ' + data.codigo_orden);
+      
+      onClose();
+      onSave(orderData);
+
+    } catch (error) {
+      console.error('❌ Error al crear orden:', error);
+      alert('❌ Error: ' + error.message);
+    }
+  };
 
   const handleProductSelection = (productId) => {
     setSelectedProducts(prev => 
@@ -248,13 +257,27 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     );
   };
 
-  // ✅ Manejador para cambio de menú
   const handleMenuChange = (e) => {
     const menuId = e.target.value;
     setTipoMenu(menuId);
     if (menuId) {
-      fetchMenuProducts(menuId); // Cargar productos del menú
+      fetchMenuProducts(menuId);
     }
+  };
+
+  // ✅ CALCULAR SUBTOTAL POR PRODUCTO
+  const calcularSubtotal = (product) => {
+    const precioUnitario = parseFloat(product.precio_unitario) || 0;
+    const cantidad = parseFloat(product.cantidad) || 0;
+    return precioUnitario * cantidad * diasDuracion * cantidadAlumnos;
+  };
+
+
+  // ✅ CALCULAR TOTAL DE LA ORDEN
+  const calcularTotalOrden = () => {
+    return menuProducts
+      .filter(p => selectedProducts.includes(p.id_producto))
+      .reduce((sum, p) => sum + calcularSubtotal(p), 0);
   };
 
   return (
@@ -381,10 +404,10 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
             </div>
           </div>
 
-          {/* --- SELECCIÓN DE PRODUCTOS --- */}
+          {/* --- SELECCIÓN DE PRODUCTOS CON PRECIOS --- */}
           <div className="form-section">
             <div className="section-header-with-button">
-              <h3><FontAwesomeIcon icon={faBox} className="section-icon" /> SELECCIÓN DE PRODUCTOS</h3>
+              <h3><FontAwesomeIcon icon={faBox} className="section-icon" /> SELECCIÓN DE PRODUCTOS Y PRECIOS</h3>
               <div className="header-buttons">
                 <button 
                   type="button" 
@@ -406,24 +429,73 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
                 Selecciona un menú para ver los productos disponibles
               </p>
             ) : (
-              <div className="product-selection-list">
-                {menuProducts.map(product => (
-                  <div key={product.id_producto} className="product-item">
-                    <input 
-                      type="checkbox" 
-                      id={`product-${product.id_producto}`}
-                      checked={selectedProducts.includes(product.id_producto)}
-                      onChange={() => handleProductSelection(product.id_producto)}
-                    />
-                    <label htmlFor={`product-${product.id_producto}`}>
-                      {product.nombre_producto} 
-                      <span className="product-category">
-                        ({product.categoria}) - {product.cantidad} {product.unidad_medida}
-                      </span>
-                    </label>
+              <>
+                {/* ✅ TABLA DE PRODUCTOS CON PRECIOS */}
+                <div className="products-table-container">
+                  <table className="products-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '50px' }}>Seleccionar</th>
+                        <th>Producto</th>
+                        <th style={{ width: '120px' }}>Unidades</th>
+                        <th style={{ width: '120px' }}>Precio Unit.</th>
+                        <th style={{ width: '150px' }}>Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {menuProducts.map(product => (
+                        <tr key={product.id_producto} className={selectedProducts.includes(product.id_producto) ? 'selected' : ''}>
+                          <td style={{ textAlign: 'center' }}>
+                            <input 
+                              type="checkbox" 
+                              id={`product-${product.id_producto}`}
+                              checked={selectedProducts.includes(product.id_producto)}
+                              onChange={() => handleProductSelection(product.id_producto)}
+                            />
+                          </td>
+                          <td>
+                            <label htmlFor={`product-${product.id_producto}`}>
+                              {product.nombre_producto} 
+                              <span className="product-category">
+                                ({product.categoria})
+                              </span>
+                            </label>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <strong>{product.cantidad}</strong> {product.unidad_medida}
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            Q{parseFloat(product.precio_unitario || 0).toFixed(2)}
+                          </td>
+                          <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                            Q{calcularSubtotal(product).toFixed(2)}
+                            <br />
+                            <small style={{ color: '#666', fontSize: '11px' }}>
+                              ({product.cantidad} × Q{parseFloat(product.precio_unitario || 0).toFixed(2)} × {diasDuracion} días × {cantidadAlumnos} alumnos)
+                            </small>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* ✅ RESUMEN DEL TOTAL */}
+                <div className="order-summary">
+                  <div className="summary-row">
+                    <span className="summary-label">Productos Seleccionados:</span>
+                    <span className="summary-value">{selectedProducts.length}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="summary-row">
+                    <span className="summary-label">Días de Entrega:</span>
+                    <span className="summary-value">{diasDuracion}</span>
+                  </div>
+                  <div className="summary-row total">
+                    <span className="summary-label">TOTAL DE LA ORDEN:</span>
+                    <span className="summary-value">Q{calcularTotalOrden().toFixed(2)}</span>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
