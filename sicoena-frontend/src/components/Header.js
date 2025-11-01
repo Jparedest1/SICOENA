@@ -104,8 +104,8 @@ const Header = ({ toggleSidebar, onLogout }) => {
         <div className="quick-icons">
           {/* ... (otros iconos) ... */}
            <Link to="/dashboard" title="Dashboard"><FontAwesomeIcon icon={faTachometerAlt} /></Link>
-          <Link to="/usuarios" title="Usuarios"><FontAwesomeIcon icon={faUsers} /></Link>
-          <Link to="/instituciones" title="Instituciones"><FontAwesomeIcon icon={faBuilding} /></Link>
+          <Link to="/usuario" title="Usuarios"><FontAwesomeIcon icon={faUsers} /></Link>
+          <Link to="/institucion" title="Instituciones"><FontAwesomeIcon icon={faBuilding} /></Link>
           <Link to="/inventario" title="Inventario"><FontAwesomeIcon icon={faBoxes} /></Link>
           <Link to="/reportes" title="Reportes"><FontAwesomeIcon icon={faChartBar} /></Link>
 
