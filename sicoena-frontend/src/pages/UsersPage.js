@@ -1,11 +1,11 @@
 // src/pages/UsersPage.js
 
-import React, { useState, useEffect, useCallback } from 'react'; // Importa useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UsersPage.css';
 import AddUserModal from '../components/AddUserModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faSearch } from '@fortawesome/free-solid-svg-icons'; // Importa faSearch
+import { faEdit, faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -17,63 +17,72 @@ const UsersPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // --- NUEVOS ESTADOS PARA FILTROS ---
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('todos');
-  const [statusFilter, setStatusFilter] = useState('ACTIVO'); // <-- NUEVO ESTADO (por defecto muestra activos)
+  const [statusFilter, setStatusFilter] = useState('ACTIVO');
 
-  // --- MODIFICACIÓN: fetchUsers ahora acepta parámetros ---
-  // Usamos useCallback para memorizar la función y evitar re-renders innecesarios
-const fetchUsers = useCallback(async (
+  // ✅ ACTUALIZADO: Ahora usa los valores actuales del estado
+  const fetchUsers = useCallback(async (
     currentSearchTerm = '',
     currentRoleFilter = 'todos',
-    currentStatusFilter = 'ACTIVO' // <-- NUEVO PARÁMETRO
+    currentStatusFilter = 'ACTIVO'
   ) => {
     setIsLoading(true);
     setError(null);
     const token = localStorage.getItem('authToken');
 
-    if (!token) { /* ... (manejo de token ausente) ... */
-        setError('No autorizado. Por favor, inicie sesión.');
-        setIsLoading(false);
-        navigate('/login');
-        return;
+    if (!token) {
+      setError('No autorizado. Por favor, inicie sesión.');
+      setIsLoading(false);
+      navigate('/login');
+      return;
     }
 
-    // Construye la URL con query parameters
-let url = `${API_URL}/usuario?`;
+    let url = `${API_URL}/usuario?`;
     const params = [];
+    
     if (currentSearchTerm) {
       params.push(`search=${encodeURIComponent(currentSearchTerm)}`);
     }
     if (currentRoleFilter !== 'todos') {
       params.push(`rol=${encodeURIComponent(currentRoleFilter)}`);
     }
-    // --- AÑADE EL FILTRO DE ESTADO SI NO ES 'todos' ---
     if (currentStatusFilter !== 'todos') {
-        params.push(`estado=${encodeURIComponent(currentStatusFilter)}`);
+      params.push(`estado=${encodeURIComponent(currentStatusFilter)}`);
     }
+    
     url += params.join('&');
 
+    console.log('📡 Fetching URL:', url);
+    console.log('🔑 Token:', token.substring(0, 20) + '...');
+
     try {
-      const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+      const response = await fetch(url, { 
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        } 
+      });
+
+      console.log('📊 Response status:', response.status);
 
       if (response.status === 401) {
         localStorage.removeItem('authToken');
         throw new Error('Sesión inválida o expirada. Por favor, inicie sesión de nuevo.');
       }
       if (!response.ok) {
-        // Intenta obtener un mensaje de error del backend si es JSON
         let errorData = { message: `Error al cargar los usuarios (${response.status})` };
         try {
-            errorData = await response.json();
+          errorData = await response.json();
         } catch(e) { /* No hacer nada si no es JSON */ }
         throw new Error(errorData.message);
       }
 
       const data = await response.json();
+      console.log('✅ Usuarios obtenidos:', data);
       setUsers(data);
     } catch (err) {
+      console.error('❌ Error:', err);
       setError(err.message);
       if (err.message.includes('Sesión inválida')) {
         navigate('/login');
@@ -83,17 +92,15 @@ let url = `${API_URL}/usuario?`;
     }
   }, [navigate]);
 
-  // --- Carga inicial de usuarios ---
+  // ✅ ACTUALIZADO: Carga inicial con statusFilter del estado
   useEffect(() => {
-    fetchUsers(); // Llama a fetchUsers sin parámetros la primera vez
-  }, [fetchUsers]); // fetchUsers ahora es una dependencia estable gracias a useCallback
+    fetchUsers(searchTerm, roleFilter, statusFilter);
+  }, [statusFilter, fetchUsers]); // Ahora incluye statusFilter como dependencia
 
-  // --- NUEVA FUNCIÓN: Se activa al hacer clic en Buscar ---
   const handleSearch = () => {
-    fetchUsers(searchTerm, roleFilter, statusFilter); // <-- Pasa el filtro de estado
+    fetchUsers(searchTerm, roleFilter, statusFilter);
   };
 
-  // --- (handleEdit, handleDelete, handleAddNewUser, handleSaveUser sin cambios significativos) ---
   const handleEdit = (user) => {
     setCurrentUserToEdit(user);
     setIsModalOpen(true);
@@ -113,9 +120,7 @@ let url = `${API_URL}/usuario?`;
           body: JSON.stringify({ estado: 'INACTIVO' }),
         });
         if (!response.ok) throw new Error('Error al desactivar el usuario.');
-        // Refresca la lista después de desactivar para reflejar el cambio si es necesario
-        // O simplemente actualiza el estado localmente si prefieres
-        fetchUsers(searchTerm, roleFilter); // Recarga con los filtros actuales
+        fetchUsers(searchTerm, roleFilter, statusFilter);
         alert('Usuario desactivado con éxito.');
       } catch (err) {
         setError(err.message);
@@ -128,60 +133,56 @@ let url = `${API_URL}/usuario?`;
     setIsModalOpen(true);
   };
 
-    const handleSaveUser = async (userDataFromModal) => { // Renombrado para claridad
+  const handleSaveUser = async (userDataFromModal) => {
     const token = localStorage.getItem('authToken');
     setError(null);
     const url = currentUserToEdit 
                 ? `${API_URL}/usuario/${currentUserToEdit.id}` 
                 : `${API_URL}/usuario`;
     const method = currentUserToEdit ? 'PUT' : 'POST';
-    // --- CONSTRUCCIÓN DEL PAYLOAD PARA EL BACKEND ---
+    
     const payload = {
-        nombre: userDataFromModal.nombre, // El backend separa nombres/apellidos
-        email: userDataFromModal.email,   // Tu backend actual usa 'email', mantenlo así por ahora
-        // correo: userDataFromModal.email, // Si cambias el backend para esperar 'correo', usa esta línea
-        rol: userDataFromModal.rol,
-        telefono: userDataFromModal.telefono,
-        estado: userDataFromModal.estado
-        // Excluimos 'cui' porque no está en la tabla
+      nombre: userDataFromModal.nombre,
+      email: userDataFromModal.email,
+      rol: userDataFromModal.rol,
+      telefono: userDataFromModal.telefono,
+      estado: userDataFromModal.estado
     };
 
-    // Solo añadimos la contraseña si estamos CREANDO (POST)
     if (method === 'POST' && userDataFromModal.contrasena) {
       payload.contrasena = userDataFromModal.contrasena;
     }
-  try {
+
+    try {
       const response = await fetch(url, {
         method: method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload), // Envía el payload adaptado
+        body: JSON.stringify(payload),
       });
+      
       let data; 
       try {
-          data = await response.json();
+        data = await response.json();
       } catch (jsonError){
-          // Si la respuesta no es JSON (como un HTML de error 500), crea un objeto error
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
+      
       if (!response.ok) {
-        // Usa el mensaje del backend si existe, si no, uno genérico
         throw new Error(data.message || `Error al ${currentUserToEdit ? 'actualizar' : 'crear'} el usuario.`);
       }
       
-      fetchUsers(searchTerm, roleFilter); // Recarga la lista con filtros actuales
+      fetchUsers(searchTerm, roleFilter, statusFilter);
       setIsModalOpen(false);
       alert(`Usuario ${currentUserToEdit ? 'actualizado' : 'creado'} con éxito.`);
 
     } catch (err) {
-      console.error("Error en handleSaveUser:", err); // Loguea el error completo
-      setError(err.message); 
-      // Mantenemos el modal abierto si hubo error
+      console.error("Error en handleSaveUser:", err);
+      setError(err.message);
     }
   };
-
 
   return (
     <div className="users-page-container">
@@ -193,40 +194,46 @@ let url = `${API_URL}/usuario?`;
       {error && <div className="page-error-message">{error}</div>}
 
       <div className="filters-bar">
-         <input
-            type="text"
-            placeholder="Buscar usuario..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <input
+          type="text"
+          placeholder="Buscar usuario..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            >
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+        >
           <option value="todos">Todos los Roles</option>
           <option value="Administrador">Administrador</option>
           <option value="Usuario">Usuario</option>
         </select>
-        {/* --- NUEVO SELECT PARA ESTADO --- */}
         <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            >
-          {/* <option value="todos">Todos los Estados</option> */} {/* Opcional: si quieres mostrar todos */}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
           <option value="ACTIVO">Activos</option>
           <option value="INACTIVO">Inactivos</option>
         </select>
         <button className="search-btn" onClick={handleSearch}>
-            <FontAwesomeIcon icon={faSearch} /> Buscar
+          <FontAwesomeIcon icon={faSearch} /> Buscar
         </button>
       </div>
 
       <div className="users-table-container">
-        {isLoading ? ( <p>Cargando usuarios...</p> ) : (
+        {isLoading ? (
+          <p>Cargando usuarios...</p>
+        ) : (
           <table>
             <thead>
               <tr>
-                <th>ID</th><th>NOMBRE</th><th>EMAIL</th><th>ROL</th><th>ESTADO</th><th>ÚLTIMA CONEXIÓN</th><th>ACCIONES</th>
+                <th>ID</th>
+                <th>NOMBRE</th>
+                <th>EMAIL</th>
+                <th>ROL</th>
+                <th>ESTADO</th>
+                <th>ÚLTIMA CONEXIÓN</th>
+                <th>ACCIONES</th>
               </tr>
             </thead>
             <tbody>
@@ -237,7 +244,7 @@ let url = `${API_URL}/usuario?`;
                   <td>{user.email}</td>
                   <td>{user.rol}</td>
                   <td>
-                    <span className={`status-badge ${user.estado?.toLowerCase()}`}> {/* Añadí ? por seguridad */}
+                    <span className={`status-badge ${user.estado?.toLowerCase()}`}>
                       {user.estado}
                     </span>
                   </td>
@@ -247,24 +254,21 @@ let url = `${API_URL}/usuario?`;
                       <button className="action-btn icon-edit" title="Editar" onClick={() => handleEdit(user)}>
                         <FontAwesomeIcon icon={faEdit} />
                       </button>
-                      {/* El botón de eliminar/desactivar solo tiene sentido para usuarios activos */}
                       {user.estado === 'ACTIVO' && (
                         <button className="action-btn icon-delete" title="Desactivar" onClick={() => handleDelete(user.id)}>
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
                       )}
-                      {/* Podrías añadir un botón para reactivar si estás viendo inactivos */}
-                      {/* {user.estado === 'INACTIVO' && ( <button>Reactivar</button> )} */}
                     </div>
                   </td>
                 </tr>
               ))}
               {users.length === 0 && !isLoading && (
-                  <tr>
-                      <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
-                          No se encontraron usuarios con los filtros aplicados.
-                      </td>
-                  </tr>
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
+                    No se encontraron usuarios con los filtros aplicados.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
