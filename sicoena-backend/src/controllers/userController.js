@@ -2,61 +2,76 @@
 
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { createNotification } = require('./notificationController');
 
 // ✅ FUNCIÓN 1: Crear Usuario
 const createUser = async (req, res) => {
-    const { 
-        nombre, 
-        email, 
-        contrasena: password,
-        rol, 
-        telefono,
-        estado
-    } = req.body;
+  try {
+    // ✅ Recibir nombre y apellido por separado
+    const { nombre, apellidos, email, rol, telefono, estado, contrasena } = req.body;
 
-    const nameParts = nombre ? nombre.split(' ') : [''];
-    const nombres = nameParts[0];
-    const apellidos = nameParts.slice(1).join(' ');
-
-    if (!nombres || !email || !password) {
-        return res.status(400).json({ message: 'Nombre, email y contraseña son requeridos.' });
+    if (!nombre || !email) {
+      return res.status(400).json({ message: 'Nombre y email son requeridos.' });
     }
 
+    // ✅ Hashear contraseña
+    const hashedPassword = await bcrypt.hash(contrasena || 'password123', 10);
+
+    console.log('📝 Creando usuario:', { nombre, apellidos, email, rol, telefono, estado });
+
+    // ✅ CORRECTO: Usar los apellidos que viene del frontend
+    const [result] = await db.query(
+      `INSERT INTO usuario (nombres, apellidos, correo, rol, telefono, estado, contraseña) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        nombre,                    // ← nombres
+        apellidos || '',           // ← apellidos (si no viene, vacío)
+        email,                     // ← correo
+        rol || 'USUARIO',          // ← rol
+        telefono || null,          // ← telefono
+        estado || 'ACTIVO',        // ← estado
+        hashedPassword             // ← contraseña
+      ]
+    );
+
+    console.log('✅ Usuario creado:', result.insertId);
+
+    // ✅ CREAR NOTIFICACIÓN PARA TODOS LOS ADMINS
     try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+      const [admins] = await db.query(
+        `SELECT id_usuario FROM usuario WHERE rol = 'ADMINISTRADOR' AND estado = 'ACTIVO'`
+      );
 
-        const sql = `
-            INSERT INTO usuario 
-            (nombres, apellidos, correo, contraseña, rol, telefono, estado, fecha_creacion) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW()) 
-        `;
-        
-        const [result] = await db.query(sql, [
-            nombres, 
-            apellidos, 
-            email, 
-            hashedPassword, 
-            rol || 'Usuario', 
-            telefono || null, 
-            estado ? estado.toUpperCase() : 'ACTIVO'
-        ]);
+      for (const admin of admins) {
+        await createNotification(
+          admin.id_usuario,
+          'Nuevo usuario registrado',
+          `El usuario "${nombre} ${apellidos || ''}" (${email}) ha sido registrado en el sistema.`,
+          'usuario'
+        );
+      }
 
-        res.status(201).json({
-            id: result.insertId,
-            nombre: nombre,      
-            email: email,
-            rol: rol || 'Usuario',
-            estado: estado ? estado.toUpperCase() : 'ACTIVO'
-        });
-
+      console.log(`📨 Notificaciones enviadas a ${admins.length} administradores`);
     } catch (error) {
-        console.error("Error al crear usuario:", error);
-        if (error.code === 'ER_DUP_ENTRY') {
-             return res.status(409).json({ message: 'El correo electrónico ya está registrado.' });
-        }
-        res.status(500).json({ message: 'Error interno del servidor al crear usuario.' });
+      console.error('⚠️ Error al crear notificaciones:', error);
     }
+
+    res.status(201).json({
+      id_usuario: result.insertId,
+      nombre,
+      apellidos,
+      email,
+      rol,
+      estado
+    });
+
+  } catch (error) {
+    console.error('❌ Error al crear usuario:', error);
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'El email ya está registrado.' });
+    }
+    res.status(500).json({ message: 'Error al crear el usuario.' });
+  }
 };
 
 // ✅ FUNCIÓN 2: Obtener todos los usuarios
