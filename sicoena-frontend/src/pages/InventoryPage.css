@@ -466,3 +466,54 @@ tbody tr:hover {
   font-weight: bold;
   color: #333;
 }
+
+.stat-card-item.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card-item.clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Contenedor para la tarjeta con dos valores */
+.stat-card-multi-content {
+  display: flex;
+  justify-content: space-around; /* Espacio entre los dos items */
+  align-items: center;
+  width: 100%;
+  gap: 15px;
+}
+
+.multi-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.multi-stat-item .stat-card-icon {
+  margin: 0; /* Reseteamos el margen del icono */
+  font-size: 1.5rem; /* Hacemos el icono un poco más pequeño */
+  color: #555;
+}
+
+.multi-stat-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.multi-stat-value {
+  font-size: 1.75rem; /* Tamaño del número */
+  font-weight: 600;
+  color: #2c3e50;
+  line-height: 1.1;
+}
+
+.multi-stat-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #7f8c8d;
+  text-transform: uppercase;
+}

@@ -3,8 +3,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './InventoryPage.css';
 import AddEditProductModal from '../components/AddEditProductModal';
+// --- NUEVO: Importar los nuevos modales ---
+import AddProveedorModal from '../components/AddProveedorModal';
+import AddBodegaModal from '../components/AddBodegaModal';
+import ListModal from '../components/ListModal';
+// --- FIN NUEVO ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faBox, faBoxes, faClipboardList, faChartLine, faExclamationTriangle, faSearch, faFilePdf, faFileExcel, faCoins, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faTruckLoading, faBox, faBoxes, faChartLine, faExclamationTriangle, faSearch, faFilePdf, faFileExcel, faCoins, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
@@ -28,14 +33,23 @@ const InventoryPage = () => {
   const [stockFilter, setStockFilter] = useState('todos');
   const [categoriesList, setCategoriesList] = useState([]);
   
-  // ✅ ESTADO PARA MOVIMIENTOS DEL DÍA
   const [movementsToday, setMovementsToday] = useState({
     entries: 0,
     exits: 0,
     total: 0
   });
 
-  // --- FUNCIÓN PARA OBTENER PRODUCTOS (con filtros) ---
+  // --- NUEVO: Estados para los nuevos modales ---
+  const [isProveedorModalOpen, setIsProveedorModalOpen] = useState(false);
+  const [isBodegaModalOpen, setIsBodegaModalOpen] = useState(false);
+  // --- FIN NUEVO ---
+
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [bodegasList, setBodegasList] = useState([]);
+  const [proveedoresList, setProveedoresList] = useState([]);
+  const [isCatalogsLoading, setIsCatalogsLoading] = useState(true);
+
+  // ... (Tu función fetchProducts se mantiene igual) ...
   const fetchProducts = useCallback(async (
     currentSearch = '',
     currentCategory = 'todos',
@@ -106,7 +120,7 @@ const InventoryPage = () => {
     }
   }, [navigate]);
 
-  // ✅ OBTENER MOVIMIENTOS DEL DÍA
+  // ... (Tu función fetchMovementsToday se mantiene igual) ...
   const fetchMovementsToday = useCallback(async () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
@@ -131,7 +145,39 @@ const InventoryPage = () => {
     }
   }, []);
 
-  // Carga inicial
+  const fetchBodegas = useCallback(async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_URL}/bodega`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Error al cargar bodegas');
+      const data = await response.json();
+      setBodegasList(data);
+    } catch (err) {
+      console.error("Error fetching bodegas:", err);
+      setError(err.message);
+    }
+  }, []);
+
+  const fetchProveedores = useCallback(async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_URL}/proveedor`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Error al cargar proveedores');
+      const data = await response.json();
+      setProveedoresList(data);
+    } catch (err) {
+      console.error("Error fetching proveedores:", err);
+      setError(err.message);
+    }
+  }, []);
+
+  // ... (Tu useEffect de carga inicial se mantiene igual) ...
   useEffect(() => {
     const fetchCategories = async () => {
       const token = localStorage.getItem('authToken');
@@ -151,23 +197,43 @@ const InventoryPage = () => {
       }
     };
 
-    fetchCategories();
-    fetchMovementsToday();
-    fetchProducts('', 'todos', 'todos', 'todos', 'todos');
-  }, [fetchProducts, fetchMovementsToday]);
+    const loadInitialData = async () => {
+      setIsCatalogsLoading(true);
+      await Promise.all([
+        fetchCategories(),
+        fetchMovementsToday(),
+        fetchProducts('', 'todos', 'todos', 'todos', 'todos'),
+        fetchBodegas(),
+        fetchProveedores()
+      ]);
+      setIsCatalogsLoading(false);
+    };
 
-  // --- BUSCAR/FILTRAR ---
+    loadInitialData();
+  }, [fetchProducts, fetchMovementsToday, fetchBodegas, fetchProveedores]);
+
+
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('🔄 Tab enfocada, recargando movimientos...');
+      fetchMovementsToday();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [fetchMovementsToday, fetchProducts]);
+
+  // ... (Tus funciones handleSearch, handleEdit, handleDelete se mantienen igual) ...
   const handleSearch = () => {
     fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
   };
 
-  // --- EDITAR ---
   const handleEdit = (product) => {
     setCurrentProductToEdit(product);
     setIsModalOpen(true);
   };
-
-  // --- DESACTIVAR (SOFT DELETE) ---
+  
   const handleDelete = async (productId) => {
     if (window.confirm('¿Está seguro de que desea cambiar el estado a INACTIVO?')) {
       const token = localStorage.getItem('authToken');
@@ -184,21 +250,21 @@ const InventoryPage = () => {
         if (!response.ok) throw new Error('Error al desactivar.');
 
         fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
-        fetchMovementsToday(); // ✅ ACTUALIZAR MOVIMIENTOS
+        fetchMovementsToday(); 
         alert('Producto desactivado.');
       } catch (err) {
         setError(err.message);
       }
     }
   };
-
+  
   const handleAddNewProduct = () => {
     setCurrentProductToEdit(null);
     setIsModalOpen(true);
   };
 
-  // --- GUARDAR (CREAR/EDITAR) ---
-const handleSaveProduct = async (productDataFromModal) => {
+  // ... (Tu función handleSaveProduct se mantiene igual) ...
+  const handleSaveProduct = async (productDataFromModal) => {
     const token = localStorage.getItem('authToken');
     setError(null);
 
@@ -241,9 +307,8 @@ const handleSaveProduct = async (productDataFromModal) => {
 
       if (!response.ok) throw new Error(data.message || `Error al guardar producto.`);
 
-      // ✅ ACTUALIZAR PRODUCTOS Y MOVIMIENTOS
       fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
-      fetchMovementsToday(); // ← Esto debe estar aquí
+      fetchMovementsToday(); 
       
       setIsModalOpen(false);
       alert(`Producto ${currentProductToEdit ? 'actualizado' : 'creado'} con éxito.`);
@@ -254,6 +319,78 @@ const handleSaveProduct = async (productDataFromModal) => {
     }
   };
 
+  // --- NUEVO: Función para guardar Proveedor ---
+  const handleSaveProveedor = async (proveedorData) => {
+    const token = localStorage.getItem('authToken');
+    setError(null);
+    const payload = { ...proveedorData, estado: 'ACTIVO' };
+
+    try {
+      const response = await fetch(`${API_URL}/proveedor`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        let data = { message: 'Error desconocido' };
+        try { data = await response.json(); } catch(e) {}
+        throw new Error(data.message || 'Error al crear el proveedor.');
+      }
+
+      setIsProveedorModalOpen(false);
+      alert('Proveedor creado con éxito.');
+      
+      // --- NUEVO: Recargar la lista de proveedores ---
+      fetchProveedores();
+      // --- FIN NUEVO ---
+      
+    } catch (err) {
+      console.error("Error en handleSaveProveedor:", err);
+      setError(err.message);
+    }
+  };
+
+  // --- NUEVO: Función para guardar Bodega ---
+  const handleSaveBodega = async (bodegaData) => {
+    const token = localStorage.getItem('authToken');
+    setError(null);
+    const payload = { ...bodegaData, estado: 'ACTIVO' };
+
+    try {
+      const response = await fetch(`${API_URL}/bodega`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        let data = { message: 'Error desconocido' };
+        try { data = await response.json(); } catch(e) {}
+        throw new Error(data.message || 'Error al crear la bodega.');
+      }
+
+      setIsBodegaModalOpen(false);
+      alert('Bodega creada con éxito.');
+      
+      // --- NUEVO: Recargar la lista de bodegas ---
+      fetchBodegas();
+      // --- FIN NUEVO ---
+
+    } catch (err) {
+      console.error("Error en handleSaveBodega:", err);
+      setError(err.message);
+    }
+  };
+  // --- FIN NUEVO ---
+
+  // ... (Tus funciones de exportación se mantienen igual) ...
   const handleExportPDF = () => {
   if (products.length === 0) {
     alert("No hay datos para exportar.");
@@ -293,11 +430,9 @@ const handleSaveProduct = async (productDataFromModal) => {
     styles: { fontSize: 8 },
   });
 
-  // ✅ ABRIR EN VENTANA EMERGENTE CON TAMAÑO PERSONALIZADO
   const pdfBlob = doc.output('blob');
   const pdfUrl = URL.createObjectURL(pdfBlob);
   
-  // Abrir en ventana emergente de 900x600 pixels
   window.open(pdfUrl, 'ReporteInventario', 'width=900,height=600,resizable=yes,scrollbars=yes');
 };
 
@@ -363,10 +498,11 @@ const handleSaveProduct = async (productDataFromModal) => {
     }
   };
 
-  // --- Cálculos para estadísticas ---
+
+  // ... (Tus cálculos de estadísticas se mantienen igual) ...
   const totalProducts = products.length;
-  const categories = [...new Set(products.map(p => p.categoria))].length;
-  const warehouses = [...new Set(products.map(p => p.almacen))].length;
+  //const categories = [...new Set(products.map(p => p.categoria))].length;
+  //const warehouses = [...new Set(products.map(p => p.almacen))].length;
   const totalValue = products.reduce((sum, p) => sum + p.valor_total, 0);
   const lowStockProductsCount = products.filter(p => p.stock_actual <= p.stock_min && p.estado === 'ACTIVO').length;
   const productsWithLowStock = products.filter(p => p.stock_actual <= p.stock_min && p.estado === 'ACTIVO');
@@ -377,11 +513,14 @@ const handleSaveProduct = async (productDataFromModal) => {
         <h1>Gestión de Inventarios</h1>
         <div className="header-buttons">
           <button className="btn-primary" onClick={handleAddNewProduct}>Nuevo Producto</button>
+          <button className="btn-primary" onClick={() => setIsProveedorModalOpen(true)}>Nuevo Proveedor</button>
+          <button className="btn-primary" onClick={() => setIsBodegaModalOpen(true)}>Nueva Bodega</button>
         </div>
       </div>
 
       {error && <div className="page-error-message">{error}</div>}
 
+      {/* --- CORREGIDO: Alerta de Stock Bajo Restaurada --- */}
       {productsWithLowStock.length > 0 && (
         <div className="low-stock-alert">
           <FontAwesomeIcon icon={faExclamationTriangle} className="alert-icon" />
@@ -391,56 +530,84 @@ const handleSaveProduct = async (productDataFromModal) => {
           <button className="btn-tertiary" onClick={() => { setStockFilter('bajo'); handleSearch(); }}>Ver Detalles</button>
         </div>
       )}
+      {/* --- FIN CORRECCIÓN --- */}
 
+
+      {/* --- Contenedor de Tarjetas de Estadísticas (Modificado) --- */}
       <div className="stats-cards-container">
+        
+        {/* Tarjeta 1: Total Productos */}
         <div className="stat-card-item">
           <FontAwesomeIcon icon={faBoxes} className="stat-card-icon" />
           <span className="stat-value">{isLoading ? '...' : totalProducts}</span>
           <span className="stat-label">Total Productos</span>
         </div>
-        <div className="stat-card-item">
-          <FontAwesomeIcon icon={faClipboardList} className="stat-card-icon" />
-          <span className="stat-value">{isLoading ? '...' : categories}</span>
-          <span className="stat-label">Categorías</span>
+
+        {/* Tarjeta 2: Bodegas y Proveedores (Modificada) */}
+        <div 
+          className="stat-card-item clickable" 
+          onClick={() => setIsListModalOpen(true)}
+          title="Ver listas de Bodegas y Proveedores"
+        >
+          <div className="stat-card-multi-content">
+            {/* Item Bodegas */}
+            <div className="multi-stat-item">
+              <FontAwesomeIcon icon={faBox} className="stat-card-icon" />
+              <div className="multi-stat-info">
+                <span className="multi-stat-value">{isCatalogsLoading ? '...' : bodegasList.length}</span>
+                <span className="multi-stat-label">Bodegas</span>
+              </div>
+            </div>
+            {/* Item Proveedores */}
+            <div className="multi-stat-item">
+              <FontAwesomeIcon icon={faTruckLoading} className="stat-card-icon" />
+              <div className="multi-stat-info">
+                <span className="multi-stat-value">{isCatalogsLoading ? '...' : proveedoresList.length}</span>
+                <span className="multi-stat-label">Proveedores</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="stat-card-item">
-          <FontAwesomeIcon icon={faBox} className="stat-card-icon" />
-          <span className="stat-value">{isLoading ? '...' : warehouses}</span>
-          <span className="stat-label">Bodegas</span>
-        </div>
+
+        {/* Tarjeta 3: Valor Total */}
         <div className="stat-card-item">
           <FontAwesomeIcon icon={faCoins} className="stat-card-icon" />
           <span className="stat-value">{isLoading ? '...' : `Q${totalValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
           <span className="stat-label">Valor Total</span>
         </div>
+        
+        {/* Tarjeta 4: Stock Bajo */}
         <div className="stat-card-item">
           <FontAwesomeIcon icon={faExclamationTriangle} className="stat-card-icon" />
           <span className="stat-value">{isLoading ? '...' : lowStockProductsCount}</span>
           <span className="stat-label">Stock Bajo</span>
         </div>
-        {/* ✅ TARJETA DE MOVIMIENTOS DEL DÍA - ESTILO CONSISTENTE */}
+        
+        {/* Tarjeta 5: Movimientos Hoy */}
         <div className="stat-card-item">
-          <FontAwesomeIcon icon={faChartLine} className="stat-card-icon" />
-          <div className="movements-info">
-            <div className="movement-item">
-              <FontAwesomeIcon icon={faArrowUp} className="movement-icon in" />
-              <div>
-                <span className="movement-label">Entradas</span>
-                <span className="movement-value">{isLoading ? '...' : movementsToday.entries}</span>
-              </div>
-            </div>
-            <div className="movement-item">
-              <FontAwesomeIcon icon={faArrowDown} className="movement-icon out" />
-              <div>
-                <span className="movement-label">Salidas</span>
-                <span className="movement-value">{isLoading ? '...' : movementsToday.exits}</span>
-              </div>
-            </div>
-          </div>
-          <span className="stat-label">Movimientos Hoy</span>
+           <FontAwesomeIcon icon={faChartLine} className="stat-card-icon" />
+           <div className="movements-info">
+             <div className="movement-item">
+               <FontAwesomeIcon icon={faArrowUp} className="movement-icon in" />
+               <div>
+                 <span className="movement-label">Entradas</span>
+                 <span className="movement-value">{isLoading ? '...' : movementsToday.entries}</span>
+               </div>
+             </div>
+             <div className="movement-item">
+               <FontAwesomeIcon icon={faArrowDown} className="movement-icon out" />
+               <div>
+                 <span className="movement-label">Salidas</span>
+                 <span className="movement-value">{isLoading ? '...' : movementsToday.exits}</span>
+               </div>
+             </div>
+           </div>
+           <span className="stat-label">Movimientos Hoy</span>
         </div>
       </div>
+      {/* --- FIN Contenedor de Tarjetas --- */}
 
+      {/* ... (Tu barra de filtros se mantiene igual) ... */}
       <div className="filters-bar">
         <input
           type="text"
@@ -480,6 +647,7 @@ const handleSaveProduct = async (productDataFromModal) => {
         }}>Limpiar</button>
       </div>
 
+      {/* ... (Tu tabla de productos se mantiene igual) ... */}
       <div className="table-container">
         <div className="table-header">
           <span>Inventario de Productos</span>
@@ -558,6 +726,7 @@ const handleSaveProduct = async (productDataFromModal) => {
         )}
       </div>
 
+      {/* ... (Tu modal de producto existente) ... */}
       {isModalOpen && (
         <AddEditProductModal
           onClose={() => setIsModalOpen(false)}
@@ -565,6 +734,32 @@ const handleSaveProduct = async (productDataFromModal) => {
           currentProduct={currentProductToEdit}
         />
       )}
+
+      {/* --- NUEVO: Renderizar los nuevos modales --- */}
+      {isProveedorModalOpen && (
+        <AddProveedorModal
+          onClose={() => setIsProveedorModalOpen(false)}
+          onSave={handleSaveProveedor}
+        />
+      )}
+
+      {isBodegaModalOpen && (
+        <AddBodegaModal
+          onClose={() => setIsBodegaModalOpen(false)}
+          onSave={handleSaveBodega}
+        />
+      )}
+      {/* --- FIN NUEVO --- */}
+
+      {isListModalOpen && (
+        <ListModal
+          onClose={() => setIsListModalOpen(false)}
+          bodegas={bodegasList}
+          proveedores={proveedoresList}
+          isLoading={isCatalogsLoading}
+        />
+      )}
+      {/* --- FIN NUEVO --- */}
     </div>
   );
 };

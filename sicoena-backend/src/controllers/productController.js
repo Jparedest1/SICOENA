@@ -355,30 +355,37 @@ exports.updateProduct = async (req, res) => {
 
     // ✅ REGISTRAR MOVIMIENTO SI HAY CAMBIO DE STOCK
     if (diferencia !== 0) {
-      const tipoMovimiento = diferencia > 0 ? 'ENTRADA' : 'SALIDA';
-      const cantidadAbsoluta = Math.abs(diferencia);
+      const tipoMovimiento = diferencia > 0 ? 'ENTRADA' : 'SALIDA';
+      const cantidadAbsoluta = Math.abs(diferencia);
+      
+      // --- NUEVO: Calcular el monto del ajuste ---
+      // Usamos el precio_unitario que viene del req.body
+      const montoMovimiento = cantidadAbsoluta * (precio_unitario || 0); 
+      // --- FIN NUEVO ---
 
-      const sqlMovimiento = `
-        INSERT INTO movimiento (
-          id_producto, 
-          tipo_movimiento, 
-          cantidad, 
-          descripcion, 
-          fecha_movimiento
-        ) VALUES (?, ?, ?, ?, NOW())
-      `;
+      const sqlMovimiento = `
+        INSERT INTO movimiento (
+          id_producto, 
+          tipo_movimiento, 
+          cantidad, 
+          monto,  /* <-- MODIFICADO */
+          descripcion, 
+          fecha_movimiento
+        ) VALUES (?, ?, ?, ?, ?, NOW()) /* <-- MODIFICADO */
+      `;
 
-      const descripcionMovimiento = `${tipoMovimiento} por ajuste de inventario (${stockAnterior} → ${stock_disponible})`;
+      const descripcionMovimiento = `${tipoMovimiento} por ajuste de inventario (${stockAnterior} → ${stock_disponible})`;
 
-      await db.query(sqlMovimiento, [
-        id,
-        tipoMovimiento,
-        cantidadAbsoluta,
-        descripcionMovimiento
-      ]);
+      await db.query(sqlMovimiento, [
+        id,
+        tipoMovimiento,
+        cantidadAbsoluta,
+          montoMovimiento, /* <-- MODIFICADO */
+        descripcionMovimiento
+      ]);
 
-      console.log(`✅ Movimiento registrado: ${tipoMovimiento} de ${cantidadAbsoluta} unidades del producto ${id}`);
-    }
+      console.log(`✅ Movimiento registrado: ${tipoMovimiento} de ${cantidadAbsoluta} unidades (Monto: ${montoMovimiento}) del producto ${id}`);
+    }
 
     // ✅ VERIFICAR STOCK BAJO DEL PRODUCTO ACTUALIZADO
     const [updatedProduct] = await db.query(
