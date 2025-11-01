@@ -1,166 +1,225 @@
 // src/pages/ReportsPage.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ReportsPage.css';
+import DashboardKPIs from '../components/Reports/DashboardKPIs';
+import ReportFilters from '../components/Reports/ReportFilters';
+import OrdersReportTable from '../components/Reports/OrdersReportTable';
+import ReportCharts from '../components/Reports/ReportCharts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilePdf, faFileCsv, faEye, faDownload, faTrash, faEdit, faPen } from '@fortawesome/free-solid-svg-icons';
-
-// Mock Data
-const initialRecentReports = [
-  { id: 1, name: 'Usuarios Activos - Enero 2024', type: 'Usuarios', generatedBy: 'admin@sistema.com', date: '2024-01-12 10:30:15', size: '2.4 MB', status: 'COMPLETADO' },
-  { id: 2, name: 'Actividad Semanal del Sistema', type: 'Actividad', generatedBy: 'supervisor@sistema.com', date: '2024-01-11 16:45:32', size: '1.8 MB', status: 'COMPLETADO' },
-];
-
-const initialScheduledReports = [
-    { id: 1, name: 'Reporte Semanal de Usuarios', schedule: 'Se ejecuta todos los lunes a las 8:00 AM', nextRun: 'Lunes 15 Ene 2024, 8:00 AM' }
-];
+import { faChartBar } from '@fortawesome/free-solid-svg-icons';
 
 const ReportsPage = () => {
-  // State for the form
-  const [reportType, setReportType] = useState('');
-  const [period, setPeriod] = useState('Hoy');
-  const [format, setFormat] = useState('PDF');
-  
-  // State for the lists
-  const [recentReports, setRecentReports] = useState(initialRecentReports);
-  const [scheduledReports, setScheduledReports] = useState(initialScheduledReports);
-
-  const handleGenerateReport = (e) => {
-    e.preventDefault();
-    if (!reportType) {
-      alert('Por favor, seleccione un tipo de reporte.');
-      return;
-    }
-
-    // Simulate report generation
-    const newReport = {
-      id: recentReports.length + 1,
-      name: `${reportType} - ${period} (${new Date().toLocaleDateString()})`,
-      type: reportType,
-      generatedBy: 'admin@sistema.com', // Assuming the current user
-      date: new Date().toLocaleString('sv-SE'), // Format 'YYYY-MM-DD HH:MM:SS'
-      size: `${(Math.random() * 5 + 1).toFixed(1)} MB`,
-      status: 'COMPLETADO'
-    };
-    
-    setRecentReports([newReport, ...recentReports]);
-    alert(`Reporte "${newReport.name}" generado exitosamente.`);
+  // ✅ OBTENER LA FECHA ACTUAL EN FORMATO YYYY-MM-DD
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
   };
 
-  const handleDeleteRecent = (reportId) => {
-    if(window.confirm('¿Está seguro de que desea eliminar este reporte?')) {
-        setRecentReports(recentReports.filter(report => report.id !== reportId));
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ✅ Filtros con fecha actual
+  const [dateFrom, setDateFrom] = useState(getTodayDate());
+  const [dateTo, setDateTo] = useState(getTodayDate());
+  const [filterEscuela, setFilterEscuela] = useState('todas');
+  const [filterEstado, setFilterEstado] = useState('todos');
+  const [filterMenu, setFilterMenu] = useState('todos');
+
+  const [escuelas, setEscuelas] = useState([]);
+  const [menus, setMenus] = useState([]);
+  const [ordersWithProducts, setOrdersWithProducts] = useState([]);
+
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+  // Cargar órdenes al montar
+  useEffect(() => {
+    fetchOrders();
+    fetchFilterData();
+  }, []);
+
+  // Aplicar filtros cuando cambien
+  useEffect(() => {
+    applyFilters();
+  }, [orders, dateFrom, dateTo, filterEscuela, filterEstado, filterMenu]);
+
+  // ✅ OBTENER TODAS LAS ÓRDENES
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    setError(null);
+    const token = localStorage.getItem('authToken');
+
+    try {
+      const response = await fetch(`${apiUrl}/api/orden`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Error al obtener órdenes');
+
+      const data = await response.json();
+      setOrders(data || []);
+
+      // ✅ Cargar detalles completos de cada orden (incluyendo productos)
+      const ordersWithDetails = await Promise.all(
+        (data || []).map(async (order) => {
+          try {
+            const detailResponse = await fetch(`${apiUrl}/api/orden/${order.id_orden}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (detailResponse.ok) {
+              const detail = await detailResponse.json();
+              return {
+                ...order,
+                productos: detail.productos || []
+              };
+            }
+            return order;
+          } catch (err) {
+            console.error(`Error cargando detalles de orden ${order.id_orden}:`, err);
+            return order;
+          }
+        })
+      );
+
+      setOrdersWithProducts(ordersWithDetails);
+      console.log('✅ Órdenes cargadas:', data.length);
+    } catch (err) {
+      console.error('Error:', err);
+      setError('No se pudieron cargar los datos de órdenes');
+      setOrders([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDeleteScheduled = (reportId) => {
-    if(window.confirm('¿Está seguro de que desea eliminar este reporte programado?')) {
-        setScheduledReports(scheduledReports.filter(report => report.id !== reportId));
+  // ✅ OBTENER DATOS PARA FILTROS (FUERA DE fetchOrders)
+  const fetchFilterData = async () => {
+    const token = localStorage.getItem('authToken');
+
+    try {
+      // Escuelas
+      const escuelasRes = await fetch(`${apiUrl}/api/institucion/active`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (escuelasRes.ok) {
+        const data = await escuelasRes.json();
+        setEscuelas(data.schools || []);
+      }
+
+      // Menús
+      const menusRes = await fetch(`${apiUrl}/api/producto/active-menus`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (menusRes.ok) {
+        const data = await menusRes.json();
+        setMenus(data.menus || []);
+      }
+    } catch (err) {
+      console.error('Error cargando filtros:', err);
     }
   };
 
+  // ✅ APLICAR FILTROS
+  const applyFilters = () => {
+    let filtered = orders;
+
+    // ✅ Filtro por fecha - VERSIÓN SIMPLIFICADA
+    if (dateFrom && dateTo) {
+      filtered = filtered.filter(order => {
+        if (!order.fecha_creacion) return false;
+        
+        // Obtener solo la parte de fecha (YYYY-MM-DD)
+        const orderDate = order.fecha_creacion.split('T')[0];
+        
+        // Comparar directamente las strings de fecha
+        return orderDate >= dateFrom && orderDate <= dateTo;
+      });
+
+      console.log(`📅 Filtro de fechas: ${dateFrom} a ${dateTo} - Órdenes encontradas: ${filtered.length}`);
+    }
+
+    // Filtro por escuela
+    if (filterEscuela !== 'todas') {
+      filtered = filtered.filter(o => o.id_escuela === parseInt(filterEscuela));
+    }
+
+    // Filtro por estado
+    if (filterEstado !== 'todos') {
+      filtered = filtered.filter(o => o.estado === filterEstado);
+    }
+
+    // Filtro por menú
+    if (filterMenu !== 'todos') {
+      filtered = filtered.filter(o => o.id_menu === parseInt(filterMenu));
+    }
+
+    setFilteredOrders(filtered);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="page-container">
+        <div className="page-header">
+          <h1>Reportes</h1>
+        </div>
+        <p style={{ textAlign: 'center', padding: '40px' }}>Cargando datos...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="page-container">
+    <div className="page-container reports-page">
       <div className="page-header">
-        <h1>Reportes y Análisis</h1>
-        <span className="breadcrumb">Inicio &gt; Reportes y Análisis</span>
+        <h1>
+          <FontAwesomeIcon icon={faChartBar} /> Reportes y Análisis
+        </h1>
       </div>
 
-      {/* --- Generar Reporte Rápido --- */}
-      <div className="card-container">
-        <h3>Generar Reporte Rápido</h3>
-        <form className="report-form" onSubmit={handleGenerateReport}>
-          <div className="form-group">
-            <label htmlFor="reportType">Tipo de Reporte</label>
-            <select id="reportType" value={reportType} onChange={(e) => setReportType(e.target.value)} required>
-              <option value="" disabled>Seleccionar tipo de reporte</option>
-              <option value="Usuarios">Reporte de Usuarios</option>
-              <option value="Inventario">Reporte de Inventario</option>
-              <option value="Entregas">Reporte de Entregas</option>
-              <option value="Actividad">Reporte de Actividad</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="period">Período</label>
-            <select id="period" value={period} onChange={(e) => setPeriod(e.target.value)}>
-              <option>Hoy</option>
-              <option>Ayer</option>
-              <option>Últimos 7 días</option>
-              <option>Este mes</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label htmlFor="format">Formato</label>
-            <select id="format" value={format} onChange={(e) => setFormat(e.target.value)}>
-              <option>PDF</option>
-              <option>Excel (XLSX)</option>
-              <option>CSV</option>
-            </select>
-          </div>
-          <button type="submit" className="btn-primary">Generar Reporte</button>
-        </form>
-      </div>
-
-      {/* --- Reportes Recientes --- */}
-      <div className="card-container">
-        <h3>Reportes Recientes</h3>
-        <div className="reports-table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre del Reporte</th>
-                        <th>Tipo</th>
-                        <th>Generado Por</th>
-                        <th>Fecha de Generación</th>
-                        <th>Tamaño</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {recentReports.map(report => (
-                        <tr key={report.id}>
-                            <td>{report.name}</td>
-                            <td>{report.type}</td>
-                            <td>{report.generatedBy}</td>
-                            <td>{report.date}</td>
-                            <td>{report.size}</td>
-                            <td>
-                                <span className="status-badge completado">{report.status}</span>
-                            </td>
-                            <td>
-                                <div className="action-buttons">
-                                    <button className="action-btn icon-view" title="Ver"><FontAwesomeIcon icon={faEye} /></button>
-                                    <button className="action-btn icon-download" title="Descargar"><FontAwesomeIcon icon={faDownload} /></button>
-                                    <button className="action-btn icon-delete" title="Eliminar" onClick={() => handleDeleteRecent(report.id)}><FontAwesomeIcon icon={faTrash} /></button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+      {error && (
+        <div className="error-message" style={{ marginBottom: '20px' }}>
+          ⚠️ {error}
         </div>
+      )}
+
+      {/* --- DASHBOARD EJECUTIVO (KPIs) --- */}
+      <div className="dashboard-section">
+        <h2>📊 Dashboard Ejecutivo</h2>
+        <DashboardKPIs orders={filteredOrders} />
       </div>
 
-      {/* --- Reportes Programados --- */}
-      <div className="card-container">
-        <h3>Reportes Programados</h3>
-        {scheduledReports.map(report => (
-            <div key={report.id} className="scheduled-report-item">
-                <div className="scheduled-report-info">
-                    <strong>{report.name}</strong>
-                    <span>{report.schedule}</span>
-                    <small>Próxima ejecución: {report.nextRun}</small>
-                </div>
-                <div className="action-buttons">
-                    <button className="action-btn icon-edit" title="Editar"><FontAwesomeIcon icon={faPen} /></button>
-                    <button className="action-btn icon-delete" title="Eliminar" onClick={() => handleDeleteScheduled(report.id)}><FontAwesomeIcon icon={faTrash} /></button>
-                </div>
-            </div>
-        ))}
+      {/* --- FILTROS --- */}
+      <ReportFilters
+        dateFrom={dateFrom}
+        setDateFrom={setDateFrom}
+        dateTo={dateTo}
+        setDateTo={setDateTo}
+        filterEscuela={filterEscuela}
+        setFilterEscuela={setFilterEscuela}
+        filterEstado={filterEstado}
+        setFilterEstado={setFilterEstado}
+        filterMenu={filterMenu}
+        setFilterMenu={setFilterMenu}
+        escuelas={escuelas}
+        menus={menus}
+      />
+
+      {/* --- GRÁFICOS --- */}
+      <div className="charts-section">
+        <h2>📈 Análisis Visual</h2>
+        <ReportCharts orders={filteredOrders} />
       </div>
 
+      {/* --- TABLA DE ÓRDENES --- */}
+      <div className="table-section">
+        <h2>📋 Detalle de Órdenes</h2>
+        <OrdersReportTable orders={filteredOrders} allOrdersWithProducts={ordersWithProducts} />
+      </div>
     </div>
   );
 };

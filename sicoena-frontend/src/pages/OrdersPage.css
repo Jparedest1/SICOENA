@@ -210,3 +210,22 @@ thead th {
     grid-template-columns: 1fr; /* 1 tarjeta por fila */
   }
 }
+
+.action-btn.icon-view {
+  background-color: #3498db;
+  color: white;
+}
+
+.action-btn.icon-view:hover {
+  background-color: #2980b9;
+}
+
+.action-btn.icon-status {
+  background-color: #3498db;
+  color: white;
+}
+
+.action-btn.icon-status:hover {
+  background-color: #2980b9;
+}
+

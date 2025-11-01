@@ -1,0 +1,209 @@
+/* src/components/ViewOrderModal.css */
+
+.view-order-modal {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.view-order-body {
+  padding: 20px;
+}
+
+/* --- SECCIONES DE INFORMACIÓN --- */
+.info-section {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.info-section h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  font-size: 14px;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* --- TABLA DE PRODUCTOS --- */
+.products-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin: 15px 0;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+}
+
+.products-table thead {
+  background-color: #2c3e50;
+  color: white;
+}
+
+.products-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.products-table tbody tr {
+  border-bottom: 1px solid #eee;
+}
+
+.products-table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.products-table td {
+  padding: 12px;
+  font-size: 14px;
+}
+
+/* --- RESUMEN DE ORDEN --- */
+.order-summary {
+  background-color: #ecf0f1;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #bdc3c7;
+}
+
+.summary-row.total {
+  border-bottom: none;
+  background-color: #3498db;
+  color: white;
+  padding: 15px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.summary-row.total .summary-label {
+  color: white;
+}
+
+.summary-value {
+  font-weight: bold;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.summary-row.total .summary-value {
+  color: white;
+  font-size: 18px;
+}
+
+/* --- ESTADO BADGE --- */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.pendiente {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.en-proceso {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-badge.entregado {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.cancelado {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* --- MODAL CLOSE BUTTON --- */
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #333;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .view-order-modal {
+    max-width: 95%;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .products-table {
+    font-size: 12px;
+  }
+
+  .products-table th,
+  .products-table td {
+    padding: 8px;
+  }
+}

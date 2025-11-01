@@ -96,14 +96,14 @@ exports.getMenuProducts = async (req, res) => {
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
         
-        // ✅ CONSULTA MEJORADA - Incluye precio_unitario
+        // ✅ TRAER UNIDAD DE MEDIDA DEL PRODUCTO, NO DE MENU_PRODUCTO
         const [products] = await db.query(`
             SELECT 
                 mp.id_menu_producto,
                 p.id_producto,
                 p.nombre_producto,
                 mp.cantidad,
-                mp.unidad_medida,
+                p.unidad_medida,
                 p.categoria,
                 p.stock_disponible,
                 p.estado,

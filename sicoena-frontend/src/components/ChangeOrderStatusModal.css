@@ -1,0 +1,153 @@
+/* src/components/ChangeOrderStatusModal.css */
+
+.status-modal {
+  max-width: 600px;
+}
+
+.status-body {
+  padding: 20px;
+}
+
+/* --- INFORMACIÓN ACTUAL --- */
+.status-info {
+  background-color: #f9f9f9;
+  border-left: 4px solid #3498db;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.status-info .info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.status-info .info-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-info .info-label {
+  font-weight: 600;
+  color: #666;
+}
+
+.status-info .info-value {
+  color: #333;
+}
+
+/* --- SELECTOR DE ESTADO --- */
+.status-selector {
+  margin-bottom: 25px;
+}
+
+.status-selector h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-option:hover {
+  border-color: #3498db;
+  background-color: #f0f8ff;
+}
+
+.status-option.selected {
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.status-circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --- VISTA PREVIA --- */
+.status-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  background-color: #ecf0f1;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.preview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.preview-arrow {
+  font-size: 24px;
+  color: #3498db;
+  font-weight: bold;
+}
+
+/* --- BADGE DE ESTADO --- */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 600px) {
+  .status-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .status-preview {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .preview-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* --- DESHABILITADO --- */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

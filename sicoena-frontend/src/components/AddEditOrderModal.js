@@ -21,26 +21,78 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   // --- Estados para datos dinámicos de la base de datos ---
   const [activeUsers, setActiveUsers] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
-  const [errorUsers, setErrorUsers] = useState('');
 
   const [activeSchools, setActiveSchools] = useState([]);
   const [isLoadingSchools, setIsLoadingSchools] = useState(false);
-  const [errorSchools, setErrorSchools] = useState('');
 
   const [activeMenus, setActiveMenus] = useState([]);
   const [isLoadingMenus, setIsLoadingMenus] = useState(false);
-  const [errorMenus, setErrorMenus] = useState('');
 
   const [menuProducts, setMenuProducts] = useState([]);
   const [isLoadingMenuProducts, setIsLoadingMenuProducts] = useState(false);
 
+  // ✅ NUEVO: Estado para cargar datos de la orden a editar
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [isLoadingOrder, setIsLoadingOrder] = useState(false);
+
   const isEditMode = currentOrder !== null;
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+  // ✅ CARGAR DETALLES DE LA ORDEN SI ESTÁ EN MODO EDICIÓN
+  useEffect(() => {
+    if (isEditMode && currentOrder?.id_orden) {
+      const fetchOrderToEdit = async () => {
+        setIsLoadingOrder(true);
+        const token = localStorage.getItem('authToken');
+
+        try {
+          const response = await fetch(`${apiUrl}/api/orden/${currentOrder.id_orden}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) throw new Error('Error al obtener orden');
+
+          const data = await response.json();
+          console.log('📝 Datos de la orden a editar:', data);
+
+          setOrderDetails(data.order);
+          
+          // Pre-llenar los campos
+          setCodigoOrden(data.order.codigo_orden || '');
+          setFechaOrden(data.order.fecha_creacion ? data.order.fecha_creacion.split('T')[0] : new Date().toISOString().slice(0, 10));
+          setResponsable(data.order.id_usuario?.toString() || '');
+          setEscuela(data.order.id_escuela?.toString() || '');
+          setTipoMenu(data.order.id_menu?.toString() || '');
+          setDiasDuracion(parseInt(data.order.dias_duracion) || 1);
+          setCantidadAlumnos(parseInt(data.order.cantidad_alumnos) || 0);
+          setFechaEntrega(data.order.fecha_entrega ? data.order.fecha_entrega.split('T')[0] : '');
+
+          // Cargar los productos del menú
+          if (data.order.id_menu) {
+            await fetchMenuProducts(data.order.id_menu);
+          }
+
+        } catch (error) {
+          console.error('Error al obtener orden:', error);
+        } finally {
+          setIsLoadingOrder(false);
+        }
+      };
+
+      fetchOrderToEdit();
+    } else {
+      // Modo creación
+      setCodigoOrden(`ORD-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`);
+    }
+  }, [isEditMode, currentOrder]);
 
   // Cargar usuarios activos
   const fetchActiveUsers = async () => {
     setIsLoadingUsers(true);
-    setErrorUsers('');
     try {
       const response = await fetch(`${apiUrl}/api/usuario/active`, {
         method: 'GET',
@@ -53,7 +105,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       setActiveUsers(data.users || []);
     } catch (error) {
       console.error('Error al obtener usuarios:', error);
-      setErrorUsers('No se pudieron cargar los usuarios activos');
       setActiveUsers([]);
     } finally {
       setIsLoadingUsers(false);
@@ -63,7 +114,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   // Cargar escuelas activas
   const fetchActiveSchools = async () => {
     setIsLoadingSchools(true);
-    setErrorSchools('');
     try {
       const response = await fetch(`${apiUrl}/api/institucion/active`, {
         method: 'GET',
@@ -76,7 +126,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       setActiveSchools(data.schools || []);
     } catch (error) {
       console.error('Error al obtener escuelas:', error);
-      setErrorSchools('No se pudieron cargar las escuelas activas');
       setActiveSchools([]);
     } finally {
       setIsLoadingSchools(false);
@@ -86,7 +135,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   // Cargar menús activos
   const fetchActiveMenus = async () => {
     setIsLoadingMenus(true);
-    setErrorMenus('');
     try {
       const response = await fetch(`${apiUrl}/api/producto/active-menus`, {
         method: 'GET',
@@ -99,7 +147,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       setActiveMenus(data.menus || []);
     } catch (error) {
       console.error('Error al obtener menús:', error);
-      setErrorMenus('No se pudieron cargar los menús activos');
       setActiveMenus([]);
     } finally {
       setIsLoadingMenus(false);
@@ -124,8 +171,15 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       
       const data = await response.json();
       setMenuProducts(data.products || []);
-      // Auto-seleccionar todos los productos del menú
-      setSelectedProducts(data.products.map(p => p.id_producto) || []);
+      
+      // ✅ Si es modo edición, seleccionar los productos que ya estaban
+      if (isEditMode && orderDetails) {
+        const productIds = orderDetails.productos?.map(p => p.id_producto) || [];
+        setSelectedProducts(productIds);
+      } else {
+        // Modo creación: auto-seleccionar todos
+        setSelectedProducts(data.products?.map(p => p.id_producto) || []);
+      }
     } catch (error) {
       console.error('Error al obtener productos del menú:', error);
       setMenuProducts([]);
@@ -140,32 +194,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     fetchActiveSchools();
     fetchActiveMenus();
   }, []);
-
-  // Cargar datos del formulario si está en modo edición
-  useEffect(() => {
-    if (isEditMode) {
-      setCodigoOrden(currentOrder.id || '');
-      setFechaOrden(currentOrder.fecha_creacion || new Date().toISOString().slice(0, 10));
-      setResponsable(currentOrder.responsable || '');
-      setEscuela(currentOrder.escuela || '');
-      setTipoMenu(currentOrder.menu || '');
-      setDiasDuracion(parseInt(currentOrder.duracion) || 1);
-      setCantidadAlumnos(currentOrder.alumnos || 0);
-      setFechaEntrega(currentOrder.fecha_entrega || '');
-    } else {
-      setCodigoOrden(`ORD-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`);
-    }
-  }, [currentOrder, isEditMode]);
-
-  // Auto-completar cantidad de alumnos cuando se selecciona escuela
-  useEffect(() => {
-    if (escuela) {
-      const selectedSchool = activeSchools.find(s => s.id_escuela == escuela);
-      if (selectedSchool) {
-        setCantidadAlumnos(selectedSchool.cantidad_estudiantes || 0);
-      }
-    }
-  }, [escuela, activeSchools]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -221,11 +249,15 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
         observaciones: ''
       };
 
-      console.log('📤 Enviando orden:', orderData);
+      console.log(`${isEditMode ? '🖊️ Actualizando' : '📤 Creando'} orden:`, orderData);
 
-      // Enviar al backend
-      const response = await fetch(`${apiUrl}/api/orden`, {
-        method: 'POST',
+      const url = isEditMode
+        ? `${apiUrl}/api/orden/${currentOrder.id_orden}`
+        : `${apiUrl}/api/orden`;
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -236,17 +268,17 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Error al crear la orden');
+        throw new Error(data.message || 'Error al guardar la orden');
       }
 
-      console.log('✅ Orden creada:', data);
-      alert('✅ Orden creada exitosamente con código: ' + data.codigo_orden);
+      console.log(`✅ Orden ${isEditMode ? 'actualizada' : 'creada'}:`, data);
+      alert(`✅ Orden ${isEditMode ? 'actualizada' : 'creada'} exitosamente`);
       
       onClose();
       onSave(orderData);
 
     } catch (error) {
-      console.error('❌ Error al crear orden:', error);
+      console.error('❌ Error al guardar orden:', error);
       alert('❌ Error: ' + error.message);
     }
   };
@@ -272,7 +304,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     return precioUnitario * cantidad * diasDuracion * cantidadAlumnos;
   };
 
-
   // ✅ CALCULAR TOTAL DE LA ORDEN
   const calcularTotalOrden = () => {
     return menuProducts
@@ -280,22 +311,30 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       .reduce((sum, p) => sum + calcularSubtotal(p), 0);
   };
 
+  if (isLoadingOrder) {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>Cargando datos de la orden...</h2>
+          </div>
+          <div style={{ padding: '40px', textAlign: 'center' }}>
+            <p>Por favor espera mientras cargamos los datos...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2><FontAwesomeIcon icon={faPlus} /> {isEditMode ? 'Editar Orden de Entrega' : 'Nueva Orden de Entrega'}</h2>
-          <span className="breadcrumb">Inicio &gt; Nueva Orden de Entrega</span>
+          <span className="breadcrumb">Inicio &gt; {isEditMode ? 'Editar' : 'Nueva'} Orden de Entrega</span>
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
           
-          {/* --- MENSAJES DE ERROR --- */}
-          {(errorUsers || errorSchools || errorMenus) && (
-            <div className="error-message" style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#fee', borderRadius: '4px', color: '#c00' }}>
-              ⚠️ {errorUsers || errorSchools || errorMenus}
-            </div>
-          )}
-
           {/* --- INFORMACIÓN DE LA ORDEN --- */}
           <div className="form-section">
             <h3>INFORMACIÓN DE LA ORDEN</h3>

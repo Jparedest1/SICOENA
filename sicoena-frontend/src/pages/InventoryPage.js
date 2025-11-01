@@ -255,46 +255,51 @@ const handleSaveProduct = async (productDataFromModal) => {
   };
 
   const handleExportPDF = () => {
-    if (products.length === 0) {
-      alert("No hay datos para exportar.");
-      return;
-    }
+  if (products.length === 0) {
+    alert("No hay datos para exportar.");
+    return;
+  }
 
-    const doc = new jsPDF();
-    doc.text("Reporte de Inventario - SICOENA", 14, 16);
+  const doc = new jsPDF();
+  doc.text("Reporte de Inventario - SICOENA", 14, 16);
 
-    const head = [[
-      'ID', 'Producto', 'Categoría', 'Stock Disp.', 'Stock Min.',
-      'Unidad Med.', 'Precio Uni.', 'Valor Total', 'Bodega', 'Perecedero',
-      'Fec. Venc.', 'Estado'
-    ]];
+  const head = [[
+    'ID', 'Producto', 'Categoría', 'Stock Disp.', 'Stock Min.',
+    'Unidad Med.', 'Precio Uni.', 'Valor Total', 'Bodega', 'Perecedero',
+    'Fec. Venc.', 'Estado'
+  ]];
 
-    const body = products.map(p => [
-      p.id,
-      p.nombre,
-      p.categoria,
-      p.stock_actual,
-      p.stock_min,
-      p.unidad,
-      `Q${Number(p.precio_uni ?? 0).toFixed(2)}`,
-      `Q${Number(p.valor_total ?? 0).toFixed(2)}`,
-      `Bodega ${p.almacen}`,
-      p.perecedero ? 'Sí' : 'No',
-      p.fecha_vencimiento || 'N/A',
-      p.estado
-    ]);
+  const body = products.map(p => [
+    p.id,
+    p.nombre,
+    p.categoria,
+    p.stock_actual,
+    p.stock_min,
+    p.unidad,
+    `Q${Number(p.precio_uni ?? 0).toFixed(2)}`,
+    `Q${Number(p.valor_total ?? 0).toFixed(2)}`,
+    `Bodega ${p.almacen}`,
+    p.perecedero ? 'Sí' : 'No',
+    p.fecha_vencimiento || 'N/A',
+    p.estado
+  ]);
 
-    autoTable(doc, {
-      startY: 22,
-      head,
-      body,
-      theme: 'grid',
-      headStyles: { fillColor: [44, 62, 80] },
-      styles: { fontSize: 8 },
-    });
+  autoTable(doc, {
+    startY: 22,
+    head,
+    body,
+    theme: 'grid',
+    headStyles: { fillColor: [44, 62, 80] },
+    styles: { fontSize: 8 },
+  });
 
-    doc.save(`inventario_sicoena_${new Date().toISOString().slice(0, 10)}.pdf`);
-  };
+  // ✅ ABRIR EN VENTANA EMERGENTE CON TAMAÑO PERSONALIZADO
+  const pdfBlob = doc.output('blob');
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+  
+  // Abrir en ventana emergente de 900x600 pixels
+  window.open(pdfUrl, 'ReporteInventario', 'width=900,height=600,resizable=yes,scrollbars=yes');
+};
 
   const handleExportExcel = async () => {
     if (products.length === 0) {

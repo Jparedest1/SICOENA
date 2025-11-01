@@ -25,13 +25,21 @@ exports.createOrder = async (req, res) => {
     }
 
     try {
-        // Insertar la orden
+        // ✅ INSERTAR LA ORDEN CON FECHA_CREACION EXPLÍCITA
         const sqlOrden = `
             INSERT INTO orden (
-                codigo_orden, id_escuela, id_menu, id_usuario,
-                cantidad_alumnos, dias_duracion, fecha_entrega, 
-                valor_total, observaciones, estado
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDIENTE')
+                codigo_orden, 
+                id_escuela, 
+                id_menu, 
+                id_usuario,
+                cantidad_alumnos, 
+                dias_duracion, 
+                fecha_entrega, 
+                valor_total, 
+                observaciones, 
+                estado,
+                fecha_creacion
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDIENTE', NOW())
         `;
 
         const [resultOrden] = await db.query(sqlOrden, [
@@ -42,13 +50,13 @@ exports.createOrder = async (req, res) => {
             cantidad_alumnos || 0,
             dias_duracion || 1,
             fecha_entrega || null,
-            valor_total || 0,
+            parseFloat(valor_total) || 0,  // ✅ Convertir a número
             observaciones || null
         ]);
 
         const idOrden = resultOrden.insertId;
 
-        // ✅ REGISTRAR MOVIMIENTOS DE SALIDA PARA CADA PRODUCTO
+        // Registrar movimientos de salida para cada producto
         for (const producto of productos) {
             // Insertar en orden_producto
             const sqlProducto = `
@@ -63,7 +71,7 @@ exports.createOrder = async (req, res) => {
                 producto.unidad_medida || 'unidad'
             ]);
 
-            // ✅ REGISTRAR MOVIMIENTO DE SALIDA
+            // Registrar movimiento de salida
             const sqlMovimiento = `
                 INSERT INTO movimiento (
                     id_producto, 
@@ -80,7 +88,7 @@ exports.createOrder = async (req, res) => {
                 `Salida por orden ${codigo_orden}`
             ]);
 
-            // ✅ ACTUALIZAR STOCK DEL PRODUCTO
+            // Actualizar stock del producto
             const sqlUpdateStock = `
                 UPDATE producto 
                 SET stock_disponible = stock_disponible - ? 
@@ -93,10 +101,13 @@ exports.createOrder = async (req, res) => {
             ]);
         }
 
+        console.log(`✅ Orden ${codigo_orden} creada exitosamente con fecha: ${new Date().toISOString()}`);
+
         res.status(201).json({
             message: 'Orden creada exitosamente.',
             id_orden: idOrden,
-            codigo_orden: codigo_orden
+            codigo_orden: codigo_orden,
+            fecha_creacion: new Date().toISOString()
         });
 
     } catch (error) {
@@ -177,17 +188,21 @@ exports.getOrderById = async (req, res) => {
             return res.status(404).json({ message: 'Orden no encontrada.' });
         }
 
-        // Obtener productos de la orden
+        // ✅ OBTENER PRODUCTOS DE LA ORDEN CON PRECIO UNITARIO
         const [productos] = await db.query(`
             SELECT 
                 op.id_producto,
                 p.nombre_producto,
                 op.cantidad,
-                op.unidad_medida
+                op.unidad_medida,
+                p.precio_unitario
             FROM orden_producto op
             INNER JOIN producto p ON op.id_producto = p.id_producto
             WHERE op.id_orden = ?
+            ORDER BY p.nombre_producto ASC
         `, [id]);
+
+        console.log(`📦 Productos de la orden ${id}:`, productos);
 
         res.status(200).json({
             order: orders[0],
@@ -208,30 +223,130 @@ exports.updateOrderStatus = async (req, res) => {
         const { id } = req.params;
         const { estado } = req.body;
 
+        // Estados válidos
         const estadosValidos = ['PENDIENTE', 'EN PROCESO', 'ENTREGADO', 'CANCELADO'];
-        if (!estadosValidos.includes(estado.toUpperCase())) {
+        
+        if (!estado || !estadosValidos.includes(estado.toUpperCase())) {
             return res.status(400).json({ 
-                message: 'Estado inválido.' 
+                message: 'Estado inválido. Estados válidos: PENDIENTE, EN PROCESO, ENTREGADO, CANCELADO' 
             });
         }
 
-        const [result] = await db.query(
-            'UPDATE orden SET estado = ? WHERE id_orden = ?',
-            [estado.toUpperCase(), id]
-        );
+        // Actualizar el estado
+        const sql = `
+            UPDATE orden 
+            SET estado = ? 
+            WHERE id_orden = ?
+        `;
+
+        const [result] = await db.query(sql, [estado.toUpperCase(), id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Orden no encontrada.' });
         }
 
-        res.status(200).json({ 
-            message: 'Estado de orden actualizado exitosamente.' 
+        console.log(`✅ Estado de la orden ${id} actualizado a: ${estado.toUpperCase()}`);
+
+        res.status(200).json({
+            message: `Orden actualizada a estado: ${estado.toUpperCase()}`,
+            id_orden: id,
+            estado: estado.toUpperCase()
+        });
+
+    } catch (error) {
+        console.error("Error al actualizar estado de orden:", error);
+        res.status(500).json({ 
+            message: 'Error interno del servidor al actualizar estado de orden.',
+            error: error.message 
+        });
+    }
+};
+
+exports.updateOrder = async (req, res) => {
+    const { id } = req.params;
+    const { 
+        codigo_orden, 
+        id_escuela, 
+        id_menu, 
+        id_responsable,
+        cantidad_alumnos, 
+        dias_duracion, 
+        fecha_entrega,
+        valor_total,
+        productos,
+        observaciones 
+    } = req.body;
+
+    if (!codigo_orden || !id_escuela || !id_menu || !id_responsable) {
+        return res.status(400).json({ message: 'Campos requeridos faltantes.' });
+    }
+
+    try {
+        // Actualizar la orden
+        const sqlUpdate = `
+            UPDATE orden SET
+                codigo_orden = ?,
+                id_escuela = ?,
+                id_menu = ?,
+                id_usuario = ?,
+                cantidad_alumnos = ?,
+                dias_duracion = ?,
+                fecha_entrega = ?,
+                valor_total = ?,
+                observaciones = ?
+            WHERE id_orden = ?
+        `;
+
+        const [result] = await db.query(sqlUpdate, [
+            codigo_orden,
+            id_escuela,
+            id_menu,
+            id_responsable,
+            cantidad_alumnos || 0,
+            dias_duracion || 1,
+            fecha_entrega || null,
+            valor_total || 0,
+            observaciones || null,
+            id
+        ]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Orden no encontrada.' });
+        }
+
+        // Eliminar productos anteriores
+        await db.query('DELETE FROM orden_producto WHERE id_orden = ?', [id]);
+
+        // Insertar nuevos productos
+        if (productos && productos.length > 0) {
+            for (const producto of productos) {
+                const sqlProducto = `
+                    INSERT INTO orden_producto (id_orden, id_producto, cantidad, unidad_medida)
+                    VALUES (?, ?, ?, ?)
+                `;
+
+                await db.query(sqlProducto, [
+                    id,
+                    producto.id_producto,
+                    producto.cantidad || 1,
+                    producto.unidad_medida || 'unidad'
+                ]);
+            }
+        }
+
+        console.log(`✅ Orden ${id} actualizada exitosamente`);
+
+        res.status(200).json({
+            message: 'Orden actualizada exitosamente.',
+            id_orden: id,
+            codigo_orden: codigo_orden
         });
 
     } catch (error) {
         console.error("Error al actualizar orden:", error);
         res.status(500).json({ 
-            message: 'Error interno del servidor.' 
+            message: 'Error interno del servidor al actualizar orden.',
+            error: error.message 
         });
     }
 };

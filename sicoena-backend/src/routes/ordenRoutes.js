@@ -7,6 +7,8 @@ const router = express.Router();
 
 // Crear nueva orden (sin protección para que funcione desde el modal)
 router.post('/', ordenController.createOrder);
+router.put('/:id', ordenController.updateOrder);
+router.patch('/:id/status', ordenController.updateOrderStatus);
 
 // Obtener todas las órdenes (protegido)
 router.get('/', protect, ordenController.getAllOrders);

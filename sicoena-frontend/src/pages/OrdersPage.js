@@ -3,24 +3,49 @@
 import React, { useState, useEffect } from 'react';
 import './OrdersPage.css';
 import AddEditOrderModal from '../components/AddEditOrderModal';
+import ViewOrderModal from '../components/ViewOrderModal';
+import ChangeOrderStatusModal from '../components/ChangeOrderStatusModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
-
+import { faEdit, faTrash, faPlus, faFilePdf, faEye, faExchangeAlt, faSearch } from '@fortawesome/free-solid-svg-icons';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentOrderToEdit, setCurrentOrderToEdit] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [currentOrderToView, setCurrentOrderToView] = useState(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [currentOrderToChangeStatus, setCurrentOrderToChangeStatus] = useState(null);
+
+  // ✅ NUEVOS ESTADOS PARA FILTROS Y BÚSQUEDA
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterEscuela, setFilterEscuela] = useState('todas');
+  const [filterMenu, setFilterMenu] = useState('todos');
+  const [filterEstado, setFilterEstado] = useState('todos');
+
+  const [escuelas, setEscuelas] = useState([]);
+  const [menus, setMenus] = useState([]);
+  const [isLoadingFilters, setIsLoadingFilters] = useState(false);
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-
+  // Cargar órdenes al montar el componente
   useEffect(() => {
     fetchOrders();
+    fetchFiltersData();
   }, []);
 
+  // ✅ APLICAR FILTROS Y BÚSQUEDA
+  useEffect(() => {
+    applyFilters();
+  }, [orders, searchTerm, filterEscuela, filterMenu, filterEstado]);
+
+  // ✅ FUNCIÓN PARA OBTENER ÓRDENES
   const fetchOrders = async () => {
     setIsLoading(true);
     setError(null);
@@ -40,6 +65,7 @@ const OrdersPage = () => {
 
       const data = await response.json();
       setOrders(data || []);
+      console.log('📋 Órdenes cargadas:', data.length);
     } catch (err) {
       console.error('Error al cargar órdenes:', err);
       setError('No se pudieron cargar las órdenes');
@@ -49,11 +75,97 @@ const OrdersPage = () => {
     }
   };
 
+  // ✅ CARGAR DATOS PARA FILTROS
+  const fetchFiltersData = async () => {
+    setIsLoadingFilters(true);
+    const token = localStorage.getItem('authToken');
+
+    try {
+      // Obtener escuelas
+      const escuelasResponse = await fetch(`${apiUrl}/api/institucion/active`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (escuelasResponse.ok) {
+        const escuelasData = await escuelasResponse.json();
+        setEscuelas(escuelasData.schools || []);
+      }
+
+      // Obtener menús
+      const menusResponse = await fetch(`${apiUrl}/api/producto/active-menus`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (menusResponse.ok) {
+        const menusData = await menusResponse.json();
+        setMenus(menusData.menus || []);
+      }
+    } catch (err) {
+      console.error('Error al cargar datos de filtros:', err);
+    } finally {
+      setIsLoadingFilters(false);
+    }
+  };
+
+  // ✅ APLICAR FILTROS Y BÚSQUEDA
+  const applyFilters = () => {
+    let filtered = orders;
+
+    // Filtrar por búsqueda (código, escuela, menú, responsable)
+    if (searchTerm.trim() !== '') {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(order =>
+        order.codigo_orden?.toLowerCase().includes(search) ||
+        order.nombre_escuela?.toLowerCase().includes(search) ||
+        order.nombre_menu?.toLowerCase().includes(search) ||
+        order.nombre_responsable?.toLowerCase().includes(search)
+      );
+    }
+
+    // Filtrar por escuela
+    if (filterEscuela !== 'todas') {
+      filtered = filtered.filter(order => order.id_escuela === parseInt(filterEscuela));
+    }
+
+    // Filtrar por menú
+    if (filterMenu !== 'todos') {
+      filtered = filtered.filter(order => order.id_menu === parseInt(filterMenu));
+    }
+
+    // Filtrar por estado
+    if (filterEstado !== 'todos') {
+      filtered = filtered.filter(order => order.estado === filterEstado);
+    }
+
+    setFilteredOrders(filtered);
+    console.log(`🔍 Órdenes filtradas: ${filtered.length}/${orders.length}`);
+  };
+
+  // ✅ LIMPIAR FILTROS
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setFilterEscuela('todas');
+    setFilterMenu('todos');
+    setFilterEstado('todos');
+  };
+
+  // ✅ FUNCIÓN PARA VISUALIZAR ORDEN
+  const handleViewOrder = (order) => {
+    setCurrentOrderToView(order);
+    setIsViewModalOpen(true);
+  };
+
+  // ✅ FUNCIÓN PARA CAMBIAR ESTADO
+  const handleChangeStatus = (order) => {
+    setCurrentOrderToChangeStatus(order);
+    setIsStatusModalOpen(true);
+  };
+
+  // ✅ FUNCIÓN PARA EDITAR ORDEN
   const handleEdit = (order) => {
     setCurrentOrderToEdit(order);
     setIsModalOpen(true);
   };
 
+  // ✅ FUNCIÓN PARA CANCELAR ORDEN
   const handleDelete = (orderId) => {
     if (window.confirm('¿Está seguro de que desea cancelar esta orden?')) {
       setOrders(orders.map(order => 
@@ -62,30 +174,107 @@ const OrdersPage = () => {
     }
   };
 
+  // ✅ FUNCIÓN PARA AGREGAR NUEVA ORDEN
   const handleAddNewOrder = () => {
     setCurrentOrderToEdit(null);
     setIsModalOpen(true);
   };
 
-    const handleSaveOrder = (orderData) => {
-    // Recargar las órdenes después de guardar
+  // ✅ FUNCIÓN PARA GUARDAR ORDEN
+  const handleSaveOrder = () => {
     fetchOrders();
     setIsModalOpen(false);
   };
 
-  // --- Statistics Calculations ---
-  const totalOrders = orders.length;
-  const pendingOrders = orders.filter(o => o.estado === 'PENDIENTE').length;
-  const deliveredOrders = orders.filter(o => o.estado === 'ENTREGADO').length;
-  const inProcessOrders = orders.filter(o => o.estado === 'EN PROCESO').length;
-  const totalValue = orders.reduce((sum, o) => sum + (o.valor_total || 0), 0);
+  // ✅ FUNCIÓN PARA MANEJAR CAMBIO DE ESTADO
+  const handleStatusChanged = () => {
+    fetchOrders();
+  };
 
-  // ✅ FUNCIÓN AUXILIAR para obtener la clase CSS del estado (con validación)
+  // ✅ FUNCIÓN PARA EXPORTAR A PDF
+  const handleExportPDF = () => {
+    if (filteredOrders.length === 0) {
+      alert("No hay órdenes para exportar.");
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    doc.text("Reporte de Órdenes de Entrega - SICOENA", 14, 16);
+    
+    doc.setFontSize(10);
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-GT')}`, 14, 24);
+
+    const head = [[
+      'Código', 'Escuela', 'Menú', 'Alumnos', 'Días', 'Valor Total', 'Estado', 'F. Creación', 'F. Entrega'
+    ]];
+
+    const body = filteredOrders.map(order => [
+      order.codigo_orden || '-',
+      order.nombre_escuela || '-',
+      order.nombre_menu || '-',
+      order.cantidad_alumnos || '-',
+      order.dias_duracion ? `${order.dias_duracion}` : '-',
+      `Q${(order.valor_total || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      order.estado || '-',
+      order.fecha_creacion ? new Date(order.fecha_creacion).toLocaleDateString('es-GT') : '-',
+      order.fecha_entrega ? new Date(order.fecha_entrega).toLocaleDateString('es-GT') : '-'
+    ]);
+
+    autoTable(doc, {
+      startY: 30,
+      head,
+      body,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [44, 62, 80],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 10
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        5: { halign: 'right' },
+        0: { halign: 'center' }
+      },
+      margin: { top: 30 },
+    });
+
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Total de Órdenes: ${filteredOrders.length}`, 14, finalY);
+    
+    const totalValor = filteredOrders.reduce((sum, o) => {
+      const valor = parseFloat(o.valor_total) || 0;
+      return sum + valor;
+    }, 0);
+    doc.text(`Valor Total: Q${totalValor.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 14, finalY + 8);
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, 'ReporteOrdenes', 'width=1000,height=700,resizable=yes,scrollbars=yes');
+  };
+
+  // ✅ FUNCIÓN AUXILIAR PARA OBTENER CLASE CSS DEL ESTADO
   const getStatusClass = (estado) => {
-    if (!estado) return 'pending'; // Valor por defecto
+    if (!estado) return 'pendiente';
     return estado.toLowerCase().replace(' ', '-');
   };
 
+  // ✅ ESTADÍSTICAS
+  const totalOrders = filteredOrders.length;
+  const pendingOrders = filteredOrders.filter(o => o.estado === 'PENDIENTE').length;
+  const deliveredOrders = filteredOrders.filter(o => o.estado === 'ENTREGADO').length;
+  const inProcessOrders = filteredOrders.filter(o => o.estado === 'EN PROCESO').length;
+  const totalValue = filteredOrders.reduce((sum, o) => {
+  const valor = parseFloat(o.valor_total) || 0;
+  return sum + valor;
+}, 0);
+
+  // ✅ MOSTRAR CARGANDO
   if (isLoading) {
     return (
       <div className="page-container orders-page">
@@ -100,17 +289,21 @@ const OrdersPage = () => {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1>Gestión de Entregas/Ordenes</h1>
+        <h1>Gestión de Entregas/Órdenes</h1>
         <div className="header-buttons">
           <button className="btn-primary" onClick={handleAddNewOrder}>
             <FontAwesomeIcon icon={faPlus} /> Nueva Orden
           </button>
-          <button className="btn-secondary">Programar Entregas</button>
-          <button className="btn-secondary">Exportar Ordenes</button>
         </div>
       </div>
 
-      {/* --- Statistics Cards --- */}
+      {error && (
+        <div className="error-message" style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#fee', borderRadius: '4px', color: '#c00' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* --- TARJETAS DE ESTADÍSTICAS --- */}
       <div className="stats-cards-container">
         <div className="stat-card-item">
           <span className="stat-value">{totalOrders}</span>
@@ -121,102 +314,202 @@ const OrdersPage = () => {
           <span className="stat-label">Pendientes</span>
         </div>
         <div className="stat-card-item">
-          <span className="stat-value">{deliveredOrders}</span>
-          <span className="stat-label">Entregadas</span>
-        </div>
-        <div className="stat-card-item">
           <span className="stat-value">{inProcessOrders}</span>
           <span className="stat-label">En Proceso</span>
         </div>
         <div className="stat-card-item">
-          <span className="stat-value">12</span> {/* Static for now */}
-          <span className="stat-label">Escuelas Activas</span>
+          <span className="stat-value">{deliveredOrders}</span>
+          <span className="stat-label">Entregadas</span>
         </div>
         <div className="stat-card-item">
-          <span className="stat-value">Q{totalValue.toLocaleString('es-GT')}</span>
-          <span className="stat-label">Valor Total Mes</span>
+          <span className="stat-value">Q{totalValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <span className="stat-label">Valor Total</span>
         </div>
       </div>
 
-      {/* --- Filters Bar --- */}
+      {/* --- BARRA DE BÚSQUEDA Y FILTROS --- */}
       <div className="filters-bar">
-        <input type="text" placeholder="Buscar orden por código, escuela o responsable..." className="search-input" />
-        <select><option>Todas las escuelas</option></select>
-        <select><option>Todos los estados</option></select>
-        <select><option>Todas las fechas</option></select>
-        <button className="btn-primary">Aplicar Filtro</button>
-        <button className="btn-tertiary">Limpiar</button>
+        <div className="search-input-wrapper">
+          <FontAwesomeIcon icon={faSearch} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Buscar por código, escuela, menú o responsable..."
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <select 
+          value={filterEscuela} 
+          onChange={(e) => setFilterEscuela(e.target.value)}
+          disabled={isLoadingFilters}
+        >
+          <option value="todas">Todas las Escuelas</option>
+          {escuelas.map(escuela => (
+            <option key={escuela.id_escuela} value={escuela.id_escuela}>
+              {escuela.nombre_escuela}
+            </option>
+          ))}
+        </select>
+
+        <select 
+          value={filterMenu} 
+          onChange={(e) => setFilterMenu(e.target.value)}
+          disabled={isLoadingFilters}
+        >
+          <option value="todos">Todos los Menús</option>
+          {menus.map(menu => (
+            <option key={menu.id_menu} value={menu.id_menu}>
+              {menu.nombre}
+            </option>
+          ))}
+        </select>
+
+        <select 
+          value={filterEstado} 
+          onChange={(e) => setFilterEstado(e.target.value)}
+        >
+          <option value="todos">Todos los Estados</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="EN PROCESO">En Proceso</option>
+          <option value="ENTREGADO">Entregado</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+
+        <button className="btn-tertiary" onClick={handleClearFilters}>
+          Limpiar Filtros
+        </button>
       </div>
 
-      {/* --- Orders Table --- */}
+      {/* --- TABLA DE ÓRDENES --- */}
       <div className="table-container">
         <div className="table-header">
-            <span>Lista de Ordenes de Entrega</span>
-        </div>
-        <table>
-  <thead>
-    <tr>
-      <th><input type="checkbox" /></th>
-      <th>Código</th>
-      <th>Escuela</th>
-      <th>Menú</th>
-      <th>Alumnos</th>
-      <th>Duración</th>
-      <th>Valor Total</th>
-      <th>Estado</th>
-      <th>F. Creación</th>
-      <th>F. Entrega</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {orders.map((order) => (
-      <tr key={order.id_orden}>
-        <td><input type="checkbox" /></td>
-        <td><strong>{order.codigo_orden || '-'}</strong></td>
-        <td>{order.nombre_escuela || '-'}</td>
-        <td>{order.nombre_menu || '-'}</td>
-        <td>{order.cantidad_alumnos || '-'}</td>
-        <td>{order.dias_duracion ? `${order.dias_duracion} días` : '-'}</td>
-        <td>Q{(order.valor_total || 0).toLocaleString('es-GT', { minimumFractionDigits: 2 })}</td>
-        <td>
-          <span className={`status-badge ${getStatusClass(order.estado)}`}>
-            {order.estado || 'SIN ESTADO'}
+          <span>
+            Lista de Órdenes de Entrega 
+            {filteredOrders.length !== orders.length && (
+              <span className="filter-info"> ({filteredOrders.length} de {orders.length})</span>
+            )}
           </span>
-        </td>
-        <td>
-          {order.fecha_creacion 
-            ? new Date(order.fecha_creacion).toLocaleDateString('es-GT')
-            : '-'
-          }
-        </td>
-        <td>
-          {order.fecha_entrega 
-            ? new Date(order.fecha_entrega).toLocaleDateString('es-GT')
-            : '-'
-          }
-        </td>
-        <td>
-          <div className="action-buttons">
-            <button className="action-btn icon-edit" title="Editar" onClick={() => handleEdit(order)}>
-              <FontAwesomeIcon icon={faEdit} />
-            </button>
-            <button className="action-btn icon-delete" title="Cancelar Orden" onClick={() => handleDelete(order.id_orden)}>
-              <FontAwesomeIcon icon={faTrash} />
+          <div className="table-actions">
+            <button className="btn-tertiary" onClick={handleExportPDF} disabled={filteredOrders.length === 0}>
+              <FontAwesomeIcon icon={faFilePdf} /> Exportar Lista
             </button>
           </div>
-        </td>
-      </tr>
-    ))}
-  </tbody>
-</table>
+        </div>
+        
+        {filteredOrders.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+            {orders.length === 0 
+              ? 'No hay órdenes registradas. Crea una nueva orden para comenzar.'
+              : 'No se encontraron órdenes con los filtros seleccionados.'
+            }
+          </p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" /></th>
+                <th>Código</th>
+                <th>Escuela</th>
+                <th>Menú</th>
+                <th>Alumnos</th>
+                <th>Duración</th>
+                <th>Valor Total</th>
+                <th>Estado</th>
+                <th>F. Creación</th>
+                <th>F. Entrega</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrders.map((order) => (
+                <tr key={order.id_orden}>
+                  <td><input type="checkbox" /></td>
+                  <td><strong>{order.codigo_orden || '-'}</strong></td>
+                  <td>{order.nombre_escuela || '-'}</td>
+                  <td>{order.nombre_menu || '-'}</td>
+                  <td>{order.cantidad_alumnos || '-'}</td>
+                  <td>{order.dias_duracion ? `${order.dias_duracion} días` : '-'}</td>
+                  <td>Q{parseFloat(order.valor_total || 0).toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td>
+                    <span className={`status-badge ${getStatusClass(order.estado)}`}>
+                      {order.estado || 'SIN ESTADO'}
+                    </span>
+                  </td>
+                  <td>
+                    {order.fecha_creacion 
+                      ? new Date(order.fecha_creacion).toLocaleDateString('es-GT')
+                      : '-'
+                    }
+                  </td>
+                  <td>
+                    {order.fecha_entrega 
+                      ? new Date(order.fecha_entrega).toLocaleDateString('es-GT')
+                      : '-'
+                    }
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        className="action-btn icon-view" 
+                        title="Visualizar" 
+                        onClick={() => handleViewOrder(order)}
+                      >
+                        <FontAwesomeIcon icon={faEye} />
+                      </button>
+                      <button 
+                        className="action-btn icon-status" 
+                        title="Cambiar Estado" 
+                        onClick={() => handleChangeStatus(order)}
+                      >
+                        <FontAwesomeIcon icon={faExchangeAlt} />
+                      </button>
+                      <button 
+                        className="action-btn icon-edit" 
+                        title="Editar" 
+                        onClick={() => handleEdit(order)}
+                      >
+                        <FontAwesomeIcon icon={faEdit} />
+                      </button>
+                      <button 
+                        className="action-btn icon-delete" 
+                        title="Cancelar Orden" 
+                        onClick={() => handleDelete(order.id_orden)}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
+      {/* --- MODALES --- */}
       {isModalOpen && (
         <AddEditOrderModal
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveOrder}
           currentOrder={currentOrderToEdit}
+        />
+      )}
+
+      {isViewModalOpen && (
+        <ViewOrderModal
+          onClose={() => setIsViewModalOpen(false)}
+          orderId={currentOrderToView?.id_orden}
+          orderData={currentOrderToView}
+        />
+      )}
+
+      {isStatusModalOpen && (
+        <ChangeOrderStatusModal
+          onClose={() => setIsStatusModalOpen(false)}
+          onStatusChanged={handleStatusChanged}
+          order={currentOrderToChangeStatus}
         />
       )}
     </div>

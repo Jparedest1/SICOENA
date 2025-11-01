@@ -44,11 +44,38 @@ exports.protect = async (req, res, next) => {
 };
 
 // Middleware para restringir acceso por rol (sin cambios)
-exports.restrictTo = (...roles) => {
-    return (req, res, next) => {
-        if (!req.user || !roles.includes(req.user.rol)) { // Añade chequeo de req.user por si acaso
-            return res.status(403).json({ message: 'No tienes permiso para realizar esta acción.' });
-        }
-        next();
-    };
+const authMiddleware = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ message: 'Token no proporcionado' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Token inválido' });
+  }
 };
+
+const roleMiddleware = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Usuario no autenticado' });
+    }
+
+    if (!allowedRoles.includes(req.user.rol)) {
+      return res.status(403).json({ 
+        message: 'Acceso denegado. Rol insuficiente.',
+        userRole: req.user.rol,
+        requiredRoles: allowedRoles
+      });
+    }
+
+    next();
+  };
+};
+
+module.exports = { authMiddleware, roleMiddleware };
