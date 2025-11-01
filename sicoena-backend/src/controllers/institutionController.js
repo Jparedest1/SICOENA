@@ -1,8 +1,8 @@
-// src/controllers/schoolController.js
+// src/controllers/institutionController.js
+
 const db = require('../config/db');
 
-// --- Obtener Todas las Escuelas (con filtros) ---
-exports.getAllSchools = async (req, res) => {
+const getAllSchools = async (req, res) => {
     try {
         const { search, ubicacion, estado } = req.query;
 
@@ -16,25 +16,21 @@ exports.getAllSchools = async (req, res) => {
         `;
         const params = [];
 
-        // Filtro de Estado (similar a usuarios)
         if (estado && (estado.toUpperCase() === 'ACTIVA' || estado.toUpperCase() === 'INACTIVA')) {
              sql += ` AND estado = ?`;
              params.push(estado.toUpperCase());
         } else {
-             sql += ` AND estado = 'ACTIVA'`; // Default a activas
+             sql += ` AND estado = 'ACTIVA'`;
         }
         
-        // Filtro de Búsqueda (ajusta columnas según necesites)
         if (search) {
             sql += ` AND (nombre_escuela LIKE ? OR codigo_escuela LIKE ? OR direccion LIKE ?)`;
             const searchTermLike = `%${search}%`;
             params.push(searchTermLike, searchTermLike, searchTermLike);
         }
-        // Filtro de Tipo
 
-        // Filtro de Ubicación (ej: por municipio)
         if (ubicacion && ubicacion !== 'todos') {
-             sql += ` AND municipio = ?`; // O busca en 'direccion' con LIKE si prefieres
+             sql += ` AND municipio = ?`;
              params.push(ubicacion);
         }
 
@@ -49,7 +45,7 @@ exports.getAllSchools = async (req, res) => {
     }
 };
 
-exports.getActiveSchools = async (req, res) => {
+const getActiveSchools = async (req, res) => {
     try {
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.set('Pragma', 'no-cache');
@@ -74,17 +70,15 @@ exports.getActiveSchools = async (req, res) => {
         });
     }
 };
-// --- Crear Escuela ---
-exports.createSchool = async (req, res) => {
-    // Extrae todos los campos de tu tabla 'escuela' desde req.body
+
+const createSchool = async (req, res) => {
     const { 
         nombre_escuela, codigo_escuela, direccion, telefono, correo, 
         municipio, departamento, director, cantidad_estudiantes, 
         observaciones, estado 
     } = req.body;
 
-    // Validación básica (añade más según necesites)
-     if (!nombre_escuela || !codigo_escuela) {
+    if (!nombre_escuela || !codigo_escuela) {
         return res.status(400).json({ message: 'Nombre y código son requeridos.' });
     }
 
@@ -103,19 +97,21 @@ exports.createSchool = async (req, res) => {
         ];
         
         const [result] = await db.query(sql, params);
-        res.status(201).json({ id_escuela: result.insertId, ...req.body }); // Devuelve el ID y los datos enviados
+        res.status(201).json({ 
+            id_escuela: result.insertId, 
+            ...req.body 
+        });
 
     } catch (error) {
         console.error("Error al crear escuela:", error);
-         if (error.code === 'ER_DUP_ENTRY') { // Si tienes unique keys como codigo_infraestructura o correo
+         if (error.code === 'ER_DUP_ENTRY') {
              return res.status(409).json({ message: 'El código o correo ya existe.' });
         }
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
 };
 
-// --- Actualizar Escuela ---
-exports.updateSchool = async (req, res) => {
+const updateSchool = async (req, res) => {
     const { id } = req.params;
      const { 
         nombre_escuela, codigo_escuela, direccion, telefono, correo, 
@@ -160,9 +156,7 @@ exports.updateSchool = async (req, res) => {
     }
 };
 
-
-// --- Actualizar Estado de Escuela ---
-exports.updateSchoolStatus = async (req, res) => {
+const updateSchoolStatus = async (req, res) => {
     const { id } = req.params;
     const { estado } = req.body;
 
@@ -183,4 +177,12 @@ exports.updateSchoolStatus = async (req, res) => {
         console.error("Error al actualizar estado de escuela:", error);
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
+};
+
+module.exports = {
+  getAllSchools,
+  getActiveSchools,
+  createSchool,
+  updateSchool,
+  updateSchoolStatus
 };

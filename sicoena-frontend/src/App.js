@@ -1,96 +1,292 @@
+// src/App.js
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
-import { Tooltip } from 'react-tooltip';
-import 'react-tooltip/dist/react-tooltip.css';
-import Header from './components/Header';
 import Sidebar from './components/Sidebar';
+import Header from './components/Header';
+import './App.css';
+
+// ✅ Importar TODAS las páginas
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import UsersPage from './pages/UsersPage';
-import InstitutionsPage from './pages/InstitutionsPage';
+import ReportsPage from './pages/ReportsPage';
 import InventoryPage from './pages/InventoryPage';
 import OrdersPage from './pages/OrdersPage';
-import ReportsPage from './pages/ReportsPage';
-import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
+import UsersPage from './pages/UsersPage';
+import InstitutionsPage from './pages/InstitutionsPage';
+import SettingsPage from './pages/SettingsPage';
 import BackupsPage from './pages/BackupsPage';
 import LogsPage from './pages/LogsPage';
 
-import './App.css'; 
+// ✅ Componente envolvente que contiene Header y Sidebar
+const AppLayout = ({ children, userRole, userInfo, onLogout }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // El estado del sidebar sigue viviendo aquí
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('fakeAuthToken');
-    if (token) {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  const handleLogin = () => {
-    localStorage.setItem('fakeAuthToken', 'un-token-falso-de-prueba');
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('fakeAuthToken');
-    setIsLoggedIn(false);
-  };
-  
-  // La función de toggle sigue viviendo aquí
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+  const handleToggleSidebar = () => {
+    console.log('🔄 Toggle Sidebar:', !sidebarOpen);
+    setSidebarOpen(!sidebarOpen);
   };
 
   return (
-    <Router>
-      <Tooltip id="my-tooltip" variant="light" placement="bottom" offset={10} style={{ boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)' }}/>
-      {!isLoggedIn ? (
-        // --- SIN LOGUEAR ---
-        <Routes>
-          <Route path="/login" element={<LoginPage onLoginSuccess={handleLogin} />} />
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
-      ) : (
-        // --- SÍ LOGUEADO ---
-        // Usamos un Fragment (<>) para renderizar Header y el layout principal
-        <>
-          {/* 1. Renderiza el Header y pásale las funciones */}
-          <Header onLogout={handleLogout} toggleSidebar={toggleSidebar} />
+    <div className="app-layout-container">
+      <Header 
+        userInfo={userInfo} 
+        onLogout={onLogout}
+        toggleSidebar={handleToggleSidebar}
+      />
+      
+      <div className="app-layout-content">
+        <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : 'closed'}`}>
+          {sidebarOpen && (
+            <Sidebar 
+              userRole={userRole} 
+              userInfo={userInfo} 
+              onLogout={onLogout}
+            />
+          )}
+        </div>
+        
+        <div className="page-content">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const App = () => {
+  const [userRole, setUserRole] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const getUserRole = () => {
+      try {
+        const userInfoData = localStorage.getItem('userInfo');
+        
+        if (userInfoData) {
+          const user = JSON.parse(userInfoData);
+          // ✅ Normalizar rol: convertir a mayúsculas y eliminar espacios
+          const normalizedRole = (user.rol || 'USUARIO')
+            .toUpperCase()
+            .trim();
           
-          {/* 2. El layout principal ahora se llama 'app-main-layout' */}
-          <div 
-            className={isSidebarOpen ? "app-main-layout" : "app-main-layout sidebar-closed"}
-          >
-            {/* 3. El Sidebar ya NO necesita el prop isSidebarOpen */}
-            <Sidebar onLogout={handleLogout} />
-            
-            <main className="content-area">
-              {/* 4. ¡El botón de toggle ya NO va aquí! */}
-              <Routes>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                {/* A medida que crees cada página, descomenta su import y su ruta */}
-                <Route path="/usuarios" element={<UsersPage />} />
-                <Route path="/instituciones" element={<InstitutionsPage />} />
-                <Route path="/inventario" element={<InventoryPage />} />
-                <Route path="/ordenes" element={<OrdersPage />} />
-                <Route path="/reportes" element={<ReportsPage />} />
-                <Route path="/configuracion" element={<SettingsPage />} />
-                <Route path="/ayuda" element={<HelpPage />} />
-                <Route path="/respaldos" element={<BackupsPage />} />
-                <Route path="/logs" element={<LogsPage />} />
-                <Route path="*" element={<Navigate to="/dashboard" />} />
-              </Routes>
-            </main>
-          </div>
-        </>
-      )}
+          console.log('👤 Usuario cargado:', { 
+            email: user.email, 
+            nombres: user.nombres,
+            rolOriginal: user.rol,
+            rolNormalizado: normalizedRole
+          });
+          
+          setUserRole(normalizedRole);
+          setUserInfo(user);
+        } else {
+          setUserRole(null);
+          setUserInfo(null);
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error obteniendo rol del usuario:', error);
+        setUserRole(null);
+        setUserInfo(null);
+        setIsLoading(false);
+      }
+    };
+
+    getUserRole();
+  }, [refreshKey]);
+
+  const handleLoginSuccess = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userInfo');
+    localStorage.removeItem('userData');
+    setUserRole(null);
+    setUserInfo(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Cargando aplicación...
+      </div>
+    );
+  }
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
+        
+        {/* ✅ DASHBOARD - Acceso: Admin + Usuario */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR', 'USUARIO']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <DashboardPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ REPORTES - Acceso: Admin + Usuario */}
+        <Route 
+          path="/reportes" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR', 'USUARIO']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <ReportsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ AYUDA - Acceso: Admin + Usuario */}
+        <Route 
+          path="/ayuda" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR', 'USUARIO']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <HelpPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ INVENTARIO - Acceso: Solo Admin */}
+        <Route 
+          path="/inventario" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <InventoryPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ ÓRDENES - Acceso: Solo Admin */}
+        <Route 
+          path="/ordenes" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <OrdersPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ USUARIOS - Acceso: Solo Admin */}
+        <Route 
+          path="/usuario" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <UsersPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ INSTITUCIONES - Acceso: Solo Admin */}
+        <Route 
+          path="/institucion" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <InstitutionsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ CONFIGURACIÓN - Acceso: Solo Admin */}
+        <Route 
+          path="/configuracion" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <SettingsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ RESPALDOS - Acceso: Solo Admin */}
+        <Route 
+          path="/respaldos" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <BackupsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* ✅ LOGS DEL SISTEMA - Acceso: Solo Admin */}
+        <Route 
+          path="/logs" 
+          element={
+            <ProtectedRoute 
+              allowedRoles={['ADMINISTRADOR']} 
+              userRole={userRole}
+            >
+              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
+                <LogsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Ruta por defecto */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
     </Router>
   );
-}
+};
 
 export default App;

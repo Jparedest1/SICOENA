@@ -8,7 +8,21 @@ const ProtectedRoute = ({ children, allowedRoles, userRole }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(userRole)) {
+  // ✅ Normalizar ambos a mayúsculas para comparación
+  const normalizedUserRole = (userRole || '').toUpperCase().trim();
+  const normalizedAllowedRoles = (allowedRoles || []).map(role => 
+    (role || '').toUpperCase().trim()
+  );
+
+  console.log('🔐 Verificación de acceso:', {
+    userRole: userRole,
+    normalizedUserRole: normalizedUserRole,
+    allowedRoles: allowedRoles,
+    normalizedAllowedRoles: normalizedAllowedRoles,
+    hasAccess: normalizedAllowedRoles.includes(normalizedUserRole)
+  });
+
+  if (!normalizedAllowedRoles.includes(normalizedUserRole)) {
     return (
       <div style={{
         display: 'flex',
@@ -28,10 +42,13 @@ const ProtectedRoute = ({ children, allowedRoles, userRole }) => {
         }}>
           <h1 style={{ color: '#dc3545', marginTop: 0 }}>⛔ Acceso Denegado</h1>
           <p style={{ fontSize: '16px', color: '#666' }}>
-            No tienes permisos para acceder a este módulo.
+            Rol insuficiente.
           </p>
           <p style={{ fontSize: '14px', color: '#999' }}>
             Tu rol: <strong>{userRole}</strong>
+          </p>
+          <p style={{ fontSize: '12px', color: '#bbb' }}>
+            Roles permitidos: <strong>{normalizedAllowedRoles.join(', ')}</strong>
           </p>
           <a 
             href="/dashboard" 

@@ -1,13 +1,22 @@
+// src/routes/movementRoutes.js
+
 const express = require('express');
-const movementController = require('../controllers/movementController');
-const { protect } = require('../middleware/authMiddleware');
-
 const router = express.Router();
+const { authMiddleware } = require('../middleware/authMiddleware');
+const movementController = require('../controllers/movementController');
 
-router.get('/hoy', protect, movementController.getMovementsToday);
+router.get('/', authMiddleware, movementController.getAllMovements);
 
-// Otras rutas...
-router.get('/', protect, movementController.getMovementHistory);
-router.post('/', protect, movementController.createMovement);
+// Obtener movimiento por ID
+router.get('/:id', authMiddleware, movementController.getMovementById);
+
+// Crear movimiento
+router.post('/', authMiddleware, movementController.createMovement);
+
+// Actualizar movimiento
+router.put('/:id', authMiddleware, movementController.updateMovement);
+
+// Eliminar movimiento
+router.delete('/:id', authMiddleware, movementController.deleteMovement);
 
 module.exports = router;

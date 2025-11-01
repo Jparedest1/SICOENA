@@ -98,10 +98,10 @@ const [stats, setStats] = useState({
 
       {/* --- Sección de Acciones Rápidas (sin cambios en la lógica) --- */}
       <div className="quick-actions-grid">
-        <Link to="/usuarios" className="action-link"> {/* Corregido a /usuario */}
+        <Link to="/usuario" className="action-link"> {/* Corregido a /usuario */}
           <ActionCard title="Usuarios" icon={faUserPlus} />
         </Link>
-        <Link to="/instituciones" className="action-link">
+        <Link to="/institucion" className="action-link">
           <ActionCard title="Instituciones" icon={faBuilding} />
         </Link>
         <Link to="/inventario" className="action-link">

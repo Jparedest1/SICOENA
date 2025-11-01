@@ -1,23 +1,21 @@
-// src/routes/userRoutes.js
 const express = require('express');
-const userController = require('../controllers/userController');
-const { protect, restrictTo } = require('../middleware/authMiddleware');
-
 const router = express.Router();
+const { authMiddleware, roleMiddleware } = require('../middleware/authMiddleware');
+const userController = require('../controllers/userController');
 
-// ✅ PRIMERO - Ruta específica SIN protección (para el formulario de órdenes)
-router.get('/active', userController.getActiveUsers);
+// ✅ Obtener todos los usuarios (Solo ADMINISTRADOR)
+router.get('/', authMiddleware, roleMiddleware(['ADMINISTRADOR']), userController.getAllUsers);
 
-// ✅ DESPUÉS - Rutas genéricas CON protección
-router.get('/', protect, userController.getAllUsers);
+// ✅ Obtener usuario por ID
+router.get('/:id', authMiddleware, userController.getUserById);
 
-// Ruta POST para crear un usuario
-router.post('/', protect, restrictTo('Administrador'), userController.createUser);
+// ✅ Crear usuario (Solo ADMINISTRADOR)
+router.post('/', authMiddleware, roleMiddleware(['ADMINISTRADOR']), userController.createUser);
 
-// Ruta PUT para actualizar (editar) usuario
-router.put('/:id', protect, restrictTo('Administrador'), userController.updateUser); 
+// ✅ Actualizar usuario
+router.put('/:id', authMiddleware, userController.updateUser);
 
-// Ruta PUT para actualizar solo el estado (soft delete)
-router.put('/:userId/status', protect, restrictTo('Administrador'), userController.updateUserStatus);
+// ✅ Eliminar usuario (Solo ADMINISTRADOR)
+router.delete('/:id', authMiddleware, roleMiddleware(['ADMINISTRADOR']), userController.deleteUser);
 
 module.exports = router;

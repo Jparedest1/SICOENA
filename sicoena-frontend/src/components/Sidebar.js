@@ -26,11 +26,11 @@ const Sidebar = ({ onLogout }) => {
           <FontAwesomeIcon icon={faTachometerAlt} className="sidebar-icon" /> Dashboard
         </NavLink></li>
         
-        <li><NavLink to="/usuarios" className={({isActive}) => isActive ? 'active' : ''}>
+        <li><NavLink to="/usuario" className={({isActive}) => isActive ? 'active' : ''}>
           <FontAwesomeIcon icon={faUsers} className="sidebar-icon" /> Gestión de Usuarios
         </NavLink></li>
 
-        <li><NavLink to="/instituciones" className={({isActive}) => isActive ? 'active' : ''}>
+        <li><NavLink to="/institucion" className={({isActive}) => isActive ? 'active' : ''}>
           <FontAwesomeIcon icon={faBuilding} className="sidebar-icon" /> Gestión de Instituciones
         </NavLink></li>
 

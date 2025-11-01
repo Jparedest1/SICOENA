@@ -1,16 +1,61 @@
-import React, { useState } from 'react';
+// src/pages/LoginPage.js
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
 import sicoenaLogo from '../assets/logo-sicoena.png'; 
 
-// Define your backend API base URL
-const API_URL = 'http://localhost:5000/api'; 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+console.log('🔗 API URL:', API_URL);
 
 const LoginPage = ({ onLoginSuccess }) => {
-  const [usuario, setUsuario] = useState(''); // Corresponds to 'email' in backend
+  const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // To show loading state
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // ✅ NO hacer fetch al cargar el componente
+  useEffect(() => {
+    console.log('📄 LoginPage montado');
+    
+    // Solo verificar si ya hay sesión activa
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
+      console.log('✅ Sesión activa detectada, redirigiendo...');
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
+  /**
+   * ✅ Función auxiliar para guardar datos del usuario
+   */
+  const saveUserData = (data) => {
+    try {
+      localStorage.setItem('authToken', data.token);
+      
+      localStorage.setItem('userInfo', JSON.stringify({
+        id_usuario: data.user?.id_usuario || data.user?.id,
+        nombres: data.user?.nombres || data.user?.name,
+        email: data.user?.email,
+        rol: data.user?.rol || 'USUARIO'
+      }));
+
+      localStorage.setItem('userData', JSON.stringify(data.user));
+
+      console.log('✅ Usuario logueado exitosamente:', {
+        email: data.user?.email,
+        rol: data.user?.rol || 'USUARIO'
+      });
+
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('❌ Error guardando datos de usuario:', err);
+      setError('Error guardando datos. Intente de nuevo.');
+    }
+  };
 
   /**
    * Handles standard form login
@@ -21,66 +66,96 @@ const LoginPage = ({ onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
+      console.log('🔐 Iniciando login con:', { email: usuario });
+      
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: usuario, password: contrasena }), // Send email and password
+        credentials: 'include', // ✅ Incluir cookies/credenciales
+        body: JSON.stringify({ email: usuario, password: contrasena }),
       });
 
-      const data = await response.json();
+      console.log('📡 Respuesta del servidor - Status:', response.status);
 
       if (!response.ok) {
-        // Handle errors from the backend (like invalid credentials)
-        throw new Error(data.message || 'Error al iniciar sesión.');
+        let errorMessage = 'Error al iniciar sesión';
+        
+        try {
+          const data = await response.json();
+          errorMessage = data.message || errorMessage;
+        } catch (e) {
+          console.error('❌ No se pudo leer respuesta JSON:', e);
+          errorMessage = `Error ${response.status}: ${response.statusText}`;
+        }
+        
+        throw new Error(errorMessage);
       }
 
-      // Login successful, backend sends back a token
-      localStorage.setItem('authToken', data.token); // Store the token
-      localStorage.setItem('userData', JSON.stringify(data.user)); // Store basic user data (optional)
-      onLoginSuccess(); // Notify App.js to update state and redirect
+      const data = await response.json();
+      console.log('✅ Login exitoso:', data);
+
+      saveUserData(data);
+      onLoginSuccess?.();
 
     } catch (err) {
-      setError(err.message);
+      console.error('❌ Error en login:', err);
+      
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        setError('❌ No se pudo conectar al servidor. Verifica que el backend esté corriendo en http://localhost:5000');
+      } else {
+        setError(err.message || 'Error desconocido al iniciar sesión');
+      }
     } finally {
-      setIsLoading(false); // Stop loading indicator
+      setIsLoading(false);
     }
   };
 
   /**
-   * Handles successful Google login (sends Google token to backend)
+   * Handles successful Google login
    */
-const handleGoogleSuccess = async (credentialResponse) => {
+  const handleGoogleSuccess = async (credentialResponse) => {
     setError(null);
     setIsLoading(true);
     
     try {
+      console.log('🔐 Iniciando login con Google...');
+      
       const response = await fetch(`${API_URL}/auth/google/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // ✅ Incluir cookies/credenciales
         body: JSON.stringify({ token: credentialResponse.credential }),
       });
 
-      const data = await response.json(); // Intenta leer el JSON incluso si hay error
+      console.log('📡 Respuesta de Google - Status:', response.status);
 
-      if (!response.ok) {
-        // --- AQUÍ MANEJA EL ERROR ---
-        // Si el backend envió un 403 con el mensaje específico, 'data.message' lo contendrá
-        throw new Error(data.message || `Error ${response.status}: No se pudo iniciar sesión con Google.`); 
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error(`No se pudo leer la respuesta del servidor: ${response.status}`);
       }
 
-      // Si la respuesta es OK (200), procede como antes
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('userData', JSON.stringify(data.user));
-      onLoginSuccess();
+      if (!response.ok) {
+        throw new Error(data.message || `Error ${response.status}: No se pudo iniciar sesión con Google.`);
+      }
+
+      console.log('✅ Login Google exitoso:', data);
+      saveUserData(data);
+      onLoginSuccess?.();
 
     } catch (err) {
-      // El mensaje de error (incluyendo el "Solicite acceso...") se mostrará
-      setError(err.message); 
-      console.error('Error en login Google:', err);
+      console.error('❌ Error en login Google:', err);
+      
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        setError('❌ No se pudo conectar al servidor.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -90,8 +165,8 @@ const handleGoogleSuccess = async (credentialResponse) => {
    * Handles Google login errors
    */
   const handleGoogleError = () => {
-    setError('El inicio de sesión con Google falló. Por favor, intente de nuevo.');
-    console.error('Login de Google fallido');
+    setError('❌ El inicio de sesión con Google falló. Por favor, intente de nuevo.');
+    console.error('Google login error');
   };
 
   return (
@@ -108,14 +183,21 @@ const handleGoogleSuccess = async (credentialResponse) => {
 
         {/* --- Error Message --- */}
         {error && (
-          <div className="login-error-message">
+          <div className="login-error-message" style={{
+            backgroundColor: '#fee',
+            color: '#c00',
+            padding: '12px',
+            borderRadius: '4px',
+            marginBottom: '15px',
+            border: '1px solid #fcc',
+            fontSize: '14px'
+          }}>
             {error}
           </div>
         )}
 
         {/* --- Standard Form --- */}
         <form onSubmit={handleLogin}>
-          {/* ... (input fields for usuario/email and contrasena) ... */}
           <div className="input-group">
             <label>Usuario (Email)</label>
             <input 
@@ -124,7 +206,7 @@ const handleGoogleSuccess = async (credentialResponse) => {
               value={usuario}
               onChange={(e) => setUsuario(e.target.value)} 
               required
-              disabled={isLoading} // Disable fields while loading
+              disabled={isLoading}
             />
           </div>
           <div className="input-group">
@@ -139,7 +221,7 @@ const handleGoogleSuccess = async (credentialResponse) => {
             />
           </div>
           <button type="submit" className="login-button" disabled={isLoading}>
-            {isLoading ? 'Ingresando...' : 'Ingresar al Sistema'}
+            {isLoading ? '⏳ Ingresando...' : '✓ Ingresar al Sistema'}
           </button>
           <a href="#" className="forgot-password">¿Olvidó su contraseña?</a>
         </form>

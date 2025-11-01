@@ -176,3 +176,56 @@ exports.getMovementHistory = async (req, res) => {
         });
     }
 };
+
+const getAllMovements = async (req, res) => {
+  try {
+    // Tu lógica aquí
+    res.json({ message: 'Get all movements' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getMovementById = async (req, res) => {
+  try {
+    // Tu lógica aquí
+    res.json({ message: 'Get movement by ID' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const createMovement = async (req, res) => {
+  try {
+    // Tu lógica aquí
+    res.json({ message: 'Create movement' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateMovement = async (req, res) => {
+  try {
+    // Tu lógica aquí
+    res.json({ message: 'Update movement' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteMovement = async (req, res) => {
+  try {
+    // Tu lógica aquí
+    res.json({ message: 'Delete movement' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  getAllMovements,
+  getMovementById,
+  createMovement,
+  updateMovement,
+  deleteMovement
+};
