@@ -113,7 +113,7 @@ const [stats, setStats] = useState({
         <Link to="/reportes" className="action-link">
           <ActionCard title="Generar Reporte" icon={faFileAlt} />
         </Link>
-        <Link to="/alertas" className="action-link"> {/* Asegúrate de tener esta ruta si es necesaria */}
+        <Link to="/inventario" className="action-link"> {/* Asegúrate de tener esta ruta si es necesaria */}
           <ActionCard title="Ver Alertas" icon={faExclamationTriangle} />
         </Link>
       </div>

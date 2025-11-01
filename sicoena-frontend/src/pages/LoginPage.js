@@ -60,57 +60,40 @@ const LoginPage = ({ onLoginSuccess }) => {
   /**
    * Handles standard form login
    */
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-    
-    try {
-      console.log('🔐 Iniciando login con:', { email: usuario });
-      
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // ✅ Incluir cookies/credenciales
-        body: JSON.stringify({ email: usuario, password: contrasena }),
-      });
+  const handleLogin = async (email, password) => {
+  try {
+    const response = await fetch('http://localhost:5000/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
 
-      console.log('📡 Respuesta del servidor - Status:', response.status);
+    const data = await response.json();
 
-      if (!response.ok) {
-        let errorMessage = 'Error al iniciar sesión';
-        
-        try {
-          const data = await response.json();
-          errorMessage = data.message || errorMessage;
-        } catch (e) {
-          console.error('❌ No se pudo leer respuesta JSON:', e);
-          errorMessage = `Error ${response.status}: ${response.statusText}`;
-        }
-        
-        throw new Error(errorMessage);
-      }
-
-      const data = await response.json();
-      console.log('✅ Login exitoso:', data);
-
-      saveUserData(data);
-      onLoginSuccess?.();
-
-    } catch (err) {
-      console.error('❌ Error en login:', err);
-      
-      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
-        setError('❌ No se pudo conectar al servidor. Verifica que el backend esté corriendo en http://localhost:5000');
-      } else {
-        setError(err.message || 'Error desconocido al iniciar sesión');
-      }
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error(data.message);
     }
-  };
+
+    // ✅ Guardar token
+    localStorage.setItem('authToken', data.token);
+
+    // ✅ Guardar usuario completo con el ID
+    localStorage.setItem('userInfo', JSON.stringify({
+      id: data.user.id,              // ✅ IMPORTANTE
+      email: data.user.email,
+      nombres: data.user.nombres,
+      apellidos: data.user.apellidos,
+      rol: data.user.rol
+    }));
+
+    console.log('✅ Login exitoso:', data.user);
+    
+    onLoginSuccess();
+    navigate('/dashboard');
+  } catch (error) {
+    console.error('❌ Error en login:', error);
+  }
+};
 
   /**
    * Handles successful Google login

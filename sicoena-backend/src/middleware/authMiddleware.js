@@ -2,7 +2,6 @@
 
 const jwt = require('jsonwebtoken');
 
-// ✅ MIDDLEWARE 1: Verificar que el usuario esté autenticado
 const authMiddleware = (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -12,16 +11,27 @@ const authMiddleware = (req, res, next) => {
       return res.status(401).json({ message: 'Token no proporcionado' });
     }
 
+    console.log('🔑 Token recibido:', token.substring(0, 30) + '...');
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
     
     console.log('✅ Token verificado:', {
-      userId: decoded.id,
+      id: decoded.id,
       email: decoded.email,
-      rol: decoded.rol,
-      rolNormalizado: (decoded.rol || '').toUpperCase()
+      rol: decoded.rol
     });
     
-    req.user = decoded;
+    // ✅ IMPORTANTE: Asegurar que req.user.id está asignado correctamente
+    req.user = {
+      id: decoded.id,           // Este debe ser el id_usuario
+      email: decoded.email,
+      rol: decoded.rol,
+      nombres: decoded.nombres,
+      apellidos: decoded.apellidos
+    };
+
+    console.log('👤 req.user asignado:', req.user);
+
     next();
   } catch (error) {
     console.error('❌ Error en authMiddleware:', error.message);
@@ -29,7 +39,6 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// ✅ MIDDLEWARE 2: Verificar que el usuario tenga el rol requerido
 const roleMiddleware = (allowedRoles = []) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -37,35 +46,27 @@ const roleMiddleware = (allowedRoles = []) => {
       return res.status(401).json({ message: 'Usuario no autenticado' });
     }
 
-    // ✅ Normalizar el rol del usuario a mayúsculas
     const userRole = (req.user.rol || '').toUpperCase().trim();
     const normalizedAllowedRoles = (allowedRoles || []).map(role => 
       (role || '').toUpperCase().trim()
     );
 
     console.log('🔐 Verificación de rol:', {
-      userRole: req.user.rol,
-      userRoleNormalizado: userRole,
-      allowedRoles: allowedRoles,
-      normalizedAllowedRoles: normalizedAllowedRoles,
+      userRole: userRole,
+      allowedRoles: normalizedAllowedRoles,
       hasAccess: normalizedAllowedRoles.includes(userRole)
     });
 
     if (!normalizedAllowedRoles.includes(userRole)) {
-      console.log(`❌ Acceso denegado: rol ${userRole} no está en ${normalizedAllowedRoles}`);
       return res.status(403).json({ 
-        message: 'Acceso denegado. Rol insuficiente.',
-        userRole: req.user.rol,
-        requiredRoles: allowedRoles
+        message: 'Acceso denegado. Rol insuficiente.'
       });
     }
 
-    console.log('✅ Acceso permitido');
     next();
   };
 };
 
-// ✅ MIDDLEWARE 3: Versiones antiguas (para compatibilidad)
 const protect = authMiddleware;
 
 const restrictTo = (...allowedRoles) => {

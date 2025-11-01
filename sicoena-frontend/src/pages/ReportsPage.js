@@ -187,9 +187,9 @@ const ReportsPage = () => {
         </div>
       )}
 
-      {/* --- DASHBOARD EJECUTIVO (KPIs) --- */}
+      {/* --- DASHBOARD DE ANÁLISIS (KPIs) --- */}
       <div className="dashboard-section">
-        <h2>📊 Dashboard Ejecutivo</h2>
+        <h2>📊 Dashboard de Análisis</h2>
         <DashboardKPIs orders={filteredOrders} />
       </div>
 

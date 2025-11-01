@@ -1,6 +1,6 @@
 // src/components/Header.js
 
-import React, { useState, useEffect, useRef } from 'react'; // <-- Importa useRef
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
 import sicoenaLogo from '../assets/logo-sicoena.png';
@@ -8,86 +8,171 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBars, faSearch, faTachometerAlt, faUsers, faBuilding,
   faBoxes, faChartBar, faSignOutAlt, faBell, faUserCircle,
-  faCheck // Icon for marking read
+  faCheck
 } from '@fortawesome/free-solid-svg-icons';
 
-// Mock Notifications
-const initialNotifications = [
-    { id: 1, text: 'Nuevo usuario "Carlos G." registrado.', read: false, time: 'Hace 5 min' },
-    { id: 2, text: 'Stock bajo para el producto "PRD-004 - Bandita".', read: false, time: 'Hace 1 hora' },
-    { id: 3, text: 'Orden "ORD-2025-003" ha sido entregada.', read: false, time: 'Hace 3 horas' },
-    { id: 4, text: 'Respaldo automático completado.', read: true, time: 'Ayer' }, // Example of a read one
-];
+const API_URL = 'http://localhost:5000/api';
 
 const Header = ({ toggleSidebar, onLogout }) => {
   const [userData, setUserData] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const notificationRef = useRef(null);
   const navigate = useNavigate();
 
-  // --- NEW STATES for Notifications ---
-  const [notifications, setNotifications] = useState(initialNotifications);
-  const [showNotifications, setShowNotifications] = useState(false); // Dropdown visibility
-
-  const notificationRef = useRef(null);
-
+  // ✅ Cargar datos del usuario
   useEffect(() => {
-    // ... (existing useEffect to load userData) ...
-    const storedUserData = localStorage.getItem('userData');
-    if (storedUserData) {
+    const userInfo = localStorage.getItem('userInfo');
+    if (userInfo) {
       try {
-        setUserData(JSON.parse(storedUserData));
+        setUserData(JSON.parse(userInfo));
       } catch (error) {
         console.error("Error parsing user data:", error);
-        handleLogoutClick(); // Logout if data is corrupt
+        handleLogoutClick();
       }
     } else if (localStorage.getItem('authToken')) {
-        console.warn("Token found but no user data. Logging out.");
-        handleLogoutClick();
+      console.warn("Token found but no user data. Logging out.");
+      handleLogoutClick();
     }
-  }, [navigate]); // Removed onLogout from dependencies here
+  }, []);
 
+  // ✅ Obtener notificaciones del backend
+  const fetchNotifications = async () => {
+    try {
+      setLoadingNotifications(true);
+      const token = localStorage.getItem('authToken');
+
+      if (!token) {
+        console.log('❌ No token available');
+        return;
+      }
+
+      console.log('📬 Fetching notifications...');
+
+      const response = await fetch(`${API_URL}/notificaciones?limit=10`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('authToken');
+          navigate('/login');
+          return;
+        }
+        throw new Error(`Error ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Notificaciones obtenidas:', data);
+      setNotifications(data);
+    } catch (error) {
+      console.error('❌ Error fetching notifications:', error);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  // ✅ Cargar notificaciones cuando se abre el dropdown
+  useEffect(() => {
+    if (showNotifications && notifications.length === 0) {
+      fetchNotifications();
+    }
+  }, [showNotifications]);
+
+  // ✅ Actualizar notificaciones cada 30 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ✅ Cerrar notificaciones al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Si el dropdown está abierto y el clic NO fue dentro del contenedor del dropdown (notificationRef.current)
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setShowNotifications(false); // Cierra el dropdown
+        setShowNotifications(false);
       }
     };
 
-    // Añade el listener solo si el dropdown está visible
     if (showNotifications) {
       document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      // Si no está visible, asegúrate de quitar cualquier listener previo
-      document.removeEventListener('mousedown', handleClickOutside);
     }
 
-    // Función de limpieza: se ejecuta cuando el componente se desmonta o antes de que el efecto se vuelva a ejecutar
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showNotifications]); // Este efecto depende del estado showNotifications
+  }, [showNotifications]);
 
   const handleLogoutClick = () => {
-      onLogout();
-      navigate('/login');
-  }
+    onLogout();
+    navigate('/login');
+  };
 
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  // ✅ Marcar todas como leídas
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+
+      const response = await fetch(`${API_URL}/notificaciones/read-all`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Error al marcar como leídas');
+
+      const data = await response.json();
+      console.log('✅ Notificaciones marcadas como leídas:', data);
+      
+      // Actualizar notificaciones localmente
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      console.error('❌ Error marking as read:', error);
+    }
   };
-  
-  // Calculate unread count
+
+  // ✅ Marcar una notificación como leída
+  const markAsRead = async (notificationId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+
+      const response = await fetch(`${API_URL}/notificaciones/${notificationId}/read`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Error al marcar como leída');
+
+      // Actualizar notificación localmente
+      setNotifications(notifications.map(n => 
+        n.id === notificationId ? { ...n, read: true } : n
+      ));
+    } catch (error) {
+      console.error('❌ Error marking notification as read:', error);
+    }
+  };
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <header className="top-navbar">
-      {/* --- LADO IZQUIERDO (sin cambios) --- */}
-       <div className="navbar-left">
-         <button onClick={toggleSidebar} className="navbar-toggle-btn" title="Menú de opciones">
+      <div className="navbar-left">
+        <button onClick={toggleSidebar} className="navbar-toggle-btn" title="Menú de opciones">
           <FontAwesomeIcon icon={faBars} />
         </button>
         <Link to="/dashboard" className="navbar-logo">
@@ -99,58 +184,64 @@ const Header = ({ toggleSidebar, onLogout }) => {
         </div>
       </div>
 
-      {/* --- LADO DERECHO --- */}
       <div className="navbar-right">
         <div className="quick-icons">
-          {/* ... (otros iconos) ... */}
-           <Link to="/dashboard" title="Dashboard"><FontAwesomeIcon icon={faTachometerAlt} /></Link>
-          <Link to="/usuario" title="Usuarios"><FontAwesomeIcon icon={faUsers} /></Link>
-          <Link to="/institucion" title="Instituciones"><FontAwesomeIcon icon={faBuilding} /></Link>
+          <Link to="/dashboard" title="Dashboard"><FontAwesomeIcon icon={faTachometerAlt} /></Link>
+          <Link to="/usuarios" title="Usuarios"><FontAwesomeIcon icon={faUsers} /></Link>
+          <Link to="/instituciones" title="Instituciones"><FontAwesomeIcon icon={faBuilding} /></Link>
           <Link to="/inventario" title="Inventario"><FontAwesomeIcon icon={faBoxes} /></Link>
           <Link to="/reportes" title="Reportes"><FontAwesomeIcon icon={faChartBar} /></Link>
 
-           {/* --- CONTENEDOR DE NOTIFICACIONES --- */}
-           {/* --- 3. AÑADE LA REFERENCIA (ref) AL DIV CONTENEDOR --- */}
-           <div className="notification-container" ref={notificationRef}>
-                <button onClick={toggleNotifications} className="notification-bell-btn" title="Notificaciones">
-                    <FontAwesomeIcon icon={faBell} />
-                    {unreadCount > 0 && (
-                        <span className="notification-badge">{unreadCount}</span>
-                    )}
-                </button>
-                {showNotifications && (
-                    <div className="notification-dropdown">
-                        <div className="dropdown-header">
-                            <span>Notificaciones</span>
-                            <button onClick={markAllAsRead} disabled={unreadCount === 0}>
-                                <FontAwesomeIcon icon={faCheck}/> Marcar todas como leídas
-                            </button>
+          <div className="notification-container" ref={notificationRef}>
+            <button onClick={toggleNotifications} className="notification-bell-btn" title="Notificaciones">
+              <FontAwesomeIcon icon={faBell} />
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount}</span>
+              )}
+            </button>
+            {showNotifications && (
+              <div className="notification-dropdown">
+                <div className="dropdown-header">
+                  <span>Notificaciones</span>
+                  <button onClick={markAllAsRead} disabled={unreadCount === 0}>
+                    <FontAwesomeIcon icon={faCheck} /> Marcar todas como leídas
+                  </button>
+                </div>
+                <ul className="notification-list">
+                  {loadingNotifications ? (
+                    <li className="loading">Cargando notificaciones...</li>
+                  ) : notifications.length > 0 ? (
+                    notifications.map(n => (
+                      <li 
+                        key={n.id} 
+                        className={n.read ? 'read' : 'unread'}
+                        onClick={() => markAsRead(n.id)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div className="notification-content">
+                          <strong>{n.titulo}</strong>
+                          <p>{n.text}</p>
+                          <small>{n.time}</small>
                         </div>
-                        <ul className="notification-list">
-                            {notifications.length > 0 ? notifications.map(n => (
-                                <li key={n.id} className={n.read ? 'read' : 'unread'}>
-                                    <p>{n.text}</p>
-                                    <small>{n.time}</small>
-                                </li>
-                            )) : (
-                                <li className="no-notifications">No hay notificaciones nuevas.</li>
-                            )}
-                        </ul>
-                    </div>
-                )}
-           </div>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="no-notifications">No hay notificaciones nuevas.</li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* --- User Info (sin cambios) --- */}
         <div className="user-profile-section">
-            <FontAwesomeIcon icon={faUserCircle} className="user-avatar-icon"/>
-            <div className="user-info">
-              <span>{userData ? userData.nombre : 'Usuario'}</span>
-              <span className="user-id">{userData ? (userData.rol || userData.email) : 'Cargando...'}</span>
-            </div>
+          <FontAwesomeIcon icon={faUserCircle} className="user-avatar-icon" />
+          <div className="user-info">
+            <span>{userData?.nombres || 'Usuario'}</span>
+            <span className="user-id">{userData?.rol || 'Cargando...'}</span>
+          </div>
         </div>
 
-        {/* --- Logout Button (sin cambios) --- */}
         <button onClick={handleLogoutClick} className="navbar-logout-btn" title="Cerrar Sesión">
           <FontAwesomeIcon icon={faSignOutAlt} />
         </button>

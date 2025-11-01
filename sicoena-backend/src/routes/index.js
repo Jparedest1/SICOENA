@@ -2,6 +2,7 @@ const express = require('express');
 const userRoutes = require('./userRoutes');
 const dashboardController = require('../controllers/dashboardController');
 const { protect } = require('../middleware/authMiddleware');
+
 const institutionRoutes = require('./institutionRoutes');
 const productRoutes = require('./productRoutes');
 const movementRoutes = require('./movementRoutes');
@@ -10,6 +11,7 @@ const proveedorRoutes = require('./proveedorRoutes');
 const bodegaRoutes = require('./bodegaRoutes');
 const settingsRoutes = require('./settingsRoutes');
 const ordenRoutes = require('./ordenRoutes');
+const notificationRoutes = require('./notificationRoutes');
 
 const router = express.Router();
 
@@ -23,5 +25,6 @@ router.use('/bodega', bodegaRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/orden', ordenRoutes);
 router.get('/dashboard/stats', protect, dashboardController.getStats);
+router.use('/notificaciones', notificationRoutes);
 
 module.exports = router;

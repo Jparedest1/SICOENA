@@ -397,3 +397,45 @@
     font-size: 28px; /* Adjust size as needed */
     color: var(--borde-medio);
 }
+/* Añade estas reglas al final de tu Header.css */
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-content strong {
+  font-size: 14px;
+  color: #333;
+}
+
+.notification-content p {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.notification-list li.loading {
+  padding: 20px;
+  text-align: center;
+  color: #999;
+}
+
+.notification-list li.unread {
+  background-color: #f0f4ff;
+  border-left: 3px solid #667eea;
+}
+
+.notification-list li.unread:hover {
+  background-color: #e8ecff;
+}
+
+.notification-list li.read {
+  background-color: #f9f9f9;
+  opacity: 0.7;
+}
+
+.notification-list li.read:hover {
+  background-color: #f5f5f5;
+}
