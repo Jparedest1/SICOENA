@@ -1,10 +1,8 @@
-// src/components/ListModal.js
-
 import React from 'react';
-// Importamos los estilos de modal que ya tenemos
-import './AddProveedorModal.css'; 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import './AddEditProveedorModal.css'; 
 
-// Estilos CSS en línea solo para este componente (para no crear otro archivo)
 const listStyles = {
   container: {
     display: 'flex',
@@ -27,6 +25,12 @@ const listStyles = {
   listItem: {
     padding: '10px 12px',
     borderBottom: '1px solid #eee',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  listItemContent: {
+    flex: 1,
   },
   listItemHeader: {
     fontWeight: 'bold',
@@ -38,6 +42,16 @@ const listStyles = {
     color: '#666',
     wordBreak: 'break-word',
   },
+  actions: {
+    display: 'flex',
+    gap: '10px',
+  },
+  actionButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: '#555',
+  },
   loadingText: {
     textAlign: 'center',
     padding: '20px',
@@ -45,11 +59,10 @@ const listStyles = {
   }
 };
 
-// Pasamos las listas y el estado de carga como props
-const ListModal = ({ onClose, bodegas, proveedores, isLoading }) => {
+const ListModal = ({ onClose, bodegas, proveedores, isLoading, onEditBodega, onDeleteBodega, onEditProveedor, onDeleteProveedor }) => {
   return (
     <div className="modal-backdrop">
-      <div className="modal-content" style={{ maxWidth: '700px' }}>
+      <div className="modal-content" style={{ maxWidth: '800px' }}>
         <div className="modal-header">
           <h2>Catálogo de Bodegas y Proveedores</h2>
           <button onClick={onClose} className="modal-close-btn">&times;</button>
@@ -60,15 +73,24 @@ const ListModal = ({ onClose, bodegas, proveedores, isLoading }) => {
           ) : (
             <div style={listStyles.container}>
               
-              {/* Columna de Bodegas */}
               <div style={listStyles.column}>
                 <h3>Bodegas ({bodegas.length})</h3>
                 <ul style={listStyles.list}>
                   {bodegas.length > 0 ? bodegas.map(bod => (
                     <li key={bod.id_bodega} style={listStyles.listItem}>
-                      <div style={listStyles.listItemHeader}>{bod.nombre_bodega}</div>
-                      <div style={listStyles.listItemSub}>
-                        {bod.observaciones || 'Sin observaciones'}
+                      <div style={listStyles.listItemContent}>
+                        <div style={listStyles.listItemHeader}>{bod.nombre_bodega}</div>
+                        <div style={listStyles.listItemSub}>
+                          {bod.observaciones || 'Sin observaciones'}
+                        </div>
+                      </div>
+                      <div style={listStyles.actions}>
+                        <button style={listStyles.actionButton} title="Editar" onClick={() => onEditBodega(bod)}>
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                        <button style={listStyles.actionButton} title="Desactivar" onClick={() => onDeleteBodega(bod.id_bodega)}>
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
                       </div>
                     </li>
                   )) : (
@@ -77,15 +99,24 @@ const ListModal = ({ onClose, bodegas, proveedores, isLoading }) => {
                 </ul>
               </div>
 
-              {/* Columna de Proveedores */}
               <div style={listStyles.column}>
                 <h3>Proveedores ({proveedores.length})</h3>
                 <ul style={listStyles.list}>
                   {proveedores.length > 0 ? proveedores.map(prov => (
                     <li key={prov.id_proveedor} style={listStyles.listItem}>
-                      <div style={listStyles.listItemHeader}>{prov.nombre_proveedor}</div>
-                      <div style={listStyles.listItemSub}>
-                        NIT: {prov.nit || 'N/A'} | Tel: {prov.telefono || 'N/A'}
+                      <div style={listStyles.listItemContent}>
+                        <div style={listStyles.listItemHeader}>{prov.nombre_proveedor}</div>
+                        <div style={listStyles.listItemSub}>
+                          NIT: {prov.nit || 'N/A'} | Tel: {prov.telefono || 'N/A'}
+                        </div>
+                      </div>
+                      <div style={listStyles.actions}>
+                        <button style={listStyles.actionButton} title="Editar" onClick={() => onEditProveedor(prov)}>
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                        <button style={listStyles.actionButton} title="Desactivar" onClick={() => onDeleteProveedor(prov.id_proveedor)}>
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
                       </div>
                     </li>
                   )) : (
@@ -93,14 +124,11 @@ const ListModal = ({ onClose, bodegas, proveedores, isLoading }) => {
                   )}
                 </ul>
               </div>
-
             </div>
           )}
         </div>
         <div className="modal-footer">
-          <button type="button" className="btn-cancel" onClick={onClose}>
-            Cerrar
-          </button>
+          <button onClick={onClose} className="btn-secondary">Cerrar</button>
         </div>
       </div>
     </div>

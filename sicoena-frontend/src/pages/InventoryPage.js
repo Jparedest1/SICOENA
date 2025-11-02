@@ -3,12 +3,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './InventoryPage.css';
 import AddEditProductModal from '../components/AddEditProductModal';
-import AddProveedorModal from '../components/AddProveedorModal';
-import AddBodegaModal from '../components/AddBodegaModal';
+import AddEditProveedorModal from '../components/AddEditProveedorModal';
+import AddEditBodegaModal from '../components/AddEditBodegaModal';
 import ListModal from '../components/ListModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faTruckLoading, faBox, faBoxes, faChartLine, faExclamationTriangle, faSearch, faFilePdf, faFileExcel, faCoins, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
-// --- CAMBIO: Se eliminan las importaciones de jsPDF que ya no se usan para este botón ---
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
@@ -22,7 +21,6 @@ const InventoryPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // --- Estados para filtros ---
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('todos');
   const [warehouseFilter, setWarehouseFilter] = useState('todos');
@@ -38,6 +36,8 @@ const InventoryPage = () => {
 
   const [isProveedorModalOpen, setIsProveedorModalOpen] = useState(false);
   const [isBodegaModalOpen, setIsBodegaModalOpen] = useState(false);
+  const [currentProveedorToEdit, setCurrentProveedorToEdit] = useState(null);
+  const [currentBodegaToEdit, setCurrentBodegaToEdit] = useState(null);
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [bodegasList, setBodegasList] = useState([]);
   const [proveedoresList, setProveedoresList] = useState([]);
@@ -308,14 +308,49 @@ const InventoryPage = () => {
     }
   };
 
+  const handleOpenAddProveedor = () => {
+    setCurrentProveedorToEdit(null);
+    setIsProveedorModalOpen(true);
+  };
+
+  const handleEditProveedor = (proveedor) => {
+    setCurrentProveedorToEdit(proveedor);
+    setIsListModalOpen(false);
+    setIsProveedorModalOpen(true);
+  };
+
+  const handleDeleteProveedor = async (proveedorId) => {
+    if (window.confirm('¿Está seguro de que desea cambiar el estado a INACTIVO?')) {
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await fetch(`${API_URL}/proveedor/${proveedorId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ estado: 'INACTIVO' }),
+        });
+        if (!response.ok) throw new Error('Error al desactivar proveedor.');
+        alert('Proveedor desactivado con éxito.');
+        fetchProveedores();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+  };
+
   const handleSaveProveedor = async (proveedorData) => {
     const token = localStorage.getItem('authToken');
     setError(null);
-    const payload = { ...proveedorData, estado: 'ACTIVO' };
+    const isEditing = !!currentProveedorToEdit;
+    const url = isEditing ? `${API_URL}/proveedor/${currentProveedorToEdit.id_proveedor}` : `${API_URL}/proveedor`;
+    const method = isEditing ? 'PUT' : 'POST';
+    const payload = isEditing ? proveedorData : { ...proveedorData, estado: 'ACTIVO' };
 
     try {
-      const response = await fetch(`${API_URL}/proveedor`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -326,11 +361,12 @@ const InventoryPage = () => {
       if (!response.ok) {
         let data = { message: 'Error desconocido' };
         try { data = await response.json(); } catch(e) {}
-        throw new Error(data.message || 'Error al crear el proveedor.');
+        throw new Error(data.message || `Error al ${isEditing ? 'actualizar' : 'crear'} el proveedor.`);
       }
 
       setIsProveedorModalOpen(false);
-      alert('Proveedor creado con éxito.');
+      setCurrentProveedorToEdit(null); // Limpiar estado al guardar
+      alert(`Proveedor ${isEditing ? 'actualizado' : 'creado'} con éxito.`);
       fetchProveedores();
       
     } catch (err) {
@@ -339,14 +375,49 @@ const InventoryPage = () => {
     }
   };
 
+  const handleOpenAddBodega = () => {
+    setCurrentBodegaToEdit(null);
+    setIsBodegaModalOpen(true);
+  };
+
+  const handleEditBodega = (bodega) => {
+    setCurrentBodegaToEdit(bodega);
+    setIsListModalOpen(false);
+    setIsBodegaModalOpen(true);
+  };
+  
+  const handleDeleteBodega = async (bodegaId) => {
+    if (window.confirm('¿Está seguro de que desea cambiar el estado a INACTIVO?')) {
+      const token = localStorage.getItem('authToken');
+      try {
+        const response = await fetch(`${API_URL}/bodega/${bodegaId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ estado: 'INACTIVO' }),
+        });
+        if (!response.ok) throw new Error('Error al desactivar bodega.');
+        alert('Bodega desactivada con éxito.');
+        fetchBodegas();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+  };
+
   const handleSaveBodega = async (bodegaData) => {
     const token = localStorage.getItem('authToken');
     setError(null);
-    const payload = { ...bodegaData, estado: 'ACTIVO' };
+    const isEditing = !!currentBodegaToEdit;
+    const url = isEditing ? `${API_URL}/bodega/${currentBodegaToEdit.id_bodega}` : `${API_URL}/bodega`;
+    const method = isEditing ? 'PUT' : 'POST';
+    const payload = isEditing ? bodegaData : { ...bodegaData, estado: 'ACTIVO' };
 
     try {
-      const response = await fetch(`${API_URL}/bodega`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -357,11 +428,12 @@ const InventoryPage = () => {
       if (!response.ok) {
         let data = { message: 'Error desconocido' };
         try { data = await response.json(); } catch(e) {}
-        throw new Error(data.message || 'Error al crear la bodega.');
+        throw new Error(data.message || `Error al ${isEditing ? 'actualizar' : 'crear'} la bodega.`);
       }
 
       setIsBodegaModalOpen(false);
-      alert('Bodega creada con éxito.');
+      setCurrentBodegaToEdit(null); // Limpiar estado al guardar
+      alert(`Bodega ${isEditing ? 'actualizada' : 'creada'} con éxito.`);
       fetchBodegas();
 
     } catch (err) {
@@ -370,7 +442,6 @@ const InventoryPage = () => {
     }
   };
 
-  // --- FUNCIÓN handleExportPDF MODIFICADA ---
   const handleExportPDF = async () => {
     console.log('Botón "Exportar PDF" presionado. Llamando al backend...');
     
@@ -389,12 +460,10 @@ const InventoryPage = () => {
       });
   
       if (!response.ok) {
-        // Intenta leer el mensaje de error del backend
         const errorData = await response.json().catch(() => ({ message: 'Error desconocido al generar el reporte.' }));
         throw new Error(errorData.message);
       }
   
-      // El backend envía el archivo, el navegador lo procesa para descarga
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -413,7 +482,6 @@ const InventoryPage = () => {
     }
   };
 
-  // --- La función handleExportExcel se mantiene igual, sin cambios ---
   const handleExportExcel = async () => {
     console.log('Botón "Exportar Excel" presionado. Llamando al backend...');
     
@@ -424,7 +492,6 @@ const InventoryPage = () => {
     }
   
     try {
-      // La URL ahora incluye el parámetro para especificar el formato
       const response = await fetch(`${API_URL}/reportes/inventario?format=excel`, {
         method: 'GET',
         headers: {
@@ -441,7 +508,7 @@ const InventoryPage = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `reporte_inventario_${Date.now()}.xlsx`; // Nombre del archivo .xlsx
+      a.download = `reporte_inventario_${Date.now()}.xlsx`; 
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -466,8 +533,8 @@ const InventoryPage = () => {
         <h1>Gestión de Inventarios</h1>
         <div className="header-buttons">
           <button className="btn-primary" onClick={handleAddNewProduct}>Nuevo Producto</button>
-          <button className="btn-primary" onClick={() => setIsProveedorModalOpen(true)}>Nuevo Proveedor</button>
-          <button className="btn-primary" onClick={() => setIsBodegaModalOpen(true)}>Nueva Bodega</button>
+          <button className="btn-primary" onClick={handleOpenAddProveedor}>Nuevo Proveedor</button>
+          <button className="btn-primary" onClick={handleOpenAddBodega}>Nueva Bodega</button>
         </div>
       </div>
 
@@ -666,23 +733,34 @@ const InventoryPage = () => {
 
       {isModalOpen && (
         <AddEditProductModal
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            setCurrentProductToEdit(null);
+          }}
           onSave={handleSaveProduct}
           currentProduct={currentProductToEdit}
         />
       )}
 
       {isProveedorModalOpen && (
-        <AddProveedorModal
-          onClose={() => setIsProveedorModalOpen(false)}
+        <AddEditProveedorModal
+          onClose={() => {
+            setIsProveedorModalOpen(false);
+            setCurrentProveedorToEdit(null);
+          }}
           onSave={handleSaveProveedor}
+          currentProveedor={currentProveedorToEdit}
         />
       )}
 
       {isBodegaModalOpen && (
-        <AddBodegaModal
-          onClose={() => setIsBodegaModalOpen(false)}
+        <AddEditBodegaModal
+          onClose={() => {
+            setIsBodegaModalOpen(false);
+            setCurrentBodegaToEdit(null);
+          }}
           onSave={handleSaveBodega}
+          currentBodega={currentBodegaToEdit}
         />
       )}
       
@@ -692,6 +770,10 @@ const InventoryPage = () => {
           bodegas={bodegasList}
           proveedores={proveedoresList}
           isLoading={isCatalogsLoading}
+          onEditBodega={handleEditBodega}
+          onDeleteBodega={handleDeleteBodega}
+          onEditProveedor={handleEditProveedor}
+          onDeleteProveedor={handleDeleteProveedor}
         />
       )}
     </div>

@@ -155,3 +155,164 @@
 .system-info a:hover {
     text-decoration: underline;
 }
+
+/* Añadir al final de HelpPage.css */
+
+.guide-item {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.guide-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.guide-detail-container {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fdfdfd;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.guide-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.guide-detail-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.guide-detail-header .svg-inline--fa {
+  margin-right: 8px;
+}
+
+.close-guide-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #888;
+  padding: 5px;
+}
+
+.close-guide-btn:hover {
+  color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.support-form button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.close-modal-btn:hover {
+  color: #333;
+}
+
+.modal-body h4 {
+  font-size: 1.1rem;
+  color: #0056b3;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.modal-body .svg-inline--fa {
+  margin-right: 8px;
+}
+
+.modal-body ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.modal-body li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.modal-footer {
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+  margin-top: 20px;
+  text-align: right;
+}
+
+/* Animaciones para el modal */
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
