@@ -8,6 +8,8 @@ const { startScheduledTasks } = require('./utils/scheduledTasks'); // ✅ NUEVO
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const reportesRoutes = require('./routes/reportesRoutes');
+app.use('/api/reportes', reportesRoutes);
 
 // --- CONFIGURACIÓN CORS ---
 app.use(cors({
