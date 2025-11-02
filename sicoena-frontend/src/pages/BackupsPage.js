@@ -6,27 +6,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDatabase, faSave, faSync, faDownload, faTrash, faHistory, faPlayCircle, faClock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = '/api';
+const POLLING_INTERVAL = 5000;
 
 // --- FUNCIÓN AUXILIAR PARA OBTENER CABECERAS DE AUTENTICACIÓN (CORREGIDA) ---
 const getAuthHeaders = () => {
-  // 1. Obtener el token directamente desde la clave 'authToken'
   const token = localStorage.getItem('authToken');
-  
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-
-  // 2. Si existe un token, añadirlo a la cabecera 'Authorization'
+  const headers = { 'Content-Type': 'application/json' };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
-  } else {
-    // Este mensaje aparecerá en la consola del navegador si no estás logueado
-    console.warn('No se encontró el "authToken" en localStorage. Las peticiones a la API fallarán si la ruta está protegida.');
   }
-  
   return headers;
 };
-
 
 const RespaldosPage = () => {
   const [backups, setBackups] = useState([]);
@@ -36,10 +26,7 @@ const RespaldosPage = () => {
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(true);
   const [backupFrequency, setBackupFrequency] = useState('Diario');
 
-  // --- Funciones para interactuar con la API (usando la función corregida) ---
-
   const fetchBackups = useCallback(async () => {
-    setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/respaldos`, { headers: getAuthHeaders() });
       if (!response.ok) {
@@ -50,11 +37,29 @@ const RespaldosPage = () => {
       setBackups(data.sort((a, b) => new Date(b.date) - new Date(a.date)));
     } catch (error) {
       console.error(error);
-      alert(error.message);
+      // No mostramos alerta en el polling para no molestar al usuario
+      // alert(error.message); 
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  // --- NUEVO: Polling para actualizar el estado automáticamente ---
+  useEffect(() => {
+    // Comprobar si hay algún respaldo "EN PROGRESO"
+    const isBackupInProgress = backups.some(b => b.status === 'EN PROGRESO');
+
+    if (isBackupInProgress) {
+      // Si hay uno, establecer un intervalo para recargar los datos
+      const intervalId = setInterval(() => {
+        console.log('Polling: Verificando estado de respaldos...');
+        fetchBackups();
+      }, POLLING_INTERVAL);
+
+      // Limpiar el intervalo cuando el componente se desmonte o cuando ya no haya respaldos en progreso
+      return () => clearInterval(intervalId);
+    }
+  }, [backups, fetchBackups]);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -89,7 +94,8 @@ const RespaldosPage = () => {
            const errorData = await response.json();
            throw new Error(errorData.message || 'Error al iniciar el respaldo.');
         }
-        alert('Respaldo manual iniciado exitosamente.');
+        alert('Respaldo manual iniciado. El estado se actualizará automáticamente.');
+        // La recarga inicial la hará el polling, pero podemos forzar una primera recarga
         await fetchBackups();
       } catch (error) {
         console.error(error);

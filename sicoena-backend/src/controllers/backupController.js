@@ -2,9 +2,9 @@ const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process');
 const util = require('util');
-const execPromise = util.promisify(exec); // Convierte exec a una promesa
+const execPromise = util.promisify(exec);
 
-// --- Ubicaciones de archivos y directorios ---
+// ... (constantes y funciones de utilidad no cambian) ...
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const BACKUPS_DIR = path.join(__dirname, '..', '..', 'backups');
 const BACKUP_METADATA_FILE = path.join(DATA_DIR, 'backups.json');
@@ -55,37 +55,59 @@ exports.createBackup = async (req, res) => {
         const backups = await readBackups();
         backups.unshift(newBackupMetadata);
         await writeBackups(backups);
-
         res.status(202).json({ message: 'Respaldo iniciado.', backup: newBackupMetadata });
 
-        // --- Proceso de respaldo asíncrono con mysqldump ---
-        const { DB_DATABASE, DB_USER, DB_PASSWORD, DB_HOST } = process.env;
-        const dumpCommand = `mysqldump --host=${DB_HOST} --user=${DB_USER} --password=${DB_PASSWORD} ${DB_DATABASE} > "${backupFilePath}"`;
+        // --- Proceso de respaldo asíncrono ---
+        (async () => {
+            try {
+                const { DB_DATABASE, DB_USER, DB_PASSWORD, DB_HOST } = process.env;
+                const dumpCommand = `mysqldump --host=${DB_HOST} --user=${DB_USER} --databases ${DB_DATABASE} > "${backupFilePath}"`;
+                
+                console.log(`Ejecutando comando para ${backupId}...`);
+                
+                const { stdout, stderr } = await execPromise(dumpCommand, {
+                    env: { ...process.env, MYSQL_PWD: DB_PASSWORD }
+                });
 
-        await execPromise(dumpCommand);
-        
-        const stats = await fs.stat(backupFilePath);
-        const sizeInMB = (stats.size / (1024 * 1024)).toFixed(2);
-        
-        // Actualizar metadatos a "COMPLETADO"
-        const finalBackups = await readBackups();
-        const backupToUpdate = finalBackups.find(b => b.id === backupId);
-        if (backupToUpdate) {
-            backupToUpdate.status = 'COMPLETADO';
-            backupToUpdate.size = `${sizeInMB} MB`;
-            await writeBackups(finalBackups);
-        }
-        console.log(`Respaldo ${backupId} completado exitosamente.`);
+                if (stderr) {
+                    console.warn(`[INFO] Salida de stderr de mysqldump (puede ser solo una advertencia): ${stderr}`);
+                }
 
-    } catch (error) {
-        console.error('Error al crear el respaldo con mysqldump:', error);
-        // Marcar como fallido si algo sale mal
-        const finalBackups = await readBackups();
-        const backupToUpdate = finalBackups.find(b => b.id === backupId);
-        if (backupToUpdate) {
-            backupToUpdate.status = 'FALLIDO';
-            await writeBackups(finalBackups);
-        }
+                console.log(`Comando mysqldump para ${backupId} ejecutado.`);
+
+                const stats = await fs.stat(backupFilePath);
+                if (stats.size === 0) {
+                    // Si el archivo está vacío, algo salió mal.
+                    throw new Error("El archivo de respaldo se creó pero está vacío. La base de datos podría no existir o el usuario no tiene permisos.");
+                }
+
+                const sizeInMB = (stats.size / (1024 * 1024)).toFixed(2);
+                
+                const finalBackups = await readBackups();
+                const backupToUpdate = finalBackups.find(b => b.id === backupId);
+                if (backupToUpdate) {
+                    backupToUpdate.status = 'COMPLETADO';
+                    backupToUpdate.size = `${sizeInMB} MB`;
+                    await writeBackups(finalBackups);
+                    console.log(`✅ Respaldo ${backupId} marcado como COMPLETADO.`);
+                }
+            } catch (error) {
+                // Este catch ahora solo se activará por un error real del comando (código de salida != 0)
+                // o si el archivo está vacío.
+                console.error(`❌ Error REAL durante el proceso de respaldo para ${backupId}:`, error);
+                const finalBackups = await readBackups();
+                const backupToUpdate = finalBackups.find(b => b.id === backupId);
+                if (backupToUpdate) {
+                    backupToUpdate.status = 'FALLIDO';
+                    await writeBackups(finalBackups);
+                    console.log(`🚫 Respaldo ${backupId} marcado como FALLIDO.`);
+                }
+            }
+        })();
+
+    } catch (initialError) {
+        console.error('Error al registrar el inicio del respaldo:', initialError);
+        res.status(500).json({ message: "No se pudo iniciar el proceso de respaldo." });
     }
 };
 
