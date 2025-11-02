@@ -9,51 +9,32 @@ const { startScheduledTasks } = require('./utils/scheduledTasks');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- CONFIGURACIÓN DE MIDDLEWARES ---
-
-// 1. Habilita CORS para TODAS las solicitudes entrantes.
-//    Esta debe ser una de las primeras configuraciones.
+// --- Middlewares ---
 app.use(cors({
-  origin: 'http://localhost:3000', // Permite solicitudes solo desde tu frontend
+  origin: 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// 2. Middlewares para parsear el cuerpo de las solicitudes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-// --- RUTAS DE LA API ---
-
-// Ruta de prueba para verificar que el servidor está vivo
+// --- Rutas de la API ---
 app.get('/', (req, res) => {
   res.send('¡API de SICOENA funcionando!');
 });
 
-// Importa y usa tus rutas principales
+// ÚNICO punto de entrada para /api
 const mainRoutes = require('./routes/index');
-app.use('/api', mainRoutes);
+app.use('/api', mainRoutes); // mainRoutes ahora maneja TODO, incluidos los reportes.
 
-// Importa y usa tus rutas de reportes
-// Ahora también estarán cubiertas por la configuración de CORS de arriba
-const reportesRoutes = require('./routes/reportesRoutes');
-app.use('/api/reportes', reportesRoutes);
-
-
-// --- MANEJO DE ERRORES ---
-
-// Manejo de rutas no encontradas (404). Esto debe ir al final.
+// --- Manejo de errores 404 ---
 app.use((req, res) => {
-  res.status(404).json({ message: 'Ruta no encontrada' });
+  res.status(404).json({ message: 'Ruta no encontrada en el servidor' });
 });
 
-
-// --- INICIAR EL SERVIDOR ---
+// --- Iniciar el Servidor ---
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
-  
-  // Inicia las tareas programadas
   startScheduledTasks();
 });

@@ -26,5 +26,6 @@ router.use('/settings', settingsRoutes);
 router.use('/orden', ordenRoutes);
 router.get('/dashboard/stats', protect, dashboardController.getStats);
 router.use('/notificaciones', notificationRoutes);
+router.use('/reportes', require('./reportesRoutes'));
 
 module.exports = router;
