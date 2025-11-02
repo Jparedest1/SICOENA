@@ -1,30 +1,45 @@
 // src/controllers/dashboardController.js
 
-const pool = require('../config/db'); // ¡Importante! Usa la conexión directa a la BD
+const pool = require('../config/db');
 
-exports.getStats = async (req, res) => {
+const getStats = async (req, res) => {
+  console.log('➡️  Recibida petición para obtener estadísticas del dashboard.');
+
   try {
-    // Contar reportes generados
-    const [reportRows] = await pool.query('SELECT COUNT(*) AS total FROM reportes_generados');
-    const reportesGenerados = reportRows[0].total;
+    // --- Ejecutamos todas las consultas en paralelo para máxima eficiencia ---
+    const [
+      [userStats],
+      [reportStats],
+      [alertStats] // <-- ¡NUEVA CONSULTA PARA ALERTAS!
+    ] = await Promise.all([
+      pool.query("SELECT estado, COUNT(*) as count FROM usuario GROUP BY estado"),
+      pool.query("SELECT COUNT(*) as count FROM reportes_generados"),
+      // Esta consulta cuenta los productos activos cuyo stock es menor o igual al mínimo
+      pool.query("SELECT COUNT(*) AS count FROM producto WHERE stock_disponible <= stock_minimo AND estado = 'ACTIVO'")
+    ]);
 
-    // Contar usuarios activos
-    const [activeUsers] = await pool.query("SELECT COUNT(*) AS total FROM usuario WHERE estado = 'Activo'");
-    const usuariosActivos = activeUsers[0].total;
+    // --- Procesamos los resultados ---
+    const usuariosActivos = userStats.find(s => s.estado === 'ACTIVO')?.count || 0;
+    const usuariosInactivos = userStats.find(s => s.estado === 'INACTIVO')?.count || 0;
+    const reportesGenerados = reportStats[0]?.count || 0;
+    const alertasSistema = alertStats[0]?.count || 0; // <-- ¡NUEVO VALOR DINÁMICO!
+
+    console.log(`✅ Estadísticas calculadas: Activos=${usuariosActivos}, Inactivos=${usuariosInactivos}, Reportes=${reportesGenerados}, Alertas=${alertasSistema}`);
     
-    // Contar usuarios inactivos
-    const [inactiveUsers] = await pool.query("SELECT COUNT(*) AS total FROM usuario WHERE estado = 'Inactivo'");
-    const usuariosInactivos = inactiveUsers[0].total;
-
+    // --- Enviamos el objeto completo al frontend ---
     res.json({
-      usuariosActivos: usuariosActivos,
-      usuariosInactivos: usuariosInactivos,
-      reportesGenerados: reportesGenerados,
-      alertasSistema: 0, // Puedes desarrollar esta lógica después
+      usuariosActivos,
+      usuariosInactivos,
+      reportesGenerados,
+      alertasSistema, 
     });
 
   } catch (error) {
-    console.error('Error al obtener estadísticas del dashboard:', error);
-    res.status(500).json({ message: 'No se pudieron cargar las estadísticas.' });
+    console.error('🔴 Error al obtener las estadísticas del dashboard:', error);
+    res.status(500).json({ message: 'Error interno al cargar las estadísticas.' });
   }
+};
+
+module.exports = {
+  getStats,
 };
