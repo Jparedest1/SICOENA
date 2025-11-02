@@ -3,15 +3,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './InventoryPage.css';
 import AddEditProductModal from '../components/AddEditProductModal';
-// --- NUEVO: Importar los nuevos modales ---
 import AddProveedorModal from '../components/AddProveedorModal';
 import AddBodegaModal from '../components/AddBodegaModal';
 import ListModal from '../components/ListModal';
-// --- FIN NUEVO ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faTruckLoading, faBox, faBoxes, faChartLine, faExclamationTriangle, faSearch, faFilePdf, faFileExcel, faCoins, faArrowUp, faArrowDown } from '@fortawesome/free-solid-svg-icons';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// --- CAMBIO: Se eliminan las importaciones de jsPDF que ya no se usan para este botón ---
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
@@ -39,17 +36,13 @@ const InventoryPage = () => {
     total: 0
   });
 
-  // --- NUEVO: Estados para los nuevos modales ---
   const [isProveedorModalOpen, setIsProveedorModalOpen] = useState(false);
   const [isBodegaModalOpen, setIsBodegaModalOpen] = useState(false);
-  // --- FIN NUEVO ---
-
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [bodegasList, setBodegasList] = useState([]);
   const [proveedoresList, setProveedoresList] = useState([]);
   const [isCatalogsLoading, setIsCatalogsLoading] = useState(true);
 
-  // ... (Tu función fetchProducts se mantiene igual) ...
   const fetchProducts = useCallback(async (
     currentSearch = '',
     currentCategory = 'todos',
@@ -120,7 +113,6 @@ const InventoryPage = () => {
     }
   }, [navigate]);
 
-  // ... (Tu función fetchMovementsToday se mantiene igual) ...
   const fetchMovementsToday = useCallback(async () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
@@ -177,7 +169,6 @@ const InventoryPage = () => {
     }
   }, []);
 
-  // ... (Tu useEffect de carga inicial se mantiene igual) ...
   useEffect(() => {
     const fetchCategories = async () => {
       const token = localStorage.getItem('authToken');
@@ -224,7 +215,6 @@ const InventoryPage = () => {
     };
   }, [fetchMovementsToday, fetchProducts]);
 
-  // ... (Tus funciones handleSearch, handleEdit, handleDelete se mantienen igual) ...
   const handleSearch = () => {
     fetchProducts(searchTerm, categoryFilter, warehouseFilter, statusFilter, stockFilter);
   };
@@ -263,7 +253,6 @@ const InventoryPage = () => {
     setIsModalOpen(true);
   };
 
-  // ... (Tu función handleSaveProduct se mantiene igual) ...
   const handleSaveProduct = async (productDataFromModal) => {
     const token = localStorage.getItem('authToken');
     setError(null);
@@ -319,7 +308,6 @@ const InventoryPage = () => {
     }
   };
 
-  // --- NUEVO: Función para guardar Proveedor ---
   const handleSaveProveedor = async (proveedorData) => {
     const token = localStorage.getItem('authToken');
     setError(null);
@@ -343,10 +331,7 @@ const InventoryPage = () => {
 
       setIsProveedorModalOpen(false);
       alert('Proveedor creado con éxito.');
-      
-      // --- NUEVO: Recargar la lista de proveedores ---
       fetchProveedores();
-      // --- FIN NUEVO ---
       
     } catch (err) {
       console.error("Error en handleSaveProveedor:", err);
@@ -354,7 +339,6 @@ const InventoryPage = () => {
     }
   };
 
-  // --- NUEVO: Función para guardar Bodega ---
   const handleSaveBodega = async (bodegaData) => {
     const token = localStorage.getItem('authToken');
     setError(null);
@@ -378,131 +362,100 @@ const InventoryPage = () => {
 
       setIsBodegaModalOpen(false);
       alert('Bodega creada con éxito.');
-      
-      // --- NUEVO: Recargar la lista de bodegas ---
       fetchBodegas();
-      // --- FIN NUEVO ---
 
     } catch (err) {
       console.error("Error en handleSaveBodega:", err);
       setError(err.message);
     }
   };
-  // --- FIN NUEVO ---
 
-  // ... (Tus funciones de exportación se mantienen igual) ...
-  const handleExportPDF = () => {
-  if (products.length === 0) {
-    alert("No hay datos para exportar.");
-    return;
-  }
-
-  const doc = new jsPDF();
-  doc.text("Reporte de Inventario - SICOENA", 14, 16);
-
-  const head = [[
-    'ID', 'Producto', 'Categoría', 'Stock Disp.', 'Stock Min.',
-    'Unidad Med.', 'Precio Uni.', 'Valor Total', 'Bodega', 'Perecedero',
-    'Fec. Venc.', 'Estado'
-  ]];
-
-  const body = products.map(p => [
-    p.id,
-    p.nombre,
-    p.categoria,
-    p.stock_actual,
-    p.stock_min,
-    p.unidad,
-    `Q${Number(p.precio_uni ?? 0).toFixed(2)}`,
-    `Q${Number(p.valor_total ?? 0).toFixed(2)}`,
-    `Bodega ${p.almacen}`,
-    p.perecedero ? 'Sí' : 'No',
-    p.fecha_vencimiento || 'N/A',
-    p.estado
-  ]);
-
-  autoTable(doc, {
-    startY: 22,
-    head,
-    body,
-    theme: 'grid',
-    headStyles: { fillColor: [44, 62, 80] },
-    styles: { fontSize: 8 },
-  });
-
-  const pdfBlob = doc.output('blob');
-  const pdfUrl = URL.createObjectURL(pdfBlob);
-  
-  window.open(pdfUrl, 'ReporteInventario', 'width=900,height=600,resizable=yes,scrollbars=yes');
-};
-
-  const handleExportExcel = async () => {
-    if (products.length === 0) {
-      alert("No hay datos para exportar.");
+  // --- FUNCIÓN handleExportPDF MODIFICADA ---
+  const handleExportPDF = async () => {
+    console.log('Botón "Exportar PDF" presionado. Llamando al backend...');
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('Sesión expirada. Por favor, inicie sesión de nuevo.');
       return;
     }
-
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'SICOENA';
-    workbook.lastModifiedBy = 'SICOENA';
-    workbook.created = new Date();
-    workbook.modified = new Date();
-
-    const worksheet = workbook.addWorksheet('Inventario');
-
-    worksheet.columns = [
-      { header: 'ID Producto', key: 'id', width: 15 },
-      { header: 'Nombre Producto', key: 'nombre', width: 30 },
-      { header: 'Categoría', key: 'categoria', width: 20 },
-      { header: 'Stock Disp.', key: 'stock_actual', width: 15 },
-      { header: 'Stock Min.', key: 'stock_min', width: 15 },
-      { header: 'Unidad Med.', key: 'unidad', width: 15 },
-      { header: 'Precio Uni. (Q)', key: 'precio_uni', width: 18 },
-      { header: 'Valor Total (Q)', key: 'valor_total', width: 18 },
-      { header: 'ID Bodega', key: 'almacen', width: 15 },
-      { header: 'Perecedero', key: 'perecedero', width: 15 },
-      { header: 'Fecha Venc.', key: 'fecha_vencimiento', width: 18 },
-      { header: 'Estado', key: 'estado', width: 15 }
-    ];
-
-    const dataToExport = products.map(p => ({
-      id: p.id,
-      nombre: p.nombre,
-      categoria: p.categoria,
-      stock_actual: p.stock_actual,
-      stock_min: p.stock_min,
-      unidad: p.unidad,
-      precio_uni: p.precio_uni,
-      valor_total: p.valor_total,
-      almacen: p.almacen,
-      perecedero: p.perecedero ? 'Sí' : 'No',
-      fecha_vencimiento: p.fecha_vencimiento || 'N/A',
-      estado: p.estado
-    }));
-
-    worksheet.addRows(dataToExport);
-    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    worksheet.getRow(1).fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF2c3e50' }
-    };
-
+  
     try {
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, `inventario_sicoena_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      const response = await fetch(`${API_URL}/reportes/inventario`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        // Intenta leer el mensaje de error del backend
+        const errorData = await response.json().catch(() => ({ message: 'Error desconocido al generar el reporte.' }));
+        throw new Error(errorData.message);
+      }
+  
+      // El backend envía el archivo, el navegador lo procesa para descarga
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_inventario_${Date.now()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+  
+      console.log('Descarga del reporte iniciada con éxito desde el backend.');
+  
     } catch (error) {
-      console.error("Error al generar el archivo Excel:", error);
-      alert("Hubo un error al generar el archivo Excel.");
+      console.error('Error durante la exportación a PDF desde el backend:', error);
+      alert(`No se pudo generar el reporte: ${error.message}`);
     }
   };
 
+  // --- La función handleExportExcel se mantiene igual, sin cambios ---
+  const handleExportExcel = async () => {
+    console.log('Botón "Exportar Excel" presionado. Llamando al backend...');
+    
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('Sesión expirada. Por favor, inicie sesión de nuevo.');
+      return;
+    }
+  
+    try {
+      // La URL ahora incluye el parámetro para especificar el formato
+      const response = await fetch(`${API_URL}/reportes/inventario?format=excel`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Error desconocido al generar el reporte.' }));
+        throw new Error(errorData.message);
+      }
+  
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reporte_inventario_${Date.now()}.xlsx`; // Nombre del archivo .xlsx
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+  
+      console.log('Descarga del reporte de Excel iniciada con éxito desde el backend.');
+  
+    } catch (error) {
+      console.error('Error durante la exportación a Excel desde el backend:', error);
+      alert(`No se pudo generar el reporte: ${error.message}`);
+    }
+  };
 
-  // ... (Tus cálculos de estadísticas se mantienen igual) ...
   const totalProducts = products.length;
-  //const categories = [...new Set(products.map(p => p.categoria))].length;
-  //const warehouses = [...new Set(products.map(p => p.almacen))].length;
   const totalValue = products.reduce((sum, p) => sum + p.valor_total, 0);
   const lowStockProductsCount = products.filter(p => p.stock_actual <= p.stock_min && p.estado === 'ACTIVO').length;
   const productsWithLowStock = products.filter(p => p.stock_actual <= p.stock_min && p.estado === 'ACTIVO');
@@ -520,7 +473,6 @@ const InventoryPage = () => {
 
       {error && <div className="page-error-message">{error}</div>}
 
-      {/* --- CORREGIDO: Alerta de Stock Bajo Restaurada --- */}
       {productsWithLowStock.length > 0 && (
         <div className="low-stock-alert">
           <FontAwesomeIcon icon={faExclamationTriangle} className="alert-icon" />
@@ -530,27 +482,20 @@ const InventoryPage = () => {
           <button className="btn-tertiary" onClick={() => { setStockFilter('bajo'); handleSearch(); }}>Ver Detalles</button>
         </div>
       )}
-      {/* --- FIN CORRECCIÓN --- */}
 
-
-      {/* --- Contenedor de Tarjetas de Estadísticas (Modificado) --- */}
       <div className="stats-cards-container">
-        
-        {/* Tarjeta 1: Total Productos */}
         <div className="stat-card-item">
           <FontAwesomeIcon icon={faBoxes} className="stat-card-icon" />
           <span className="stat-value">{isLoading ? '...' : totalProducts}</span>
           <span className="stat-label">Total Productos</span>
         </div>
 
-        {/* Tarjeta 2: Bodegas y Proveedores (Modificada) */}
         <div 
           className="stat-card-item clickable" 
           onClick={() => setIsListModalOpen(true)}
           title="Ver listas de Bodegas y Proveedores"
         >
           <div className="stat-card-multi-content">
-            {/* Item Bodegas */}
             <div className="multi-stat-item">
               <FontAwesomeIcon icon={faBox} className="stat-card-icon" />
               <div className="multi-stat-info">
@@ -558,7 +503,6 @@ const InventoryPage = () => {
                 <span className="multi-stat-label">Bodegas</span>
               </div>
             </div>
-            {/* Item Proveedores */}
             <div className="multi-stat-item">
               <FontAwesomeIcon icon={faTruckLoading} className="stat-card-icon" />
               <div className="multi-stat-info">
@@ -569,21 +513,18 @@ const InventoryPage = () => {
           </div>
         </div>
 
-        {/* Tarjeta 3: Valor Total */}
         <div className="stat-card-item">
           <FontAwesomeIcon icon={faCoins} className="stat-card-icon" />
           <span className="stat-value">{isLoading ? '...' : `Q${totalValue.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
           <span className="stat-label">Valor Total</span>
         </div>
         
-        {/* Tarjeta 4: Stock Bajo */}
         <div className="stat-card-item">
           <FontAwesomeIcon icon={faExclamationTriangle} className="stat-card-icon" />
           <span className="stat-value">{isLoading ? '...' : lowStockProductsCount}</span>
           <span className="stat-label">Stock Bajo</span>
         </div>
         
-        {/* Tarjeta 5: Movimientos Hoy */}
         <div className="stat-card-item">
            <FontAwesomeIcon icon={faChartLine} className="stat-card-icon" />
            <div className="movements-info">
@@ -605,9 +546,7 @@ const InventoryPage = () => {
            <span className="stat-label">Movimientos Hoy</span>
         </div>
       </div>
-      {/* --- FIN Contenedor de Tarjetas --- */}
 
-      {/* ... (Tu barra de filtros se mantiene igual) ... */}
       <div className="filters-bar">
         <input
           type="text"
@@ -647,7 +586,6 @@ const InventoryPage = () => {
         }}>Limpiar</button>
       </div>
 
-      {/* ... (Tu tabla de productos se mantiene igual) ... */}
       <div className="table-container">
         <div className="table-header">
           <span>Inventario de Productos</span>
@@ -726,7 +664,6 @@ const InventoryPage = () => {
         )}
       </div>
 
-      {/* ... (Tu modal de producto existente) ... */}
       {isModalOpen && (
         <AddEditProductModal
           onClose={() => setIsModalOpen(false)}
@@ -735,7 +672,6 @@ const InventoryPage = () => {
         />
       )}
 
-      {/* --- NUEVO: Renderizar los nuevos modales --- */}
       {isProveedorModalOpen && (
         <AddProveedorModal
           onClose={() => setIsProveedorModalOpen(false)}
@@ -749,8 +685,7 @@ const InventoryPage = () => {
           onSave={handleSaveBodega}
         />
       )}
-      {/* --- FIN NUEVO --- */}
-
+      
       {isListModalOpen && (
         <ListModal
           onClose={() => setIsListModalOpen(false)}
@@ -759,7 +694,6 @@ const InventoryPage = () => {
           isLoading={isCatalogsLoading}
         />
       )}
-      {/* --- FIN NUEVO --- */}
     </div>
   );
 };
