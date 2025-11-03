@@ -17,7 +17,7 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   useEffect(() => {
     console.log('LoginPage montado');
-    const userInfo = sessionStorage.getItem('userInfo');
+    const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
       console.log('Sesión activa detectada, redirigiendo...');
       navigate('/dashboard');
@@ -26,16 +26,16 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   const saveUserData = (data) => {
     try {
-      sessionStorage.setItem('authToken', data.token);
+      localStorage.setItem('authToken', data.token);
       
-      sessionStorage.setItem('userInfo', JSON.stringify({
+      localStorage.setItem('userInfo', JSON.stringify({
         id_usuario: data.user?.id_usuario || data.user?.id,
         nombres: data.user?.nombres || data.user?.name,
         email: data.user?.email,
         rol: data.user?.rol || 'USUARIO'
       }));
 
-      sessionStorage.setItem('userData', JSON.stringify(data.user));
+      localStorage.setItem('userData', JSON.stringify(data.user));
 
       console.log('Usuario logueado exitosamente:', {
         email: data.user?.email,
