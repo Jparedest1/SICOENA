@@ -50,7 +50,12 @@ const LoginPage = ({ onLoginSuccess }) => {
         rol: data.user?.rol || 'USUARIO'
       });
 
-      navigate('/dashboard');
+      if (onLoginSuccess) {
+        onLoginSuccess(); // ✅ Notifica a App.js que el login fue exitoso
+      }
+      
+      // navigate('/dashboard'); // ✅ MODIFICADO: Elimina o comenta esta línea. ¡App.js se encargará de esto!
+
     } catch (err) {
       console.error('❌ Error guardando datos de usuario:', err);
       setError('Error guardando datos. Intente de nuevo.');
@@ -60,40 +65,40 @@ const LoginPage = ({ onLoginSuccess }) => {
   /**
    * Handles standard form login
    */
-  const handleLogin = async (email, password) => {
-  try {
-    const response = await fetch('http://localhost:5000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+  const handleLogin = async (event) => {
+    event.preventDefault(); // ✅ MODIFICADO: Previene la recarga de la página.
+    setError(null);
+    setIsLoading(true);
 
-    const data = await response.json();
+    try {
+      // ✅ MODIFICADO: Usa los estados 'usuario' y 'contrasena' en lugar de parámetros.
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: usuario, password: contrasena }) 
+      });
 
-    if (!response.ok) {
-      throw new Error(data.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Lanza un error con el mensaje del backend si está disponible.
+        throw new Error(data.message || 'Credenciales incorrectas. Por favor, intente de nuevo.');
+      }
+
+      console.log('✅ Login exitoso:', data);
+      
+      // ✅ MODIFICADO: Reutiliza la función saveUserData para consistencia.
+      saveUserData(data);
+
+    } catch (error) {
+      console.error('❌ Error en login:', error);
+      // ✅ MODIFICADO: Muestra el mensaje de error en la UI.
+      setError(error.message);
+    } finally {
+      // ✅ MODIFICADO: Se asegura de detener la carga.
+      setIsLoading(false);
     }
-
-    // ✅ Guardar token
-    localStorage.setItem('authToken', data.token);
-
-    // ✅ Guardar usuario completo con el ID
-    localStorage.setItem('userInfo', JSON.stringify({
-      id: data.user.id,              // ✅ IMPORTANTE
-      email: data.user.email,
-      nombres: data.user.nombres,
-      apellidos: data.user.apellidos,
-      rol: data.user.rol
-    }));
-
-    console.log('✅ Login exitoso:', data.user);
-    
-    onLoginSuccess();
-    navigate('/dashboard');
-  } catch (error) {
-    console.error('❌ Error en login:', error);
-  }
-};
+  };
 
   /**
    * Handles successful Google login
@@ -211,7 +216,6 @@ const LoginPage = ({ onLoginSuccess }) => {
 
         <div className="login-divider"><span>o</span></div>
 
-        {/* --- Google Button --- */}
         <div className="google-login-button-container">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}

@@ -1,5 +1,3 @@
-// src/App.js
-
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -7,7 +5,7 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import './App.css';
 
-// ✅ Importar TODAS las páginas
+// Importar TODAS las páginas
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ReportsPage from './pages/ReportsPage';
@@ -20,14 +18,16 @@ import SettingsPage from './pages/SettingsPage';
 import BackupsPage from './pages/BackupsPage';
 import LogsPage from './pages/LogsPage';
 
-// ✅ Componente envolvente que contiene Header y Sidebar
-const AppLayout = ({ children, userRole, userInfo, onLogout }) => {
+// Componente envolvente que contiene Header y Sidebar
+const AppLayout = ({ children, userInfo, onLogout }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleToggleSidebar = () => {
-    console.log('🔄 Toggle Sidebar:', !sidebarOpen);
     setSidebarOpen(!sidebarOpen);
   };
+  
+  // ✅ Usamos el rol desde userInfo para pasarlo a Sidebar
+  const userRole = userInfo?.rol?.toUpperCase().trim() || 'USUARIO';
 
   return (
     <div className="app-layout-container">
@@ -57,233 +57,115 @@ const AppLayout = ({ children, userRole, userInfo, onLogout }) => {
 };
 
 const App = () => {
-  const [userRole, setUserRole] = useState(null);
+  // ✅ MODIFICADO: Simplificamos los estados. 'isAuthenticated' es ahora la fuente de verdad.
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(true); // Este estado es crucial
 
   useEffect(() => {
-    const getUserRole = () => {
-      try {
-        const userInfoData = localStorage.getItem('userInfo');
-        
-        if (userInfoData) {
-          const user = JSON.parse(userInfoData);
-          // ✅ Normalizar rol: convertir a mayúsculas y eliminar espacios
-          const normalizedRole = (user.rol || 'USUARIO')
-            .toUpperCase()
-            .trim();
-          
-          console.log('👤 Usuario cargado:', { 
-            email: user.email, 
-            nombres: user.nombres,
-            rolOriginal: user.rol,
-            rolNormalizado: normalizedRole
-          });
-          
-          setUserRole(normalizedRole);
-          setUserInfo(user);
-        } else {
-          setUserRole(null);
-          setUserInfo(null);
-        }
-        
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error obteniendo rol del usuario:', error);
-        setUserRole(null);
+    // Esta función se ejecuta solo una vez al cargar la aplicación
+    try {
+      const userInfoData = localStorage.getItem('userInfo');
+      
+      if (userInfoData) {
+        const user = JSON.parse(userInfoData);
+        // ✅ Se establece toda la información del usuario y el estado de autenticación
+        setUserInfo(user);
+        setIsAuthenticated(true);
+      } else {
+        // Si no hay datos, nos aseguramos de que el estado esté limpio
         setUserInfo(null);
-        setIsLoading(false);
+        setIsAuthenticated(false);
       }
-    };
-
-    getUserRole();
-  }, [refreshKey]);
+    } catch (error) {
+      console.error('Error al parsear datos de sesión, limpiando sesión:', error);
+      // Si hay un error (ej. JSON mal formado), se limpia todo para evitar problemas
+      localStorage.clear();
+      setIsAuthenticated(false);
+      setUserInfo(null);
+    } finally {
+      // ✅ Una vez que la verificación termina, dejamos de cargar.
+      setIsLoading(false);
+    }
+  }, []); // El array vacío [] asegura que esto se ejecute solo una vez.
 
   const handleLoginSuccess = () => {
-    setRefreshKey(prev => prev + 1);
+    // Al iniciar sesión, leemos los datos frescos de localStorage
+    const userInfoData = localStorage.getItem('userInfo');
+    if (userInfoData) {
+      setUserInfo(JSON.parse(userInfoData));
+      setIsAuthenticated(true);
+    }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userInfo');
     localStorage.removeItem('userData');
-    setUserRole(null);
+    setIsAuthenticated(false);
     setUserInfo(null);
+    // No es necesario Navigate aquí, el cambio de estado en las rutas lo hará automáticamente.
   };
 
+  // ✅ MODIFICADO: Mientras isLoading sea true, mostramos un mensaje.
+  // Esto previene que las rutas se rendericen antes de tiempo.
   if (isLoading) {
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        fontSize: '18px'
-      }}>
-        Cargando aplicación...
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '18px' }}>
+        Verificando sesión...
       </div>
     );
   }
+  
+  // ✅ Extraemos el rol del usuario de forma segura
+  const userRole = userInfo?.rol?.toUpperCase().trim() || null;
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
+        {/* ✅ MODIFICADO: La ruta de Login ahora redirige si ya estás autenticado */}
+        <Route 
+          path="/login" 
+          element={
+            !isAuthenticated ? (
+              <LoginPage onLoginSuccess={handleLoginSuccess} />
+            ) : (
+              <Navigate to="/dashboard" replace />
+            )
+          } 
+        />
         
-        {/* ✅ DASHBOARD - Acceso: Admin + Usuario */}
+        {/* Se agrupan las rutas protegidas para mayor claridad */}
         <Route 
-          path="/dashboard" 
+          path="/*" 
           element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR', 'USUARIO']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <DashboardPage />
+            isAuthenticated ? (
+              <AppLayout userInfo={userInfo} onLogout={handleLogout}>
+                <Routes>
+                  {/* Rutas para TODOS los usuarios autenticados */}
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="reportes" element={<ReportsPage />} />
+                  <Route path="ayuda" element={<HelpPage />} />
+
+                  {/* Rutas SOLO para ADMINISTRADOR */}
+                  <Route path="inventario" element={<ProtectedRoute allowedRoles={['ADMINISTRADOR']} userRole={userRole}><InventoryPage /></ProtectedRoute>} />
+                  <Route path="ordenes" element={<ProtectedRoute allowedRoles={['ADMINISTRADOR']} userRole={userRole}><OrdersPage /></ProtectedRoute>} />
+                  <Route path="usuario" element={<ProtectedRoute allowedRoles={['ADMINISTRADOR']} userRole={userRole}><UsersPage /></ProtectedRoute>} />
+                  <Route path="institucion" element={<ProtectedRoute allowedRoles={['ADMINISTRADOR']} userRole={userRole}><InstitutionsPage /></ProtectedRoute>} />
+                  <Route path="configuracion" element={<ProtectedRoute allowedRoles={['ADMINISTRADOR']} userRole={userRole}><SettingsPage /></ProtectedRoute>} />
+                  <Route path="respaldos" element={<ProtectedRoute allowedRoles={['ADMINISTRADOR']} userRole={userRole}><BackupsPage /></ProtectedRoute>} />
+                  <Route path="logs" element={<ProtectedRoute allowedRoles={['ADMINISTRADOR']} userRole={userRole}><LogsPage /></ProtectedRoute>} />
+                  
+                  {/* Redirección por defecto dentro del layout */}
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
               </AppLayout>
-            </ProtectedRoute>
+            ) : (
+              <Navigate to="/login" replace />
+            )
           } 
         />
-
-        {/* ✅ REPORTES - Acceso: Admin + Usuario */}
-        <Route 
-          path="/reportes" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR', 'USUARIO']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <ReportsPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ AYUDA - Acceso: Admin + Usuario */}
-        <Route 
-          path="/ayuda" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR', 'USUARIO']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <HelpPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ INVENTARIO - Acceso: Solo Admin */}
-        <Route 
-          path="/inventario" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <InventoryPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ ÓRDENES - Acceso: Solo Admin */}
-        <Route 
-          path="/ordenes" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <OrdersPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ USUARIOS - Acceso: Solo Admin */}
-        <Route 
-          path="/usuario" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <UsersPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ INSTITUCIONES - Acceso: Solo Admin */}
-        <Route 
-          path="/institucion" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <InstitutionsPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ CONFIGURACIÓN - Acceso: Solo Admin */}
-        <Route 
-          path="/configuracion" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <SettingsPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ RESPALDOS - Acceso: Solo Admin */}
-        <Route 
-          path="/respaldos" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <BackupsPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* ✅ LOGS DEL SISTEMA - Acceso: Solo Admin */}
-        <Route 
-          path="/logs" 
-          element={
-            <ProtectedRoute 
-              allowedRoles={['ADMINISTRADOR']} 
-              userRole={userRole}
-            >
-              <AppLayout userRole={userRole} userInfo={userInfo} onLogout={handleLogout}>
-                <LogsPage />
-              </AppLayout>
-            </ProtectedRoute>
-          } 
-        />
-
-        {/* Ruta por defecto */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   );

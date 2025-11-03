@@ -77,7 +77,7 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
     setConfirmarContrasena(newPassword);
   };
 
-  // Handle form submission
+  // ✅ MODIFICADO: Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     // Validate passwords only if a new password is being set
@@ -88,27 +88,30 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
 
     // Construct the data object to send to the backend
     const userData = {
-      // Combine nombre and apellido for the backend if needed, or send separately
       nombre: `${nombre} ${apellido}`.trim(), 
-      email: email, // Send email (backend maps to 'correo')
-      rol: rol || 'Usuario', // Default role if not selected
-      telefono: telefono || null, // Send null if empty
-      estado: estado, // Send state ('Activo' or 'Inactivo')
+      email: email,
+      rol: rol || 'Usuario',
+      telefono: telefono || null,
+      estado: estado,
     };
 
-    // MODIFICATION: Include password if it's not empty. This works for both create and edit mode.
+    // ✅ MODIFICACIÓN CLAVE: Si estamos en modo edición, añadimos el ID del usuario.
+    if (isEditMode) {
+      userData.id_usuario = currentUser.id_usuario;
+    }
+
+    // Incluye la contraseña solo si se ha introducido una nueva.
     if (contrasena) {
       userData.contrasena = contrasena;
     }
 
-    onSave(userData); // Call the save function passed from UsersPage
+    onSave(userData); // Llama a la función de guardado (en UsersPage.js) con todos los datos necesarios.
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content large" onClick={(e) => e.stopPropagation()}> {/* Added 'large' class */}
+      <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          {/* Title changes based on mode */}
           <h2>{isEditMode ? 'Editar Usuario' : 'Añadir Nuevo Usuario'}</h2> 
           <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
@@ -129,14 +132,13 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
                 <small className="helper-text">Apellido(s) del usuario</small>
               </div>
             </div>
-            {/* CUI field removed */}
             <div className="form-row"> 
               <div className="form-group">
                 <label htmlFor="telefono">Teléfono</label>
                 <input type="tel" id="telefono" placeholder="Ingrese el teléfono" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
                 <small className="helper-text">Número de teléfono (opcional)</small>
               </div>
-               <div className="form-group"> {/* Email moved here to fill the row */}
+               <div className="form-group">
                 <label htmlFor="email">Correo Electrónico *</label>
                 <input type="email" id="email" placeholder="Ingrese el correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 <small className="helper-text">Dirección de correo electrónico única del usuario</small>
@@ -157,14 +159,12 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
                 </select>
                 <small className="helper-text">Seleccione el rol que tendrá el usuario en el sistema</small>
               </div>
-              {/* Institución field removed */}
-               <div className="form-group"> {/* Added empty div for layout consistency */}
-                    {/* Optionally add another system setting here if needed */}
+               <div className="form-group">
                </div>
             </div>
           </div>
 
-          {/* MODIFICATION: The security section is now always visible, but fields are not required in edit mode. */}
+          {/* --- CONFIGURACIÓN DE SEGURIDAD --- */}
           <div className="form-section">
             <div className="section-header-with-button">
               <h3><FontAwesomeIcon icon={faLock} className="section-icon" /> CONFIGURACIÓN DE SEGURIDAD</h3>
@@ -177,7 +177,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
             )}
             <div className="form-row">
               <div className="form-group">
-                {/* MODIFICATION: The 'required' attribute is now conditional */}
                 <label htmlFor="contrasena">Contraseña {isEditMode ? '(Opcional)' : '*'}</label>
                 <div className="password-wrapper">
                   <input 
@@ -186,7 +185,7 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
                     placeholder={isEditMode ? "Ingrese la nueva contraseña" : "Ingrese la contraseña"} 
                     value={contrasena} 
                     onChange={(e) => setContrasena(e.target.value)} 
-                    required={!isEditMode} // Only required when creating a new user
+                    required={!isEditMode}
                   />
                   <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)} />
                 </div>
@@ -201,7 +200,7 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
                     placeholder="Confirme la contraseña" 
                     value={confirmarContrasena} 
                     onChange={(e) => setConfirmarContrasena(e.target.value)} 
-                    required={!isEditMode || (isEditMode && contrasena)} // Required in edit mode only if new password is set
+                    required={!isEditMode || (isEditMode && contrasena)}
                   />
                   <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} className="password-toggle-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
                 </div>
@@ -230,7 +229,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
           <div className="modal-footer">
             <button type="button" className="btn-cancel" onClick={onClose}>Cancelar</button>
             <button type="submit" className="btn-save">
-              {/* Button text changes based on mode */}
               {isEditMode ? 'Guardar Cambios' : 'Crear Usuario'} 
             </button>
           </div>

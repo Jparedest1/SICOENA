@@ -155,49 +155,73 @@ const getUserById = async (req, res) => {
     }
 };
 
-// ✅ FUNCIÓN 4: Actualizar usuario
+// ✅ MODIFICADO: FUNCIÓN 4: Actualizar usuario
 const updateUser = async (req, res) => {
     const userId = req.params.id;
+    // Extraemos todos los campos, incluyendo la contraseña
     const { 
         nombre, 
         email, 
         rol, 
         telefono, 
-        estado 
+        estado,
+        contrasena // <-- Campo clave
     } = req.body;
 
-    const nameParts = nombre ? nombre.split(' ') : [''];
-    const nombres = nameParts[0];
-    const apellidos = nameParts.slice(1).join(' ');
-
-    if (!nombres || !email) {
+    // Validación básica de campos
+    if (!nombre || !email) {
         return res.status(400).json({ message: 'Nombre y email son requeridos.' });
     }
     if (estado && estado.toUpperCase() !== 'ACTIVO' && estado.toUpperCase() !== 'INACTIVO') {
         return res.status(400).json({ message: 'Estado inválido.' });
     }
 
+    // Separamos nombre y apellidos
+    const nameParts = nombre ? nombre.split(' ') : [''];
+    const nombres = nameParts[0] || '';
+    const apellidos = nameParts.slice(1).join(' ');
+
     try {
-        const sql = `
-            UPDATE usuario SET 
-                nombres = ?, 
-                apellidos = ?, 
-                correo = ?, 
-                rol = ?, 
-                telefono = ?, 
-                estado = ? 
-            WHERE id_usuario = ?
-        `;
-        
-        const [result] = await db.query(sql, [
+        // Construcción dinámica de la consulta SQL
+        let sqlFields = [
+            'nombres = ?', 
+            'apellidos = ?', 
+            'correo = ?', 
+            'rol = ?', 
+            'telefono = ?', 
+            'estado = ?'
+        ];
+        let params = [
             nombres, 
             apellidos, 
             email, 
             rol || 'Usuario',
             telefono || null, 
-            estado ? estado.toUpperCase() : 'ACTIVO',
-            userId
-        ]);
+            estado ? estado.toUpperCase() : 'ACTIVO'
+        ];
+
+        // --- INICIO DE LA LÓGICA CORREGIDA ---
+        // Si se proporciona una nueva contraseña en el body de la petición...
+        if (contrasena && contrasena.trim() !== '') {
+            console.log(`🔑 Actualizando contraseña para el usuario ${userId}`);
+            // ...la hasheamos
+            const hashedPassword = await bcrypt.hash(contrasena, 10);
+            // ...y la añadimos a los campos y parámetros a actualizar
+            sqlFields.push('contraseña = ?');
+            params.push(hashedPassword);
+        }
+        // --- FIN DE LA LÓGICA CORREGIDA ---
+
+        // Unimos todos los campos en un string para la consulta SET
+        const sqlSetClause = sqlFields.join(', ');
+        
+        // Añadimos el ID del usuario al final de los parámetros para el WHERE
+        params.push(userId);
+
+        // Construimos y ejecutamos la consulta final
+        const sql = `UPDATE usuario SET ${sqlSetClause} WHERE id_usuario = ?`;
+        
+        const [result] = await db.query(sql, params);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Usuario no encontrado.' });
@@ -222,6 +246,7 @@ const updateUser = async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor al actualizar usuario.' });
     }
 };
+
 
 // ✅ FUNCIÓN 5: Eliminar usuario
 const deleteUser = async (req, res) => {
