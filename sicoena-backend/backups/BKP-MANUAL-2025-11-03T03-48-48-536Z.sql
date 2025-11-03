@@ -270,3 +270,283 @@ CREATE TABLE `movimiento_bodega` (
 
 LOCK TABLES `movimiento_bodega` WRITE;
 /*!40000 ALTER TABLE `movimiento_bodega` DISABLE KEYS */;
+/*!40000 ALTER TABLE `movimiento_bodega` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notificacion`
+--
+
+DROP TABLE IF EXISTS `notificacion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notificacion` (
+  `id_notificacion` int NOT NULL AUTO_INCREMENT,
+  `id_usuario` int NOT NULL,
+  `titulo` varchar(100) NOT NULL,
+  `descripcion` text NOT NULL,
+  `tipo` varchar(50) NOT NULL,
+  `leida` tinyint(1) DEFAULT '0',
+  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `fecha_lectura` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id_notificacion`),
+  KEY `idx_notificaciones_usuario` (`id_usuario`,`leida`,`fecha_creacion` DESC),
+  CONSTRAINT `notificacion_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notificacion`
+--
+
+LOCK TABLES `notificacion` WRITE;
+/*!40000 ALTER TABLE `notificacion` DISABLE KEYS */;
+INSERT INTO `notificacion` VALUES (1,3,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 07:28:54','2025-11-01 18:30:50'),(3,3,'Nuevo usuario registrado','El usuario \"Agusto Solis \" (agustosolis@gmail.com) ha sido registrado en el sistema.','usuario',1,'2025-11-01 07:39:17','2025-11-01 18:30:50'),(5,7,'Nuevo usuario registrado','El usuario \"Agusto Solis \" (agustosolis@gmail.com) ha sido registrado en el sistema.','usuario',0,'2025-11-01 07:39:17',NULL),(6,3,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 18:18:48','2025-11-01 18:30:50'),(8,7,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',0,'2025-11-01 18:18:48',NULL),(9,3,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 18:32:55','2025-11-02 01:18:53'),(10,3,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 19:13:01','2025-11-02 01:18:53'),(11,7,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',0,'2025-11-01 19:13:01',NULL),(12,3,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 19:27:15','2025-11-02 01:18:53'),(13,7,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',0,'2025-11-01 19:27:15',NULL),(14,3,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 21:33:10','2025-11-02 01:18:53'),(15,7,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',0,'2025-11-01 21:33:10',NULL),(16,3,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 21:33:10','2025-11-02 01:18:53'),(17,7,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',0,'2025-11-01 21:33:10',NULL),(18,3,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',1,'2025-11-01 21:33:10','2025-11-02 01:18:53'),(19,7,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',0,'2025-11-01 21:33:10',NULL),(20,3,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',1,'2025-11-02 00:29:34','2025-11-02 01:18:53'),(21,7,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 00:29:34',NULL),(22,3,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',1,'2025-11-02 00:29:34','2025-11-02 01:18:53'),(23,7,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 00:29:34',NULL),(24,3,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',1,'2025-11-02 00:29:34','2025-11-02 01:18:53'),(25,7,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 00:29:34',NULL),(26,3,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',1,'2025-11-02 01:27:41','2025-11-02 02:01:19'),(27,3,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',1,'2025-11-02 01:27:41','2025-11-02 02:01:19'),(28,3,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',1,'2025-11-02 01:27:41','2025-11-02 02:01:19'),(29,3,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 16:39:27',NULL),(30,7,'⚠️ Stock bajo: Espagueti','El producto \"Espagueti\" tiene 45 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 16:39:27',NULL),(31,3,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 16:39:27',NULL),(32,7,'⚠️ Stock bajo: Piña','El producto \"Piña\" tiene 26 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 16:39:27',NULL),(33,3,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 16:39:27',NULL),(34,7,'⚠️ Stock bajo: Zanahoria','El producto \"Zanahoria\" tiene 38 unidades en stock (mínimo: 50)','stock',0,'2025-11-02 16:39:27',NULL);
+/*!40000 ALTER TABLE `notificacion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `orden`
+--
+
+DROP TABLE IF EXISTS `orden`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `orden` (
+  `id_orden` int NOT NULL AUTO_INCREMENT,
+  `id_escuela` int DEFAULT NULL,
+  `id_menu` int DEFAULT NULL,
+  `id_usuario` int DEFAULT NULL,
+  `cantidad_alumnos` int DEFAULT NULL,
+  `dias_duracion` int DEFAULT NULL,
+  `codigo_orden` varchar(50) NOT NULL,
+  `fecha_creacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `fecha_entrega_programada` date DEFAULT NULL,
+  `fecha_entrega` date DEFAULT NULL,
+  `estado` varchar(50) DEFAULT 'Pendiente',
+  `valor_total` decimal(10,2) DEFAULT NULL,
+  `observaciones` text,
+  `fecha_modificacion` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_orden`),
+  KEY `id_escuela` (`id_escuela`),
+  KEY `id_usuario` (`id_usuario`),
+  KEY `fk_orden_menu` (`id_menu`),
+  CONSTRAINT `fk_orden_menu` FOREIGN KEY (`id_menu`) REFERENCES `menu` (`id_menu`),
+  CONSTRAINT `orden_ibfk_1` FOREIGN KEY (`id_escuela`) REFERENCES `escuela` (`id_escuela`),
+  CONSTRAINT `orden_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `orden`
+--
+
+LOCK TABLES `orden` WRITE;
+/*!40000 ALTER TABLE `orden` DISABLE KEYS */;
+INSERT INTO `orden` VALUES (4,1,1,4,50,30,'ORD-2025-478','2025-10-31 23:55:19',NULL,'2025-10-31','CANCELADO',309000.00,NULL,NULL),(5,1,1,4,20,15,'ORD-2025-739','2025-10-31 23:55:14',NULL,'2025-10-31','ENTREGADO',64800.00,NULL,NULL),(6,1,1,3,1,1,'ORD-2025-40','2025-11-01 00:59:11',NULL,'2025-10-31','ENTREGADO',216.00,NULL,NULL),(7,1,2,4,20,10,'ORD-2025-738','2025-11-01 01:03:15',NULL,'2025-10-23','ENTREGADO',70420.00,NULL,NULL);
+/*!40000 ALTER TABLE `orden` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `orden_producto`
+--
+
+DROP TABLE IF EXISTS `orden_producto`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `orden_producto` (
+  `id_orden_producto` int NOT NULL AUTO_INCREMENT,
+  `id_orden` int NOT NULL,
+  `id_producto` int NOT NULL,
+  `cantidad` decimal(10,2) DEFAULT NULL,
+  `unidad_medida` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id_orden_producto`),
+  KEY `id_orden` (`id_orden`),
+  KEY `id_producto` (`id_producto`),
+  CONSTRAINT `orden_producto_ibfk_1` FOREIGN KEY (`id_orden`) REFERENCES `orden` (`id_orden`) ON DELETE CASCADE,
+  CONSTRAINT `orden_producto_ibfk_2` FOREIGN KEY (`id_producto`) REFERENCES `producto` (`id_producto`)
+) ENGINE=InnoDB AUTO_INCREMENT=158 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `orden_producto`
+--
+
+LOCK TABLES `orden_producto` WRITE;
+/*!40000 ALTER TABLE `orden_producto` DISABLE KEYS */;
+INSERT INTO `orden_producto` VALUES (64,4,67,1.00,'taza'),(65,4,26,8.00,'unidades'),(66,4,43,3.00,'dientes'),(67,4,56,2.50,'libras'),(68,4,68,1.50,'libras'),(69,4,48,1.00,'gusto'),(70,4,28,0.50,'libra'),(71,4,40,0.50,'manojo'),(72,4,49,1.00,'gusto'),(73,4,35,2.00,'unidades'),(74,4,44,1.00,'gusto'),(75,4,12,8.00,'unidades'),(76,4,34,1.00,'libra'),(77,4,74,5.00,'libras'),(78,4,46,1.00,'gusto'),(79,4,29,2.00,'unidades'),(80,4,21,1.50,'libras'),(81,4,51,4.00,'cucharadas'),(82,4,27,1.00,'libra'),(83,4,64,1.00,'unidad'),(84,4,30,6.00,'unidades'),(85,5,67,1.00,'taza'),(86,5,69,10.00,'litros'),(87,5,26,8.00,'unidades'),(88,5,43,3.00,'dientes'),(89,5,56,2.50,'libras'),(90,5,68,1.50,'libras'),(91,5,48,1.00,'gusto'),(92,5,28,0.50,'libra'),(93,5,40,0.50,'manojo'),(94,5,49,1.00,'gusto'),(95,5,35,2.00,'unidades'),(96,5,44,1.00,'gusto'),(97,5,12,8.00,'unidades'),(98,5,34,1.00,'libra'),(99,5,74,5.00,'libras'),(100,5,46,1.00,'gusto'),(101,5,29,2.00,'unidades'),(102,5,21,1.50,'libras'),(103,5,51,4.00,'cucharadas'),(104,5,27,1.00,'libra'),(105,5,64,1.00,'unidad'),(106,5,30,6.00,'unidades'),(107,6,67,1.00,'Litro'),(108,6,69,10.00,'Litro'),(109,6,26,8.00,'Unidad'),(110,6,43,3.00,'Unidad'),(111,6,56,2.50,'Libra'),(112,6,68,1.50,'Libra'),(113,6,48,1.00,'Manojo'),(114,6,28,0.50,'Libra'),(115,6,40,0.50,'Manojo'),(116,6,49,1.00,'Libra'),(117,6,35,2.00,'Libra'),(118,6,44,1.00,'Manojo'),(119,6,12,8.00,'Unidad'),(120,6,34,1.00,'Libra'),(121,6,74,5.00,'Libra'),(122,6,46,1.00,'Libra'),(123,6,29,2.00,'Unidad'),(124,6,21,1.50,'Unidad'),(125,6,51,4.00,'Libra'),(126,6,27,1.00,'Libra'),(127,6,64,1.00,'Unidad'),(128,6,30,6.00,'Unidad'),(129,7,67,1.00,'Litro'),(130,7,88,1.00,'Litro'),(131,7,92,10.00,'Litro'),(132,7,43,3.00,'Unidad'),(133,7,85,3.00,'Diente'),(134,7,87,0.50,'Manojo'),(135,7,68,1.50,'Libra'),(136,7,91,1.50,'Libra'),(137,7,80,3.00,'Libra'),(138,7,81,1.00,'Unidad'),(139,7,28,0.50,'Libra'),(140,7,84,0.50,'Libra'),(141,7,82,2.00,'Unidad'),(142,7,62,8.00,'Bolsa'),(143,7,95,8.00,'Paquete'),(144,7,61,8.00,'Bolsa'),(145,7,79,8.00,'Libra'),(146,7,12,15.00,'Unidad'),(147,7,90,15.00,'Unidad'),(148,7,78,15.00,'Litro'),(149,7,21,4.00,'Unidad'),(150,7,94,4.00,'Unidad'),(151,7,51,4.00,'Libra'),(152,7,89,4.00,'Kilogramo'),(153,7,27,4.50,'Libra'),(154,7,83,4.50,'Libra'),(155,7,93,40.00,'Unidad'),(156,7,30,2.00,'Unidad'),(157,7,86,2.00,'Unidad');
+/*!40000 ALTER TABLE `orden_producto` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `producto`
+--
+
+DROP TABLE IF EXISTS `producto`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `producto` (
+  `id_producto` int NOT NULL AUTO_INCREMENT,
+  `id_proveedor` int DEFAULT NULL,
+  `id_bodega` int DEFAULT NULL,
+  `nombre_producto` varchar(255) NOT NULL,
+  `descripcion` text,
+  `categoria` varchar(100) DEFAULT NULL,
+  `unidad_medida` varchar(50) DEFAULT NULL,
+  `precio_unitario` decimal(10,2) DEFAULT NULL,
+  `stock_disponible` int DEFAULT '0',
+  `stock_minimo` int DEFAULT '0',
+  `perecedero` tinyint(1) DEFAULT '0',
+  `fecha_vencimiento` datetime DEFAULT NULL,
+  `estado` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id_producto`),
+  KEY `id_proveedor` (`id_proveedor`),
+  KEY `id_bodega` (`id_bodega`),
+  CONSTRAINT `producto_ibfk_1` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedor` (`id_proveedor`),
+  CONSTRAINT `producto_ibfk_2` FOREIGN KEY (`id_bodega`) REFERENCES `bodega` (`id_bodega`)
+) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `producto`
+--
+
+LOCK TABLES `producto` WRITE;
+/*!40000 ALTER TABLE `producto` DISABLE KEYS */;
+INSERT INTO `producto` VALUES (12,1,1,'Limón','Fruta fresca','Fruta','Unidad',0.50,461,100,1,NULL,'ACTIVO'),(13,1,1,'Jocote marañón','Fruta fresca','Fruta','Libra',7.00,100,25,1,NULL,'ACTIVO'),(14,1,1,'Mango','Fruta fresca','Fruta','Unidad',3.00,200,50,1,NULL,'ACTIVO'),(15,1,1,'Zapote','Fruta fresca','Fruta','Unidad',3.00,200,50,1,NULL,'ACTIVO'),(16,1,1,'Manzana','Fruta fresca','Fruta','Unidad',3.00,500,100,1,NULL,'ACTIVO'),(17,1,1,'Carambola','Fruta fresca','Fruta','Unidad',2.00,500,100,1,NULL,'ACTIVO'),(18,1,1,'Papaya','Fruta fresca','Fruta','Unidad',17.00,200,50,1,NULL,'ACTIVO'),(19,1,1,'Mora','Fruta fresca','Fruta','Libra',5.00,200,50,1,NULL,'ACTIVO'),(20,1,1,'Naranja','Fruta fresca','Fruta','Unidad',4.00,500,100,1,NULL,'ACTIVO'),(21,1,1,'Piña','Fruta fresca','Fruta','Unidad',15.00,190,50,1,NULL,'ACTIVO'),(22,1,1,'Melón','Fruta fresca','Fruta','Unidad',15.00,200,50,1,NULL,'ACTIVO'),(23,1,1,'Sandía','Fruta fresca','Fruta','Unidad',0.17,200,50,1,NULL,'ACTIVO'),(24,1,1,'Banano','Fruta fresca','Fruta','Unidad',1.25,200,50,1,NULL,'ACTIVO'),(25,1,1,'Tamarindo','Fruta fresca','Fruta','Libra',3.00,200,50,1,NULL,'ACTIVO'),(26,1,1,'Aguacate','Fruta fresca','Fruta','Unidad',5.00,176,50,1,NULL,'ACTIVO'),(27,1,1,'Tomate','Verdura fresca','Verdura','Libra',8.00,192,50,1,NULL,'ACTIVO'),(28,1,1,'Cebolla','Verdura fresca','Verdura','Libra',5.00,200,50,1,NULL,'ACTIVO'),(29,1,1,'Pimiento (chile dulce)','Verdura fresca','Verdura','Unidad',1.00,194,50,1,NULL,'ACTIVO'),(30,1,1,'Zanahoria','Verdura fresca','Verdura','Unidad',1.50,180,20,1,NULL,'ACTIVO'),(31,1,1,'Ejote','Verdura fresca','Verdura','Libra',2.00,200,20,1,NULL,'ACTIVO'),(32,1,1,'Repollo','Verdura fresca','Verdura','Unidad',8.00,200,50,1,NULL,'ACTIVO'),(33,1,1,'Remolacha','Verdura fresca','Verdura','Libra',7.00,200,50,1,NULL,'ACTIVO'),(34,1,1,'Papa','Verdura fresca','Verdura','Libra',5.00,197,50,1,NULL,'ACTIVO'),(35,1,1,'Güisquil (chayote)','Verdura fresca','Verdura','Libra',5.00,194,50,1,NULL,'ACTIVO'),(36,1,1,'Apio','Verdura fresca','Verdura','Manojo',1.00,200,50,1,NULL,'ACTIVO'),(37,1,1,'Cebollín','Verdura fresca','Verdura','Libra',5.00,200,50,1,NULL,'ACTIVO'),(38,1,1,'Bledo (hoja)','Verdura de hoja','Verdura','Manojo',0.50,200,50,1,NULL,'ACTIVO'),(39,1,1,'Miltomate (tomatillo)','Verdura fresca','Verdura','Libra',3.00,200,50,1,NULL,'ACTIVO'),(40,1,1,'Cilantro','Hierba fresca','Hierba y especia','Manojo',0.50,200,50,1,NULL,'ACTIVO'),(41,1,1,'Hierbabuena','Hierba fresca','Hierba y especia','Manojo',0.50,200,50,1,NULL,'ACTIVO'),(42,1,1,'Perejil','Hierba fresca','Hierba y especia','Manojo',0.50,200,50,1,NULL,'ACTIVO'),(43,1,1,'Ajo','Bulbo fresco','Hierba y especia','Unidad',1.00,188,50,1,NULL,'ACTIVO'),(44,1,2,'Laurel','Especia seca','Hierba y especia','Manojo',1.00,497,100,0,NULL,'ACTIVO'),(45,1,2,'Tomillo','Especia seca','Hierba y especia','Libra',1.00,500,100,0,NULL,'ACTIVO'),(46,1,2,'Pimienta','Molida','Hierba y especia','Libra',1.00,497,100,0,NULL,'ACTIVO'),(47,1,2,'Pimienta gorda','Grano entero','Hierba y especia','Libra',1.00,500,100,0,NULL,'ACTIVO'),(48,1,2,'Canela','Rama/molida','Hierba y especia','Manojo',3.00,197,50,0,NULL,'ACTIVO'),(49,1,2,'Clavo de olor','Especia seca','Hierba y especia','Libra',1.00,97,25,0,NULL,'ACTIVO'),(50,1,2,'Vinagre','Grado alimenticio','Hierba y especia','Botella',5.00,300,100,0,NULL,'ACTIVO'),(51,1,2,'Sal','Grado alimenticio','Hierba y especia','Libra',1.50,484,100,0,NULL,'ACTIVO'),(52,1,2,'Pepitoria (semilla de ayote molida)','Semilla molida','Semilla y fruto seco','Libra',2.00,200,50,0,NULL,'ACTIVO'),(53,1,2,'Maní (cacahuate)','Fruto seco','Semilla y fruto seco','Libra',5.00,200,50,0,NULL,'ACTIVO'),(54,1,2,'Frijol colorado','Grano seco','Legumbre','Libra',2.00,500,100,0,NULL,'ACTIVO'),(55,1,2,'Frijol negro','Grano seco','Legumbre','Libra',2.00,500,100,0,NULL,'ACTIVO'),(56,1,2,'Arroz blanco','Grano','Cereal y harina','Libra',2.00,494,100,0,NULL,'ACTIVO'),(57,1,2,'Avena en hojuelas','Cereal','Cereal y harina','Bolsa',7.00,500,100,0,NULL,'ACTIVO'),(58,1,2,'Harina fortificada','Para atol','Cereal y harina','Libra',7.00,500,100,0,NULL,'ACTIVO'),(59,1,2,'Harina de haba','Para atol','Cereal y harina','Libra',5.00,500,100,0,NULL,'ACTIVO'),(60,1,2,'Maíz en grano','Grano','Cereal y harina','Libra',7.00,200,50,0,NULL,'ACTIVO'),(61,1,2,'Fideos','Pasta','Pasta','Bolsa',2.00,192,50,0,NULL,'ACTIVO'),(62,1,2,'Espagueti','Pasta','Pasta','Bolsa',1.50,192,50,0,NULL,'ACTIVO'),(63,1,2,'Coditos','Pasta','Pasta','Bolsa',2.00,200,50,0,NULL,'ACTIVO'),(64,1,1,'Tortilla de maíz','Panificado fresco','Panificados','Unidad',0.25,197,50,1,NULL,'ACTIVO'),(65,1,1,'Pan francés','Panificado fresco','Panificados','Unidad',1.00,500,50,1,NULL,'ACTIVO'),(66,1,2,'Tostadas de maíz','Producto seco','Panificados','Unidad',0.50,500,20,0,NULL,'ACTIVO'),(67,1,2,'Aceite vegetal','Grado alimenticio','Básico de despensa','Litro',12.00,196,50,0,NULL,'ACTIVO'),(68,1,2,'Azúcar','Granulada','Básico de despensa','Libra',7.00,192,50,0,NULL,'ACTIVO'),(69,1,2,'Agua pura','Embotellada/garrafón','Bebida','Litro',1.00,480,100,0,NULL,'ACTIVO'),(70,1,2,'Leche en polvo','Lácteo seco','Lácteo','Bolsa',0.00,200,50,0,NULL,'ACTIVO'),(71,1,1,'Queso fresco','Refrigerado','Lácteo','Unidad',5.00,200,50,1,NULL,'ACTIVO'),(72,1,1,'Queso duro/seco','Refrigerado','Lácteo','Unidad',5.00,200,50,1,NULL,'ACTIVO'),(73,1,1,'Huevo de gallina','Grado alimenticio','Proteína animal','Unidad',1.25,1500,200,1,NULL,'ACTIVO'),(74,1,1,'Pechuga de pollo','Refrigerado/congelado','Proteína animal','Libra',12.00,185,20,1,NULL,'ACTIVO'),(75,1,1,'Pollo entero','Refrigerado/congelado','Proteína animal','Libra',16.00,100,20,1,NULL,'ACTIVO'),(76,1,1,'Carne de res molida','Refrigerado/congelado','Proteína animal','Libra',30.00,50,10,1,NULL,'ACTIVO'),(77,1,1,'Carne de res para bistec','Refrigerado/congelado','Proteína animal','Libra',35.00,50,10,1,NULL,'ACTIVO'),(78,NULL,NULL,'Limonada','Refresco de limonada','Bebidas','Litro',2.50,85,10,0,NULL,'ACTIVO'),(79,NULL,NULL,'Fideos','Fideos para sopa','Granos y Pastas','Libra',1.50,42,5,0,NULL,'ACTIVO'),(80,NULL,NULL,'Carne molida','Carne de res molida','Carnes','Libra',8.00,37,5,0,NULL,'ACTIVO'),(81,NULL,NULL,'Carne vegetal','Carne vegetal para cocinado','Vegetales','Unidad',2.00,29,5,0,NULL,'ACTIVO'),(82,NULL,NULL,'Chile pimiento','Chile pimiento rojo o verde','Vegetales','Unidad',1.50,48,10,0,NULL,'ACTIVO'),(83,NULL,NULL,'Tomate','Tomate fresco','Vegetales','Libra',2.00,56,10,0,NULL,'ACTIVO'),(84,NULL,NULL,'Cebolla','Cebolla blanca','Vegetales','Libra',1.00,40,5,0,NULL,'ACTIVO'),(85,NULL,NULL,'Ajo','Dientes de ajo','Vegetales','Diente',0.20,197,50,0,NULL,'ACTIVO'),(86,2,2,'Zanahoria','Zanahoria fresca','Vegetales','Unidad',1.50,38,50,0,NULL,'ACTIVO'),(87,NULL,NULL,'Albahaca','Albahaca fresca','Condimentos','Manojo',3.00,20,2,0,NULL,'ACTIVO'),(88,NULL,NULL,'Aceite vegetal','Aceite vegetal para cocinar','Condimentos','Litro',12.00,29,5,0,NULL,'ACTIVO'),(89,NULL,NULL,'Sal','Sal de mesa','Condimentos','Kilogramo',2.50,46,10,0,NULL,'ACTIVO'),(90,NULL,NULL,'Limón','Limón ácido','Frutas','Unidad',0.50,185,30,0,NULL,'ACTIVO'),(91,NULL,NULL,'Azúcar','Azúcar blanca','Básicos','Libra',2.00,98,20,0,NULL,'ACTIVO'),(92,NULL,NULL,'Agua Segura','Agua potable segura','Bebidas','Litro',1.00,190,50,0,NULL,'ACTIVO'),(93,NULL,NULL,'Tortilla','Tortilla de maíz','Pan','Unidad',0.50,460,100,0,NULL,'ACTIVO'),(94,2,2,'Piña','Piña fresca','Frutas','Unidad',4.00,26,50,0,NULL,'ACTIVO'),(95,1,2,'Espagueti','Espagueti 200 gramos','Granos y Pastas','Bolsa',1.50,45,50,0,NULL,'ACTIVO');
+/*!40000 ALTER TABLE `producto` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `proveedor`
+--
+
+DROP TABLE IF EXISTS `proveedor`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `proveedor` (
+  `id_proveedor` int NOT NULL AUTO_INCREMENT,
+  `nombre_proveedor` varchar(255) NOT NULL,
+  `nit` varchar(50) DEFAULT NULL,
+  `direccion` text,
+  `telefono` int DEFAULT NULL,
+  `estado` text,
+  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_proveedor`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `proveedor`
+--
+
+LOCK TABLES `proveedor` WRITE;
+/*!40000 ALTER TABLE `proveedor` DISABLE KEYS */;
+INSERT INTO `proveedor` VALUES (1,'Cenma','5845687','Ciudad Capital',55556666,'ACTIVO','2025-10-24 23:32:43'),(2,'Terminal','58658549','Ciudad Capital',56878654,'ACTIVO','2025-11-01 13:11:40'),(3,'Panaderia La Mejor','0000000','Calle Real Zona 3 Sumpango',56878654,'ACTIVO','2025-11-01 13:26:13');
+/*!40000 ALTER TABLE `proveedor` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reporte`
+--
+
+DROP TABLE IF EXISTS `reporte`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reporte` (
+  `id_reporte` int NOT NULL AUTO_INCREMENT,
+  `id_usuario` int DEFAULT NULL,
+  `nombre_reporte` varchar(100) NOT NULL,
+  `tipo_reporte` varchar(50) NOT NULL,
+  `periodo` date DEFAULT NULL,
+  `fecha_generacion` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_reporte`),
+  KEY `id_usuario` (`id_usuario`),
+  CONSTRAINT `reporte_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reporte`
+--
+
+LOCK TABLES `reporte` WRITE;
+/*!40000 ALTER TABLE `reporte` DISABLE KEYS */;
+/*!40000 ALTER TABLE `reporte` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reportes_generados`
+--
+
+DROP TABLE IF EXISTS `reportes_generados`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reportes_generados` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tipo` varchar(10) NOT NULL,
+  `modulo` varchar(50) NOT NULL,
+  `generado_por_id` int DEFAULT NULL,
+  `fecha_generacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reportes_generados`
+--
+
+LOCK TABLES `reportes_generados` WRITE;
+/*!40000 ALTER TABLE `reportes_generados` DISABLE KEYS */;
+INSERT INTO `reportes_generados` VALUES (1,'PDF','inventario',3,'2025-11-02 01:53:11'),(2,'EXCEL','inventario',3,'2025-11-02 02:00:49'),(3,'PDF','orden_individual 7',3,'2025-11-02 17:25:06'),(4,'EXCEL','orden_individual 6',3,'2025-11-02 17:25:24');
+/*!40000 ALTER TABLE `reportes_generados` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `usuario`
+--
+
+DROP TABLE IF EXISTS `usuario`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `usuario` (
+  `id_usuario` int NOT NULL AUTO_INCREMENT,
+  `nombres` varchar(100) NOT NULL,
+  `apellidos` varchar(100) NOT NULL,
+  `correo` varchar(100) NOT NULL,
+  `contraseña` varchar(255) NOT NULL,
+  `telefono` int DEFAULT NULL,
+  `rol` varchar(50) NOT NULL,
+  `estado` varchar(50) DEFAULT '1',
+  `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ultima_conexion` datetime DEFAULT NULL,
+  `intentos_fallidos` int DEFAULT '0',
+  `bloqueado_hasta` datetime DEFAULT NULL,
+  `requiere_cambio_contraseña` varchar(50) DEFAULT '0',
+  `fecha_ultimo_cambio_contraseña` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_usuario`),
+  UNIQUE KEY `correo` (`correo`),
+  UNIQUE KEY `uq_correo` (`correo`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `usuario`
+--
+
+LOCK TABLES `usuario` WRITE;
+/*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
+INSERT INTO `usuario` VALUES (3,'Admin','SICOENA','jhony.paredes1994@gmail.com','$2b$10$OBwdVsq7VscDtYi222q9je/90MnjEms0A1d7etrmPKKBH3d/SRoum',NULL,'Administrador','ACTIVO','2025-10-21 17:39:15','2025-11-02 21:29:03',0,NULL,'0','2025-10-21 17:39:15'),(4,'Sherlyn','Elias','nicheelias93@gmail.com','$2b$10$GVmPegSsakrPZnkdyx9Yf.yrkU5l2RWuUG926CWaC.udoiqdPPZJ2',NULL,'Usuario','ACTIVO','2025-10-21 18:02:18','2025-11-01 00:55:16',0,NULL,'0','2025-10-21 18:02:18'),(5,'Juancho','Lopez','juanlopez@yahoo.mx','$2b$10$gLCQZVAIojT83EEXbOX4KejbpMytKUVG9ejLyceXhljswkMeaLl.6',NULL,'Usuario','INACTIVO','2025-10-23 21:18:49',NULL,0,NULL,'0','2025-10-23 21:18:49'),(7,'Agusto Solis','','agustosolis@gmail.com','$2b$10$rrrRflZZoCSedtGw1LodE.MeRlWGDBjdsoZmvpVlyb8LNdJ.JGTaS',NULL,'Administrador','Activo','2025-11-01 01:39:17',NULL,0,NULL,'0','2025-11-01 01:39:17');
+/*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-11-02 21:48:48

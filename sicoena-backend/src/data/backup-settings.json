@@ -1,1 +1,4 @@
-{"autoBackupEnabled":true,"backupFrequency":"Diario"}
+{
+  "autoBackupEnabled": true,
+  "backupFrequency": "Semanal"
+}

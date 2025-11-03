@@ -204,7 +204,7 @@ const LoginPage = ({ onLoginSuccess }) => {
             />
           </div>
           <button type="submit" className="login-button" disabled={isLoading}>
-            {isLoading ? '⏳ Ingresando...' : '✓ Ingresar al Sistema'}
+            {isLoading ? '⏳ Ingresando...' : 'Ingresar al Sistema'}
           </button>
           <a href="#" className="forgot-password">¿Olvidó su contraseña?</a>
         </form>

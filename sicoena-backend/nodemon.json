@@ -1,0 +1,7 @@
+{
+  "verbose": true,
+  "ignore": [
+    "backups/*",
+    "src/data/*"
+  ]
+}
