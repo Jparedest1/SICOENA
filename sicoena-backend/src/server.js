@@ -19,10 +19,10 @@ app.use(express.urlencoded({ extended: true }));
 const mainRoutes = require('./routes/index');
 app.use('/api', mainRoutes); 
 
-app.use(express.static(path.join(__dirname, '../sicoena-frontend/build')));
+app.use(express.static(path.join(__dirname, '../../sicoena-frontend/build')));
 
 app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../sicoena-frontend/build', 'index.html'));
+  res.sendFile(path.join(__dirname, '../../sicoena-frontend/build', 'index.html'));
 });
 
 app.use((req, res) => {
