@@ -1,5 +1,4 @@
-// src/config/db.js
-const mysql = require('mysql2/promise'); // Usamos la versión con promesas
+const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -8,18 +7,17 @@ const pool = mysql.createPool({
   database: process.env.DB_DATABASE,
   port: process.env.DB_PORT,
   waitForConnections: true,
-  connectionLimit: 10, // Número de conexiones máximas en el pool
+  connectionLimit: 10,
   queueLimit: 0
 });
 
-// (Opcional) Probar la conexión al iniciar
 pool.getConnection()
   .then(connection => {
     console.log('Conexión a la base de datos MySQL establecida con éxito.');
-    connection.release(); // Libera la conexión de prueba
+    connection.release(); 
   })
   .catch(err => {
     console.error('Error al conectar con la base de datos:', err);
   });
 
-module.exports = pool; // Exportamos el pool para usarlo en los controladores
+module.exports = pool; 
