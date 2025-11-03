@@ -21,7 +21,7 @@ app.use('/api', mainRoutes);
 
 app.use(express.static(path.join(__dirname, '../sicoena-frontend/build')));
 
-app.get('*', (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, '../sicoena-frontend/build', 'index.html'));
 });
 
@@ -30,6 +30,6 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Servidor corriendo en el puerto ${PORT}`);
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
   startScheduledTasks();
 });
