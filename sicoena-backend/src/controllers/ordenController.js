@@ -1,7 +1,5 @@
-// src/controllers/ordenController.js
 const db = require('../config/db');
 
-// ✅ CREAR NUEVA ORDEN
 exports.createOrder = async (req, res) => {
     const { 
         codigo_orden, 
@@ -24,8 +22,7 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: 'Debes seleccionar al menos un producto.' });
     }
 
-    try {
-        // ✅ INSERTAR LA ORDEN CON FECHA_CREACION EXPLÍCITA
+    try {        
         const sqlOrden = `
             INSERT INTO orden (
                 codigo_orden, 
@@ -50,15 +47,14 @@ exports.createOrder = async (req, res) => {
             cantidad_alumnos || 0,
             dias_duracion || 1,
             fecha_entrega || null,
-            parseFloat(valor_total) || 0,  // ✅ Convertir a número
+            parseFloat(valor_total) || 0,  
             observaciones || null
         ]);
 
         const idOrden = resultOrden.insertId;
-
-        // Registrar movimientos de salida para cada producto
+        
         for (const producto of productos) {
-            // Insertar en orden_producto
+            
             const sqlProducto = `
                 INSERT INTO orden_producto (id_orden, id_producto, cantidad, unidad_medida)
                 VALUES (?, ?, ?, ?)
@@ -70,8 +66,7 @@ exports.createOrder = async (req, res) => {
                 producto.cantidad || 1,
                 producto.unidad_medida || 'unidad'
             ]);
-
-            // Registrar movimiento de salida
+            
             const sqlMovimiento = `
                 INSERT INTO movimiento (
                     id_producto, 
@@ -87,21 +82,19 @@ exports.createOrder = async (req, res) => {
                 producto.cantidad || 1,
                 `Salida por orden ${codigo_orden}`
             ]);
-
-            // Actualizar stock del producto
+            
             const sqlUpdateStock = `
                 UPDATE producto 
                 SET stock_disponible = stock_disponible - ? 
                 WHERE id_producto = ?
             `;
-
             await db.query(sqlUpdateStock, [
                 producto.cantidad || 1,
                 producto.id_producto
             ]);
         }
 
-        console.log(`✅ Orden ${codigo_orden} creada exitosamente con fecha: ${new Date().toISOString()}`);
+        console.log(`Orden ${codigo_orden} creada exitosamente con fecha: ${new Date().toISOString()}`);
 
         res.status(201).json({
             message: 'Orden creada exitosamente.',
@@ -122,7 +115,6 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-// ✅ OBTENER TODAS LAS ÓRDENES
 exports.getAllOrders = async (req, res) => {
     try {
         const [orders] = await db.query(`
@@ -148,7 +140,7 @@ exports.getAllOrders = async (req, res) => {
             ORDER BY o.fecha_creacion DESC
         `);
 
-        console.log('📊 Órdenes obtenidas:', orders);
+        console.log('Órdenes obtenidas:', orders);
         
         res.status(200).json(orders);
 
@@ -161,7 +153,6 @@ exports.getAllOrders = async (req, res) => {
     }
 };
 
-// ✅ OBTENER UNA ORDEN ESPECÍFICA
 exports.getOrderById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -188,7 +179,7 @@ exports.getOrderById = async (req, res) => {
             return res.status(404).json({ message: 'Orden no encontrada.' });
         }
 
-        // ✅ OBTENER PRODUCTOS DE LA ORDEN CON PRECIO UNITARIO
+        
         const [productos] = await db.query(`
             SELECT 
                 op.id_producto,
@@ -217,13 +208,11 @@ exports.getOrderById = async (req, res) => {
     }
 };
 
-// ✅ ACTUALIZAR ESTADO DE ORDEN
 exports.updateOrderStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { estado } = req.body;
-
-        // Estados válidos
+        
         const estadosValidos = ['PENDIENTE', 'EN PROCESO', 'ENTREGADO', 'CANCELADO'];
         
         if (!estado || !estadosValidos.includes(estado.toUpperCase())) {
@@ -231,8 +220,7 @@ exports.updateOrderStatus = async (req, res) => {
                 message: 'Estado inválido. Estados válidos: PENDIENTE, EN PROCESO, ENTREGADO, CANCELADO' 
             });
         }
-
-        // Actualizar el estado
+        
         const sql = `
             UPDATE orden 
             SET estado = ? 
@@ -245,7 +233,7 @@ exports.updateOrderStatus = async (req, res) => {
             return res.status(404).json({ message: 'Orden no encontrada.' });
         }
 
-        console.log(`✅ Estado de la orden ${id} actualizado a: ${estado.toUpperCase()}`);
+        console.log(`Estado de la orden ${id} actualizado a: ${estado.toUpperCase()}`);
 
         res.status(200).json({
             message: `Orden actualizada a estado: ${estado.toUpperCase()}`,
@@ -282,7 +270,7 @@ exports.updateOrder = async (req, res) => {
     }
 
     try {
-        // Actualizar la orden
+        
         const sqlUpdate = `
             UPDATE orden SET
                 codigo_orden = ?,
@@ -313,18 +301,15 @@ exports.updateOrder = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Orden no encontrada.' });
         }
-
-        // Eliminar productos anteriores
+        
         await db.query('DELETE FROM orden_producto WHERE id_orden = ?', [id]);
-
-        // Insertar nuevos productos
+        
         if (productos && productos.length > 0) {
             for (const producto of productos) {
                 const sqlProducto = `
                     INSERT INTO orden_producto (id_orden, id_producto, cantidad, unidad_medida)
                     VALUES (?, ?, ?, ?)
                 `;
-
                 await db.query(sqlProducto, [
                     id,
                     producto.id_producto,
@@ -334,7 +319,7 @@ exports.updateOrder = async (req, res) => {
             }
         }
 
-        console.log(`✅ Orden ${id} actualizada exitosamente`);
+        console.log(`Orden ${id} actualizada exitosamente`);
 
         res.status(200).json({
             message: 'Orden actualizada exitosamente.',

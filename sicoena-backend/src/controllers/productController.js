@@ -1,9 +1,5 @@
-// src/controllers/productController.js
-
 const db = require('../config/db');
 const { createNotification } = require('./notificationController');
-
-// ✅ FUNCIÓN PARA VERIFICAR Y NOTIFICAR STOCK BAJO
 const checkAndNotifyLowStock = async (products) => {
   try {
     const STOCK_MINIMO = 10;
@@ -12,24 +8,21 @@ const checkAndNotifyLowStock = async (products) => {
     );
 
     if (lowStockProducts.length === 0) {
-      console.log('✅ Todos los productos tienen stock adecuado');
+      console.log('Todos los productos tienen stock adecuado');
       return;
     }
 
-    console.log(`⚠️ ${lowStockProducts.length} productos con stock bajo detectados`);
-
-    // Obtener todos los admins activos
+    console.log(`${lowStockProducts.length} productos con stock bajo detectados`);
+    
     const [admins] = await db.query(
       `SELECT id_usuario FROM usuario WHERE rol = 'ADMINISTRADOR' AND estado = 'ACTIVO'`
     );
 
-    console.log(`📨 Notificando a ${admins.length} administradores`);
-
-    // Crear notificación para cada producto con stock bajo
+    console.log(`Notificando a ${admins.length} administradores`);
+    
     for (const product of lowStockProducts) {
       for (const admin of admins) {
-        try {
-          // Verificar si ya existe notificación reciente SIN LEER
+        try {          
           const [existing] = await db.query(
             `SELECT id_notificacion FROM notificacion 
              WHERE id_usuario = ? 
@@ -42,27 +35,26 @@ const checkAndNotifyLowStock = async (products) => {
           if (existing.length === 0) {
             await createNotification(
               admin.id_usuario,
-              `⚠️ Stock bajo: ${product.nombre_producto}`,
+              `Stock bajo: ${product.nombre_producto}`,
               `El producto "${product.nombre_producto}" tiene ${product.stock_disponible} unidades en stock (mínimo: ${product.stock_minimo})`,
               'stock'
             );
-            console.log(`📨 Notificación creada para ${product.nombre_producto} - Admin ${admin.id_usuario}`);
+            console.log(`Notificación creada para ${product.nombre_producto} - Admin ${admin.id_usuario}`);
           } else {
-            console.log(`⏭️ Notificación duplicada evitada para ${product.nombre_producto}`);
+            console.log(`Notificación duplicada evitada para ${product.nombre_producto}`);
           }
         } catch (error) {
-          console.error('⚠️ Error creando notificación:', error.message);
+          console.error('Error creando notificación:', error.message);
         }
       }
     }
 
-    console.log('✅ Verificación de stock completada');
+    console.log('Verificación de stock completada');
   } catch (error) {
-    console.error('❌ Error en checkAndNotifyLowStock:', error);
+    console.error('Error en checkAndNotifyLowStock:', error);
   }
 };
 
-// --- Obtener Todos los Productos (con filtros) ---
 exports.getAllProducts = async (req, res) => {
   try {
     const { search, categoria, bodega, estado, stock } = req.query;
@@ -86,49 +78,42 @@ exports.getAllProducts = async (req, res) => {
       WHERE 1=1 
     `;
     const params = [];
-
-    // Filtro de Estado
+    
     if (estado && estado !== 'todos' && (estado.toUpperCase() === 'ACTIVO' || estado.toUpperCase() === 'INACTIVO')) {
       sql += ` AND p.estado = ?`;
       params.push(estado.toUpperCase());
     }
-
-    // Filtro de Búsqueda
+    
     if (search) {
       sql += ` AND (p.nombre_producto LIKE ? OR p.descripcion LIKE ? OR p.categoria LIKE ?)`;
       const searchTermLike = `%${search}%`;
       params.push(searchTermLike, searchTermLike, searchTermLike);
     }
-
-    // Filtro de Categoría
+    
     if (categoria && categoria !== 'todos') {
       sql += ` AND p.categoria = ?`;
       params.push(categoria);
     }
-
-    // Filtro de Bodega
+    
     if (bodega && bodega !== 'todos') {
       sql += ` AND p.id_bodega = ?`;
       params.push(bodega);
     }
-
-    // Filtro de Stock Bajo
+    
     if (stock === 'bajo') {
       sql += ` AND p.stock_disponible <= p.stock_minimo`;
     }
-
     sql += ` ORDER BY p.id_producto DESC`;
 
     const [rows] = await db.query(sql, params);
-
-    // ✅ VERIFICAR STOCK BAJO Y CREAR NOTIFICACIONES
+    
     await checkAndNotifyLowStock(rows);
 
-    console.log(`📦 ${rows.length} productos obtenidos`);
+    console.log(`${rows.length} productos obtenidos`);
     res.status(200).json(rows);
 
   } catch (error) {
-    console.error("❌ Error al obtener productos:", error);
+    console.error("Error al obtener productos:", error);
     res.status(500).json({ message: 'Error interno del servidor al obtener productos.' });
   }
 };
@@ -151,7 +136,7 @@ exports.getActiveMenus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Error al obtener menús activos:", error);
+    console.error("Error al obtener menús activos:", error);
     res.status(500).json({
       message: 'Error interno del servidor al obtener menús activos.',
       error: error.message
@@ -195,7 +180,7 @@ exports.getMenuProducts = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Error al obtener productos del menú:", error);
+    console.error("Error al obtener productos del menú:", error);
     res.status(500).json({
       message: 'Error interno del servidor al obtener productos del menú.',
       error: error.message
@@ -203,7 +188,6 @@ exports.getMenuProducts = async (req, res) => {
   }
 };
 
-// --- Crear Producto ---
 exports.createProduct = async (req, res) => {
   const {
     nombre_producto,
@@ -219,8 +203,7 @@ exports.createProduct = async (req, res) => {
     id_bodega,
     estado
   } = req.body;
-
-  // Validación básica
+  
   if (!nombre_producto || !categoria || !unidad_medida || precio_unitario === undefined || stock_disponible === undefined || stock_minimo === undefined || !id_bodega) {
     return res.status(400).json({ message: 'Campos requeridos faltantes (nombre, categoría, unidad, precio, stock inicial, stock mínimo, bodega).' });
   }
@@ -254,8 +237,7 @@ exports.createProduct = async (req, res) => {
 
     const [result] = await db.query(sql, params);
     const productoId = result.insertId;
-
-    // ✅ REGISTRAR MOVIMIENTO DE ENTRADA INICIAL
+    
     if (stock_disponible > 0) {
       const movimientoSql = `
         INSERT INTO movimiento (
@@ -271,10 +253,9 @@ exports.createProduct = async (req, res) => {
       const movimientoMonto = stock_disponible * precio_unitario;
 
       await db.query(movimientoSql, [productoId, stock_disponible, movimientoMonto]);
-      console.log(`✅ Movimiento de entrada registrado para producto ${productoId}`);
+      console.log(`Movimiento de entrada registrado para producto ${productoId}`);
     }
-
-    // ✅ VERIFICAR STOCK BAJO DEL NUEVO PRODUCTO
+    
     const [newProduct] = await db.query(
       'SELECT * FROM producto WHERE id_producto = ?',
       [productoId]
@@ -284,7 +265,7 @@ exports.createProduct = async (req, res) => {
       await checkAndNotifyLowStock(newProduct);
     }
 
-    console.log(`✅ Producto creado: ${productoId}`);
+    console.log(`Producto creado: ${productoId}`);
 
     res.status(201).json({
       id_producto: productoId,
@@ -292,7 +273,7 @@ exports.createProduct = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Error al crear producto:", error);
+    console.error("Error al crear producto:", error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ message: 'Ya existe un producto con ese nombre o código.' });
     }
@@ -300,7 +281,6 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// --- Actualizar Producto ---
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
   const {
@@ -308,8 +288,7 @@ exports.updateProduct = async (req, res) => {
     stock_disponible, stock_minimo, perecedero, fecha_vencimiento,
     id_proveedor, id_bodega, estado
   } = req.body;
-
-  // Validación básica
+  
   if (!nombre_producto || !categoria || !unidad_medida || precio_unitario === undefined || stock_disponible === undefined || stock_minimo === undefined || !id_bodega) {
     return res.status(400).json({ message: 'Campos requeridos faltantes.' });
   }
@@ -319,7 +298,7 @@ exports.updateProduct = async (req, res) => {
   }
 
   try {
-    // ✅ OBTENER EL STOCK ANTERIOR
+    
     const [existingProduct] = await db.query(
       'SELECT stock_disponible FROM producto WHERE id_producto = ?',
       [id]
@@ -331,8 +310,7 @@ exports.updateProduct = async (req, res) => {
 
     const stockAnterior = existingProduct[0].stock_disponible;
     const diferencia = stock_disponible - stockAnterior;
-
-    // Actualizar el producto
+    
     const sql = `
       UPDATE producto SET
         nombre_producto = ?, descripcion = ?, categoria = ?, unidad_medida = ?, precio_unitario = ?,
@@ -352,42 +330,36 @@ exports.updateProduct = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Producto no encontrado.' });
     }
-
-    // ✅ REGISTRAR MOVIMIENTO SI HAY CAMBIO DE STOCK
+    
     if (diferencia !== 0) {
-      const tipoMovimiento = diferencia > 0 ? 'ENTRADA' : 'SALIDA';
-      const cantidadAbsoluta = Math.abs(diferencia);
-      
-      // --- NUEVO: Calcular el monto del ajuste ---
-      // Usamos el precio_unitario que viene del req.body
-      const montoMovimiento = cantidadAbsoluta * (precio_unitario || 0); 
-      // --- FIN NUEVO ---
+      const tipoMovimiento = diferencia > 0 ? 'ENTRADA' : 'SALIDA';
+      const cantidadAbsoluta = Math.abs(diferencia);
+      const montoMovimiento = cantidadAbsoluta * (precio_unitario || 0);
 
-      const sqlMovimiento = `
-        INSERT INTO movimiento (
-          id_producto, 
-          tipo_movimiento, 
-          cantidad, 
-          monto,  /* <-- MODIFICADO */
-          descripcion, 
-          fecha_movimiento
-        ) VALUES (?, ?, ?, ?, ?, NOW()) /* <-- MODIFICADO */
-      `;
+      const sqlMovimiento = `
+        INSERT INTO movimiento (
+          id_producto, 
+          tipo_movimiento, 
+          cantidad, 
+          monto, 
+          descripcion, 
+          fecha_movimiento
+        ) VALUES (?, ?, ?, ?, ?, NOW())
+      `;
 
-      const descripcionMovimiento = `${tipoMovimiento} por ajuste de inventario (${stockAnterior} → ${stock_disponible})`;
+      const descripcionMovimiento = `${tipoMovimiento} por ajuste de inventario (${stockAnterior} → ${stock_disponible})`;
 
-      await db.query(sqlMovimiento, [
-        id,
-        tipoMovimiento,
-        cantidadAbsoluta,
-          montoMovimiento, /* <-- MODIFICADO */
-        descripcionMovimiento
-      ]);
+      await db.query(sqlMovimiento, [
+        id,
+        tipoMovimiento,
+        cantidadAbsoluta,
+          montoMovimiento,
+        descripcionMovimiento
+      ]);
 
-      console.log(`✅ Movimiento registrado: ${tipoMovimiento} de ${cantidadAbsoluta} unidades (Monto: ${montoMovimiento}) del producto ${id}`);
-    }
-
-    // ✅ VERIFICAR STOCK BAJO DEL PRODUCTO ACTUALIZADO
+      console.log(`Movimiento registrado: ${tipoMovimiento} de ${cantidadAbsoluta} unidades (Monto: ${montoMovimiento}) del producto ${id}`);
+    }
+    
     const [updatedProduct] = await db.query(
       'SELECT * FROM producto WHERE id_producto = ?',
       [id]
@@ -397,7 +369,7 @@ exports.updateProduct = async (req, res) => {
       await checkAndNotifyLowStock(updatedProduct);
     }
 
-    console.log(`✅ Producto actualizado: ${id}`);
+    console.log(`Producto actualizado: ${id}`);
 
     res.status(200).json({
       message: 'Producto actualizado.',
@@ -408,7 +380,7 @@ exports.updateProduct = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Error al actualizar producto:", error);
+    console.error("Error al actualizar producto:", error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ message: 'Ya existe otro producto con ese nombre o código.' });
     }
@@ -416,7 +388,6 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-// --- Actualizar Estado del Producto ---
 exports.updateProductStatus = async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
@@ -436,11 +407,11 @@ exports.updateProductStatus = async (req, res) => {
       return res.status(404).json({ message: 'Producto no encontrado.' });
     }
 
-    console.log(`✅ Producto ${id} puesto en estado ${estado.toLowerCase()}`);
+    console.log(`Producto ${id} puesto en estado ${estado.toLowerCase()}`);
 
     res.status(200).json({ message: `Producto puesto en estado ${estado.toLowerCase()} con éxito.` });
   } catch (error) {
-    console.error("❌ Error al actualizar estado del producto:", error);
+    console.error("Error al actualizar estado del producto:", error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
@@ -452,12 +423,12 @@ exports.getProductCategories = async (req, res) => {
     );
     const categories = rows.map(row => row.categoria);
 
-    console.log(`📂 ${categories.length} categorías obtenidas`);
+    console.log(`${categories.length} categorías obtenidas`);
 
     res.status(200).json(categories);
 
   } catch (error) {
-    console.error("❌ Error al obtener categorías de producto:", error);
+    console.error("Error al obtener categorías de producto:", error);
     res.status(500).json({ message: 'Error interno del servidor al obtener categorías.' });
   }
 };

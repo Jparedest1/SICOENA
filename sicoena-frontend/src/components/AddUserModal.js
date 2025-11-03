@@ -1,59 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import './AddUserModal.css'; // Assuming you have this CSS file
+import './AddUserModal.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faCog, faEye, faEyeSlash, faKey } from '@fortawesome/free-solid-svg-icons';
 
 const AddUserModal = ({ onClose, onSave, currentUser }) => {
-  // --- States for relevant form fields ---
-  const [nombre, setNombre] = useState(''); // Corresponds to 'nombres' in DB
-  const [apellido, setApellido] = useState(''); // Corresponds to 'apellidos' in DB
-  const [telefono, setTelefono] = useState(''); // Corresponds to 'telefono' in DB
-  const [email, setEmail] = useState(''); // Corresponds to 'correo' in DB
-  const [rol, setRol] = useState(''); // Corresponds to 'rol' in DB
-  const [contrasena, setContrasena] = useState(''); // Corresponds to 'contraseña' in DB
+  
+  const [nombre, setNombre] = useState(''); 
+  const [apellido, setApellido] = useState(''); 
+  const [telefono, setTelefono] = useState(''); 
+  const [email, setEmail] = useState(''); 
+  const [rol, setRol] = useState(''); 
+  const [contrasena, setContrasena] = useState(''); 
   const [confirmarContrasena, setConfirmarContrasena] = useState('');
-  const [estado, setEstado] = useState('Activo'); // Corresponds to 'estado' in DB
-  const [enviarCredenciales, setEnviarCredenciales] = useState(true); // UI state
+  const [estado, setEstado] = useState('Activo'); 
+  const [enviarCredenciales, setEnviarCredenciales] = useState(true); 
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Determine if we are editing an existing user
   const isEditMode = currentUser !== null;
-
-  // Effect to populate fields when in edit mode
+  
   useEffect(() => {
     if (isEditMode) {
-      // Split the full name from the user object into first and last names
+      
       const nameParts = currentUser.nombre ? currentUser.nombre.split(' ') : [''];
       setNombre(nameParts[0] || '');
       setApellido(nameParts.slice(1).join(' ') || '');
-
-      // Populate other fields from the currentUser object
-      // Use the email field from the user object for the 'correo' column
       setEmail(currentUser.email || ''); 
-      setTelefono(currentUser.telefono || ''); // Assuming telefono exists in user object
+      setTelefono(currentUser.telefono || ''); 
       setRol(currentUser.rol || '');
-      // Ensure state mapping handles potential case differences (e.g., 'ACTIVO' vs 'Activo')
       setEstado(currentUser.estado?.toUpperCase() === 'ACTIVO' ? 'Activo' : 'Inactivo'); 
-      // Password fields remain empty in edit mode for security
       setContrasena(''); 
       setConfirmarContrasena('');
     } else {
-      // Default values for creating a new user
+      
       setNombre('');
       setApellido('');
       setEmail('');
       setTelefono('');
-      setRol(''); // Start with empty or a default role like 'Usuario'
+      setRol(''); 
       setContrasena('');
       setConfirmarContrasena('');
       setEstado('Activo');
       setEnviarCredenciales(true);
     }
-  }, [currentUser, isEditMode]); // Rerun effect if currentUser changes
+  }, [currentUser, isEditMode]); 
 
-  // Function to generate a random secure password
+  
   const generateRandomPassword = () => {
     const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lower = 'abcdefghijklmnopqrstuvwxyz';
@@ -62,31 +54,29 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
     const allChars = upper + lower + numbers + symbols;
     const passwordLength = 14;
     let newPassword = '';
-    // Ensure complexity
+    
     newPassword += upper[Math.floor(Math.random() * upper.length)];
     newPassword += lower[Math.floor(Math.random() * lower.length)];
     newPassword += numbers[Math.floor(Math.random() * numbers.length)];
     newPassword += symbols[Math.floor(Math.random() * symbols.length)];
-    // Fill the rest
+    
     for (let i = 4; i < passwordLength; i++) {
       newPassword += allChars[Math.floor(Math.random() * allChars.length)];
     }
-    // Shuffle
+    
     newPassword = newPassword.split('').sort(() => 0.5 - Math.random()).join('');
     setContrasena(newPassword);
     setConfirmarContrasena(newPassword);
   };
-
-  // ✅ MODIFICADO: Handle form submission
+  
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Validate passwords only if a new password is being set
+    
     if (contrasena && contrasena !== confirmarContrasena) {
       alert('Las contraseñas no coinciden.');
       return;
     }
-
-    // Construct the data object to send to the backend
+    
     const userData = {
       nombre: `${nombre} ${apellido}`.trim(), 
       email: email,
@@ -94,18 +84,15 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
       telefono: telefono || null,
       estado: estado,
     };
-
-    // ✅ MODIFICACIÓN CLAVE: Si estamos en modo edición, añadimos el ID del usuario.
+    
     if (isEditMode) {
       userData.id_usuario = currentUser.id_usuario;
     }
-
-    // Incluye la contraseña solo si se ha introducido una nueva.
+    
     if (contrasena) {
       userData.contrasena = contrasena;
     }
-
-    onSave(userData); // Llama a la función de guardado (en UsersPage.js) con todos los datos necesarios.
+    onSave(userData); 
   };
 
   return (
@@ -117,7 +104,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
           
-          {/* --- INFORMACIÓN PERSONAL --- */}
           <div className="form-section">
             <h3>INFORMACIÓN PERSONAL</h3>
             <div className="form-row">
@@ -146,7 +132,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
             </div>
           </div>
 
-          {/* --- CONFIGURACIÓN DEL SISTEMA --- */}
           <div className="form-section">
             <h3>CONFIGURACIÓN DEL SISTEMA</h3>
             <div className="form-row">
@@ -164,7 +149,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
             </div>
           </div>
 
-          {/* --- CONFIGURACIÓN DE SEGURIDAD --- */}
           <div className="form-section">
             <div className="section-header-with-button">
               <h3><FontAwesomeIcon icon={faLock} className="section-icon" /> CONFIGURACIÓN DE SEGURIDAD</h3>
@@ -209,7 +193,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
             </div>
           </div>
 
-          {/* --- CONFIGURACIONES ADICIONALES --- */}
           <div className="form-section">
             <h3><FontAwesomeIcon icon={faCog} className="section-icon" /> CONFIGURACIONES ADICIONALES</h3>
             <div className="form-row">
@@ -225,7 +208,6 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
             </div>
           </div>
 
-          {/* --- Modal Footer --- */}
           <div className="modal-footer">
             <button type="button" className="btn-cancel" onClick={onClose}>Cancelar</button>
             <button type="submit" className="btn-save">

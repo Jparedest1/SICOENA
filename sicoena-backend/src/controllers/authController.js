@@ -50,7 +50,7 @@ const login = async (req, res) => {
     try {
       await createNotification(user.id_usuario, 'Bienvenida', `Hola ${user.nombres}, has iniciado sesión exitosamente`, 'login');
     } catch (error) {
-      console.log('⚠️ No se pudo crear notificación de bienvenida');
+      console.log('No se pudo crear notificación de bienvenida');
     }
     
     await createLog('INFO', `Inicio de sesión exitoso`, { userId: user.id_usuario, email, ip, method: 'local' });
@@ -62,7 +62,7 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en login:', error);
+    console.error('Error en login:', error);
     await createLog('ERROR', `Error interno en la función de login`, { errorMessage: error.message, stack: error.stack, email: req.body.email });
     res.status(500).json({ message: 'Error interno del servidor' });
   }
@@ -129,13 +129,12 @@ const googleVerify = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en googleVerify:', error);
+    console.error('Error en googleVerify:', error);
     const email = req.body.token ? jwt.decode(req.body.token)?.email : 'desconocido';
     await createLog('ERROR', 'Error interno en la autenticación con Google', { errorMessage: error.message, stack: error.stack, email: email });
     res.status(500).json({ message: 'Error en la autenticación con Google' });
   }
 };
-
 
 module.exports = {
   login,

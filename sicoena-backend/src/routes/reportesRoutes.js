@@ -1,5 +1,3 @@
-// src/routes/reportesRoutes.js
-
 const express = require('express');
 const router = express.Router();
 const { generarReporte } = require('../controllers/reportesController');

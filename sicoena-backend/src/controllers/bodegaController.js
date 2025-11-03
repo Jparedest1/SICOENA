@@ -1,7 +1,5 @@
-// sicoena-backend/src/controllers/bodegaController.js
 const db = require('../config/db');
 
-// --- Obtener todas las bodegas ---
 exports.getAllBodegas = async (req, res) => {
     try {
         const [bodegas] = await db.query(`
@@ -23,7 +21,6 @@ exports.getAllBodegas = async (req, res) => {
     }
 };
 
-// --- Crear Bodega ---
 exports.createBodega = async (req, res) => {
     const { nombre_bodega, fecha_actualizacion, observaciones } = req.body;
 

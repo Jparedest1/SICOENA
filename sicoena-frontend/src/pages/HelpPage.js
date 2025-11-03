@@ -1,11 +1,8 @@
-// src/pages/HelpPage.js
-
 import React, { useState } from 'react';
 import './HelpPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQuestionCircle, faChevronDown, faBook, faUsers, faBuilding, faBoxes, faTruck, faChartBar, faCog, faEnvelope, faTimes, faStar, faBug, faWrench } from '@fortawesome/free-solid-svg-icons';
 
-// Componente para el Acordeón de FAQ (sin cambios)
 const AccordionItem = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(false);
   return (
@@ -19,7 +16,6 @@ const AccordionItem = ({ title, children }) => {
   );
 };
 
-// Contenido de las guías
 const guidesContent = {
   'Gestión de Usuarios': {
     icon: faUsers,
@@ -47,7 +43,6 @@ const guidesContent = {
   }
 };
 
-// Componente para el Modal de Notas de Versión
 const VersionNotesModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
@@ -88,17 +83,12 @@ const VersionNotesModal = ({ isOpen, onClose }) => {
 };
 
 const HelpPage = () => {
-  // Estado para el formulario de soporte
-  const [supportSubject, setSupportSubject] = useState('');
-  const [supportMessage, setSupportMessage] = useState('');
   
-  // Estado para la guía seleccionada
-  const [selectedGuide, setSelectedGuide] = useState(null);
-
-  // Estado para el modal de notas de versión
+  const [supportSubject, setSupportSubject] = useState('');
+  const [supportMessage, setSupportMessage] = useState('');  
+  const [selectedGuide, setSelectedGuide] = useState(null);  
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Manejador para el envío del formulario de soporte
+  
   const handleSupportSubmit = (e) => {
     e.preventDefault();
     if (!supportSubject.trim() || !supportMessage.trim()) {
@@ -109,8 +99,7 @@ const HelpPage = () => {
     setSupportSubject('');
     setSupportMessage('');
   };
-
-  // Manejador para el clic en las guías
+  
   const handleGuideClick = (guideTitle) => {
     setSelectedGuide(guidesContent[guideTitle]);
   };
@@ -134,10 +123,8 @@ const HelpPage = () => {
       </div>
 
       <div className="help-layout">
-        {/* --- Sección Izquierda: FAQ y Guías --- */}
         <div className="help-main-content">
           
-          {/* --- Preguntas Frecuentes (FAQ) --- */}
           <div className="card-container">
             <h3>Preguntas Frecuentes (FAQ)</h3>
             <div className="accordion">
@@ -158,7 +145,6 @@ const HelpPage = () => {
             </div>
           </div>
 
-          {/* --- Guías por Módulo --- */}
           <div className="card-container">
             <h3><FontAwesomeIcon icon={faBook} /> Guías por Módulo</h3>
             <div className="guides-grid">
@@ -184,10 +170,8 @@ const HelpPage = () => {
 
         </div>
 
-        {/* --- Sección Derecha: Contacto y Sistema --- */}
         <div className="help-sidebar">
           
-          {/* --- Contacto de Soporte --- */}
           <div className="card-container">
             <h3><FontAwesomeIcon icon={faEnvelope} /> Contactar a Soporte</h3>
             <p>¿No encontraste lo que buscabas? Envíanos un mensaje y te ayudaremos.</p>
@@ -216,7 +200,6 @@ const HelpPage = () => {
             </form>
           </div>
 
-           {/* --- Información del Sistema --- */}
           <div className="card-container system-info">
               <h3>Información del Sistema</h3>
               <p><strong>Versión de SICOENA:</strong> 1.0.0 (Build 20251015)</p>

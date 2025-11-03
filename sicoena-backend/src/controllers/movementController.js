@@ -1,14 +1,12 @@
-// sicoena-backend/src/controllers/movementController.js
 const db = require('../config/db');
 
-// --- Obtener Movimientos de Hoy (CORREGIDO) ---
 exports.getMovementsToday = async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0];
         
         console.log(`📅 Buscando movimientos del día: ${today}`);
         
-        // Obtener movimientos de hoy
+        
         const [movements] = await db.query(`
             SELECT 
                 m.id_movimiento,
@@ -23,9 +21,9 @@ exports.getMovementsToday = async (req, res) => {
             ORDER BY m.fecha_movimiento DESC
         `, [today]);
 
-        console.log(`📊 Movimientos encontrados: ${movements.length}`);
+        console.log(`Movimientos encontrados: ${movements.length}`);
 
-        // Calcular totales
+        
         let totalEntradas = 0;
         let totalSalidas = 0;
         let cantidadEntradas = 0;
@@ -41,7 +39,7 @@ exports.getMovementsToday = async (req, res) => {
             }
         });
 
-        console.log(`✅ Totales: Entradas=${totalEntradas}, Salidas=${totalSalidas}`);
+        console.log(`Totales: Entradas=${totalEntradas}, Salidas=${totalSalidas}`);
 
         res.status(200).json({
             entries: totalEntradas,
@@ -59,7 +57,6 @@ exports.getMovementsToday = async (req, res) => {
     }
 };
 
-// --- Registrar Nuevo Movimiento (Entrada o Salida) ---
 exports.createMovement = async (req, res) => {
     const { 
         id_producto, 
@@ -96,7 +93,7 @@ exports.createMovement = async (req, res) => {
             descripcion || null
         ]);
 
-        // Actualiza el stock del producto
+        
         if (tipo_movimiento.toUpperCase() === 'ENTRADA') {
             await db.query(
                 `UPDATE producto SET stock_disponible = stock_disponible + ? WHERE id_producto = ?`,
@@ -122,7 +119,6 @@ exports.createMovement = async (req, res) => {
     }
 };
 
-// --- Obtener Historial de Movimientos ---
 exports.getMovementHistory = async (req, res) => {
     try {
         const { fecha_inicio, fecha_fin, tipo_movimiento, limite = 50, pagina = 1 } = req.query;
@@ -178,8 +174,7 @@ exports.getMovementHistory = async (req, res) => {
 };
 
 const getAllMovements = async (req, res) => {
-  try {
-    // Tu lógica aquí
+  try {    
     res.json({ message: 'Get all movements' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -187,8 +182,7 @@ const getAllMovements = async (req, res) => {
 };
 
 const getMovementById = async (req, res) => {
-  try {
-    // Tu lógica aquí
+  try {    
     res.json({ message: 'Get movement by ID' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -196,8 +190,7 @@ const getMovementById = async (req, res) => {
 };
 
 const createMovement = async (req, res) => {
-  try {
-    // Tu lógica aquí
+  try {    
     res.json({ message: 'Create movement' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -205,8 +198,7 @@ const createMovement = async (req, res) => {
 };
 
 const updateMovement = async (req, res) => {
-  try {
-    // Tu lógica aquí
+  try {    
     res.json({ message: 'Update movement' });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -214,8 +206,7 @@ const updateMovement = async (req, res) => {
 };
 
 const deleteMovement = async (req, res) => {
-  try {
-    // Tu lógica aquí
+  try {    
     res.json({ message: 'Delete movement' });
   } catch (error) {
     res.status(500).json({ message: error.message });

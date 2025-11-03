@@ -1,5 +1,3 @@
-// src/pages/OrdersPage.js
-
 import React, { useState, useEffect } from 'react';
 import './OrdersPage.css';
 import AddEditOrderModal from '../components/AddEditOrderModal';
@@ -21,31 +19,25 @@ const OrdersPage = () => {
   const [currentOrderToView, setCurrentOrderToView] = useState(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [currentOrderToChangeStatus, setCurrentOrderToChangeStatus] = useState(null);
-
-  // ✅ NUEVOS ESTADOS PARA FILTROS Y BÚSQUEDA
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEscuela, setFilterEscuela] = useState('todas');
   const [filterMenu, setFilterMenu] = useState('todos');
   const [filterEstado, setFilterEstado] = useState('todos');
-
   const [escuelas, setEscuelas] = useState([]);
   const [menus, setMenus] = useState([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState(false);
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  // Cargar órdenes al montar el componente
   useEffect(() => {
     fetchOrders();
     fetchFiltersData();
   }, []);
 
-  // ✅ APLICAR FILTROS Y BÚSQUEDA
   useEffect(() => {
     applyFilters();
   }, [orders, searchTerm, filterEscuela, filterMenu, filterEstado]);
 
-  // ✅ FUNCIÓN PARA OBTENER ÓRDENES
   const fetchOrders = async () => {
     setIsLoading(true);
     setError(null);
@@ -65,7 +57,7 @@ const OrdersPage = () => {
 
       const data = await response.json();
       setOrders(data || []);
-      console.log('📋 Órdenes cargadas:', data.length);
+      console.log('Órdenes cargadas:', data.length);
     } catch (err) {
       console.error('Error al cargar órdenes:', err);
       setError('No se pudieron cargar las órdenes');
@@ -75,13 +67,11 @@ const OrdersPage = () => {
     }
   };
 
-  // ✅ CARGAR DATOS PARA FILTROS
   const fetchFiltersData = async () => {
     setIsLoadingFilters(true);
     const token = localStorage.getItem('authToken');
 
     try {
-      // Obtener escuelas
       const escuelasResponse = await fetch(`${apiUrl}/api/institucion/active`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -90,7 +80,6 @@ const OrdersPage = () => {
         setEscuelas(escuelasData.schools || []);
       }
 
-      // Obtener menús
       const menusResponse = await fetch(`${apiUrl}/api/producto/active-menus`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -105,11 +94,9 @@ const OrdersPage = () => {
     }
   };
 
-  // ✅ APLICAR FILTROS Y BÚSQUEDA
   const applyFilters = () => {
     let filtered = orders;
 
-    // Filtrar por búsqueda (código, escuela, menú, responsable)
     if (searchTerm.trim() !== '') {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(order =>
@@ -120,26 +107,22 @@ const OrdersPage = () => {
       );
     }
 
-    // Filtrar por escuela
     if (filterEscuela !== 'todas') {
       filtered = filtered.filter(order => order.id_escuela === parseInt(filterEscuela));
     }
 
-    // Filtrar por menú
     if (filterMenu !== 'todos') {
       filtered = filtered.filter(order => order.id_menu === parseInt(filterMenu));
     }
 
-    // Filtrar por estado
     if (filterEstado !== 'todos') {
       filtered = filtered.filter(order => order.estado === filterEstado);
     }
 
     setFilteredOrders(filtered);
-    console.log(`🔍 Órdenes filtradas: ${filtered.length}/${orders.length}`);
+    console.log(`Órdenes filtradas: ${filtered.length}/${orders.length}`);
   };
 
-  // ✅ LIMPIAR FILTROS
   const handleClearFilters = () => {
     setSearchTerm('');
     setFilterEscuela('todas');
@@ -147,25 +130,21 @@ const OrdersPage = () => {
     setFilterEstado('todos');
   };
 
-  // ✅ FUNCIÓN PARA VISUALIZAR ORDEN
   const handleViewOrder = (order) => {
     setCurrentOrderToView(order);
     setIsViewModalOpen(true);
   };
 
-  // ✅ FUNCIÓN PARA CAMBIAR ESTADO
   const handleChangeStatus = (order) => {
     setCurrentOrderToChangeStatus(order);
     setIsStatusModalOpen(true);
   };
 
-  // ✅ FUNCIÓN PARA EDITAR ORDEN
   const handleEdit = (order) => {
     setCurrentOrderToEdit(order);
     setIsModalOpen(true);
   };
 
-  // ✅ FUNCIÓN PARA CANCELAR ORDEN
   const handleDelete = (orderId) => {
     if (window.confirm('¿Está seguro de que desea cancelar esta orden?')) {
       setOrders(orders.map(order => 
@@ -174,24 +153,20 @@ const OrdersPage = () => {
     }
   };
 
-  // ✅ FUNCIÓN PARA AGREGAR NUEVA ORDEN
   const handleAddNewOrder = () => {
     setCurrentOrderToEdit(null);
     setIsModalOpen(true);
   };
 
-  // ✅ FUNCIÓN PARA GUARDAR ORDEN
   const handleSaveOrder = () => {
     fetchOrders();
     setIsModalOpen(false);
   };
 
-  // ✅ FUNCIÓN PARA MANEJAR CAMBIO DE ESTADO
   const handleStatusChanged = () => {
     fetchOrders();
   };
 
-  // ✅ FUNCIÓN PARA EXPORTAR A PDF
   const handleExportPDF = () => {
     if (filteredOrders.length === 0) {
       alert("No hay órdenes para exportar.");
@@ -258,13 +233,11 @@ const OrdersPage = () => {
     window.open(pdfUrl, 'ReporteOrdenes', 'width=1000,height=700,resizable=yes,scrollbars=yes');
   };
 
-  // ✅ FUNCIÓN AUXILIAR PARA OBTENER CLASE CSS DEL ESTADO
   const getStatusClass = (estado) => {
     if (!estado) return 'pendiente';
     return estado.toLowerCase().replace(' ', '-');
   };
 
-  // ✅ ESTADÍSTICAS
   const totalOrders = filteredOrders.length;
   const pendingOrders = filteredOrders.filter(o => o.estado === 'PENDIENTE').length;
   const deliveredOrders = filteredOrders.filter(o => o.estado === 'ENTREGADO').length;
@@ -274,7 +247,6 @@ const OrdersPage = () => {
   return sum + valor;
 }, 0);
 
-  // ✅ MOSTRAR CARGANDO
   if (isLoading) {
     return (
       <div className="page-container orders-page">
@@ -303,7 +275,6 @@ const OrdersPage = () => {
         </div>
       )}
 
-      {/* --- TARJETAS DE ESTADÍSTICAS --- */}
       <div className="stats-cards-container">
         <div className="stat-card-item">
           <span className="stat-value">{totalOrders}</span>
@@ -327,7 +298,6 @@ const OrdersPage = () => {
         </div>
       </div>
 
-      {/* --- BARRA DE BÚSQUEDA Y FILTROS --- */}
       <div className="filters-bar">
         <div className="search-input-wrapper">
           <FontAwesomeIcon icon={faSearch} className="search-icon" />
@@ -382,7 +352,6 @@ const OrdersPage = () => {
         </button>
       </div>
 
-      {/* --- TABLA DE ÓRDENES --- */}
       <div className="table-container">
         <div className="table-header">
           <span>
@@ -488,7 +457,6 @@ const OrdersPage = () => {
         )}
       </div>
 
-      {/* --- MODALES --- */}
       {isModalOpen && (
         <AddEditOrderModal
           onClose={() => setIsModalOpen(false)}

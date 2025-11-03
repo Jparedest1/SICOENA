@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './AddEditBodegaModal.css';
 
 const AddEditBodegaModal = ({ onClose, onSave, currentBodega }) => {
-  // Inicializa el estado directamente con los datos de la bodega a editar o un objeto vacío.
   const [bodega, setBodega] = useState(
     currentBodega
       ? {

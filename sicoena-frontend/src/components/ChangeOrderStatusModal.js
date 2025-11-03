@@ -1,4 +1,3 @@
-// src/components/ChangeOrderStatusModal.js
 import React, { useState } from 'react';
 import './ChangeOrderStatusModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,7 +10,6 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  // Estados disponibles y sus colores
   const estadosPosibles = [
     { valor: 'PENDIENTE', label: 'Pendiente', color: '#FFC107', bgColor: '#FFF3CD' },
     { valor: 'EN PROCESO', label: 'En Proceso', color: '#0066CC', bgColor: '#CCE5FF' },
@@ -45,9 +43,9 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
         throw new Error(data.message || 'Error al cambiar estado');
       }
 
-      console.log('✅ Estado actualizado:', data);
-      alert(`✅ Estado actualizado a: ${selectedStatus}`);
-      
+      console.log('Estado actualizado:', data);
+      alert(`Estado actualizado a: ${selectedStatus}`);
+
       onStatusChanged(data);
       onClose();
 
@@ -75,7 +73,6 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
         </div>
 
         <div className="modal-body status-body">
-          {/* Información actual */}
           <div className="status-info">
             <div className="info-item">
               <span className="info-label">Código de Orden:</span>
@@ -105,7 +102,6 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
             </div>
           )}
 
-          {/* Selector de estado */}
           <div className="status-selector">
             <h3>Selecciona el nuevo estado:</h3>
             <div className="status-options">
@@ -127,7 +123,6 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
             </div>
           </div>
 
-          {/* Vista previa de cambio */}
           <div className="status-preview">
             <div className="preview-item">
               <span className="preview-label">De:</span>

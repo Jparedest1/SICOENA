@@ -1,4 +1,4 @@
-/* src/components/ViewOrderModal.css */
+
 
 .view-order-modal {
   max-width: 900px;
@@ -10,7 +10,7 @@
   padding: 20px;
 }
 
-/* --- SECCIONES DE INFORMACIÓN --- */
+
 .info-section {
   background-color: #f9f9f9;
   border: 1px solid #e0e0e0;
@@ -55,7 +55,7 @@
   font-weight: 500;
 }
 
-/* --- TABLA DE PRODUCTOS --- */
+
 .products-table-container {
   width: 100%;
   overflow-x: auto;
@@ -95,7 +95,7 @@
   font-size: 14px;
 }
 
-/* --- RESUMEN DE ORDEN --- */
+
 .order-summary {
   background-color: #ecf0f1;
   border: 2px solid #3498db;
@@ -144,7 +144,7 @@
   font-size: 18px;
 }
 
-/* --- ESTADO BADGE --- */
+
 .status-badge {
   display: inline-block;
   padding: 6px 12px;
@@ -174,7 +174,7 @@
   color: #721c24;
 }
 
-/* --- MODAL CLOSE BUTTON --- */
+
 .modal-close-btn {
   background: none;
   border: none;
@@ -188,7 +188,7 @@
   color: #333;
 }
 
-/* --- RESPONSIVE --- */
+
 @media (max-width: 768px) {
   .view-order-modal {
     max-width: 95%;

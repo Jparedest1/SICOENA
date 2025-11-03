@@ -1,24 +1,17 @@
-// src/pages/LogsPage.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import './LogsPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileAlt, faFilter, faSearch, faDownload } from '@fortawesome/free-solid-svg-icons';
 
-// Simulación de una llamada a la API que podría fallar o tardar
 const fetchLogsFromAPI = () => {
   console.log("Fetching logs from REAL API...");
-
-  // 1. Obtener el token directamente desde la clave 'authToken'.
-  const token = localStorage.getItem('authToken'); // <-- LA CLAVE CORRECTA
   
-  if (!token) {
-    // Si no hay token, no podemos continuar.
-    // Rechazamos la promesa para que el .catch() del componente se active.
+  const token = localStorage.getItem('authToken'); 
+  
+  if (!token) {     
     return Promise.reject(new Error("No se encontró el token de autenticación. Por favor, inicie sesión."));
   }
-
-  // 2. Realizar la petición con el token correcto.
+  
   return fetch('/api/logs', {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -35,19 +28,15 @@ const fetchLogsFromAPI = () => {
   });
 };
 
-
 const LogsPage = () => {
   const [logs, setLogs] = useState([]);
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // Estados para los filtros
+  const [error, setError] = useState(null);  
   const [levelFilter, setLevelFilter] = useState('Todos');
   const [dateFilter, setDateFilter] = useState('Hoy');
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Cargar logs desde el API al montar el componente
+  
   useEffect(() => {
     setLoading(true);
     fetchLogsFromAPI()
@@ -64,8 +53,7 @@ const LogsPage = () => {
         setLoading(false);
       });
   }, []);
-
-  // Filtrado de logs
+  
   const filterLogs = useCallback(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -80,7 +68,6 @@ const LogsPage = () => {
       const matchesSearch = searchTerm === '' || 
                             log.message.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             JSON.stringify(log.context).toLowerCase().includes(searchTerm.toLowerCase());
-
       let matchesDate = false;
       switch (dateFilter) {
         case 'Hoy':
@@ -104,8 +91,7 @@ const LogsPage = () => {
   useEffect(() => {
     filterLogs();
   }, [filterLogs]);
-
-  // Función para exportar logs a CSV
+  
   const handleExport = () => {
     const headers = ["Timestamp", "Nivel", "Mensaje", "Contexto"];
     const csvRows = [

@@ -1,5 +1,3 @@
-// src/pages/RespaldosPage.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import './BackupsPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -7,8 +5,6 @@ import { faDatabase, faSave, faSync, faDownload, faTrash, faHistory, faPlayCircl
 
 const API_URL = '/api';
 const POLLING_INTERVAL = 5000;
-
-// --- FUNCIÓN AUXILIAR PARA OBTENER CABECERAS DE AUTENTICACIÓN (CORREGIDA) ---
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken');
   const headers = { 'Content-Type': 'application/json' };
@@ -37,26 +33,20 @@ const RespaldosPage = () => {
       setBackups(data.sort((a, b) => new Date(b.date) - new Date(a.date)));
     } catch (error) {
       console.error(error);
-      // No mostramos alerta en el polling para no molestar al usuario
-      // alert(error.message); 
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // --- NUEVO: Polling para actualizar el estado automáticamente ---
   useEffect(() => {
-    // Comprobar si hay algún respaldo "EN PROGRESO"
     const isBackupInProgress = backups.some(b => b.status === 'EN PROGRESO');
 
     if (isBackupInProgress) {
-      // Si hay uno, establecer un intervalo para recargar los datos
       const intervalId = setInterval(() => {
         console.log('Polling: Verificando estado de respaldos...');
         fetchBackups();
       }, POLLING_INTERVAL);
-
-      // Limpiar el intervalo cuando el componente se desmonte o cuando ya no haya respaldos en progreso
+      
       return () => clearInterval(intervalId);
     }
   }, [backups, fetchBackups]);
@@ -95,7 +85,7 @@ const RespaldosPage = () => {
            throw new Error(errorData.message || 'Error al iniciar el respaldo.');
         }
         alert('Respaldo manual iniciado. El estado se actualizará automáticamente.');
-        // La recarga inicial la hará el polling, pero podemos forzar una primera recarga
+        
         await fetchBackups();
       } catch (error) {
         console.error(error);
@@ -190,8 +180,7 @@ const RespaldosPage = () => {
           alert(error.message);
       }
   };
-
-  // ... El resto del componente JSX no cambia ...
+  
   return (
     <div className="page-container respaldos-page">
       <div className="page-header">
@@ -200,7 +189,6 @@ const RespaldosPage = () => {
       </div>
 
       <div className="respaldos-layout">
-        {/* --- Columna de Acciones --- */}
         <div className="card-container">
           <h3>Acciones Inmediatas</h3>
           <p>Crea un punto de restauración manual en cualquier momento.</p>
@@ -210,7 +198,6 @@ const RespaldosPage = () => {
           {isActionInProgress && <div className="backup-status">Proceso en curso, por favor no cierre esta ventana...</div>}
         </div>
 
-        {/* --- Columna de Configuración --- */}
         <div className="card-container">
           <h3><FontAwesomeIcon icon={faClock} /> Respaldos Automáticos</h3>
           <p>Configura la creación automática de respaldos para garantizar la seguridad de los datos.</p>
@@ -231,7 +218,6 @@ const RespaldosPage = () => {
         </div>
       </div>
 
-      {/* --- Historial de Respaldos --- */}
       <div className="card-container">
         <h3><FontAwesomeIcon icon={faHistory} /> Historial de Respaldos</h3>
         <div className="reports-table-container">

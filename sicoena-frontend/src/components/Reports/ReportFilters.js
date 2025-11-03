@@ -1,5 +1,3 @@
-// src/components/Reports/ReportFilters.js
-
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -40,7 +38,6 @@ const ReportFilters = ({
       </div>
 
       <div className="filters-grid">
-        {/* Rango de fechas */}
         <div className="filter-group">
           <label>Desde:</label>
           <input
@@ -59,7 +56,6 @@ const ReportFilters = ({
           />
         </div>
 
-        {/* Escuela */}
         <div className="filter-group">
           <label>Escuela:</label>
           <select value={filterEscuela} onChange={(e) => setFilterEscuela(e.target.value)}>
@@ -72,7 +68,6 @@ const ReportFilters = ({
           </select>
         </div>
 
-        {/* Menú */}
         <div className="filter-group">
           <label>Menú:</label>
           <select value={filterMenu} onChange={(e) => setFilterMenu(e.target.value)}>
@@ -85,7 +80,6 @@ const ReportFilters = ({
           </select>
         </div>
 
-        {/* Estado */}
         <div className="filter-group">
           <label>Estado:</label>
           <select value={filterEstado} onChange={(e) => setFilterEstado(e.target.value)}>

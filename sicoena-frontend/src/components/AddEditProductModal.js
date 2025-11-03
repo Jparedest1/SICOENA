@@ -1,7 +1,5 @@
-// sicoena-frontend/src/components/AddEditProductModal.js
-
 import React, { useState, useEffect } from 'react';
-import './AddEditProductModal.css'; // ✅ ACTUALIZADO
+import './AddEditProductModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 
@@ -18,7 +16,6 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
   const [descripcion, setDescripcion] = useState('');
   const [perecedero, setPerecedero] = useState(false);
   const [estado, setEstado] = useState('ACTIVO');
-
   const [proveedores, setProveedores] = useState([]);
   const [bodegas, setBodegas] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -129,7 +126,6 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
         <h2>{isEditMode ? 'Editar Producto' : 'Añadir Nuevo Producto'}</h2>
 
         <form onSubmit={handleSubmit}>
-          {/* ===== INFORMACIÓN DEL PRODUCTO ===== */}
           <div className="form-section">
             <h3>Información del Producto</h3>
 
@@ -183,7 +179,6 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
             </div>
           </div>
 
-          {/* ===== INFORMACIÓN DE PRECIOS Y STOCK ===== */}
           <div className="form-section">
             <h3>Precios y Stock</h3>
 
@@ -234,7 +229,6 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
             </div>
           </div>
 
-          {/* ===== ALMACENAMIENTO Y PROVEEDOR ===== */}
           <div className="form-section">
             <h3>Almacenamiento y Proveedor</h3>
 
@@ -288,7 +282,6 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
             </div>
           </div>
 
-          {/* ===== BOTONES ===== */}
           <div className="modal-buttons">
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancelar

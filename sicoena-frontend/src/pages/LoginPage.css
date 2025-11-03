@@ -1,6 +1,6 @@
-/* src/pages/LoginPage.css */
 
-/* Contenedor principal que centra la caja en la pantalla */
+
+
 .login-container {
   display: flex;
   justify-content: center;
@@ -11,24 +11,24 @@
   box-sizing: border-box;
 }
 
-/* La caja blanca única que contiene todo */
+
 .login-box {
   width: 100%;
-  max-width: 420px; /* Ancho del panel único */
+  max-width: 420px;
   padding: 40px;
-  text-align: center; /* Centra todo el texto y elementos internos */
+  text-align: center;
   background-color: var(--bg-blanco, #ffffff);
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-/* Encabezado con logo y textos */
+
 .login-header {
   margin-bottom: 25px;
 }
 
 .sicoena-logo-img {
-  max-width: 250px; /* Tamaño del logo */
+  max-width: 250px;
   height: auto;
   margin-bottom: 0px;
 }
@@ -40,7 +40,7 @@
   margin: 5px 0 0;
 }
 
-/* Título "Iniciar Sesión" */
+
 .login-box h3 {
   color: var(--color-principal, #2c3e50);
   font-size: 28px;
@@ -48,10 +48,10 @@
   font-weight: 600;
 }
 
-/* Formulario */
+
 .input-group {
   margin-bottom: 20px;
-  text-align: left; /* Alinea las etiquetas a la izquierda */
+  text-align: left;
 }
 
 .input-group label {
@@ -95,7 +95,7 @@
   background-color: var(--borde-oscuro, #495057);
 }
 
-/* Enlace y pie de página */
+
 .forgot-password {
   display: block;
   margin-top: 20px;
@@ -115,8 +115,8 @@
 }
 
 .login-error-message {
-  background-color: #ffebe9; /* Fondo rojo pálido */
-  color: #c92a2a; /* Texto rojo oscuro */
+  background-color: #ffebe9;
+  color: #c92a2a;
   border: 1px solid #ffc9c9;
   border-radius: 6px;
   padding: 12px 15px;
@@ -125,7 +125,7 @@
   font-size: 14px;
 }
 
-/* Estilo para el divisor "o" */
+
 .login-divider {
   display: flex;
   align-items: center;
@@ -135,7 +135,7 @@
   font-size: 13px;
 }
 
-/* Líneas a los lados del "o" */
+
 .login-divider::before,
 .login-divider::after {
   content: '';
@@ -147,16 +147,14 @@
   padding: 0 10px;
 }
 
-/* Contenedor para el botón de Google */
+
 .google-login-button-container {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
 }
 
-/* Hack para hacer que el botón de Google use el ancho completo.
-  La librería de Google genera un div, así que lo seleccionamos.
-*/
+
 .google-login-button-container > div {
   width: 75% !important;
 }

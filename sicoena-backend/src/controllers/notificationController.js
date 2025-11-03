@@ -1,20 +1,16 @@
-// src/controllers/notificationController.js
-
 const db = require('../config/db');
-
-// ✅ Obtener notificaciones del usuario
 const getNotifications = async (req, res) => {
   try {
-    // ✅ Verificar que req.user existe y tiene id
+    
     if (!req.user || !req.user.id) {
-      console.log('❌ No user ID in request');
+      console.log('No user ID in request');
       return res.status(401).json({ message: 'Usuario no autenticado' });
     }
 
     const userId = req.user.id;
     const { limit = 10, unreadOnly = false } = req.query;
 
-    console.log('📬 Obteniendo notificaciones para usuario:', userId);
+    console.log('Obteniendo notificaciones para usuario:', userId);
 
     let sql = `
       SELECT 
@@ -44,16 +40,16 @@ const getNotifications = async (req, res) => {
     sql += ` ORDER BY fecha_creacion DESC LIMIT ?`;
     params.push(parseInt(limit));
 
-    console.log('🔍 Executing SQL:', sql);
-    console.log('📌 Params:', params);
+    console.log('Executing SQL:', sql);
+    console.log('Params:', params);
 
     const [notifications] = await db.query(sql, params);
 
-    console.log(`✅ ${notifications.length} notificaciones obtenidas`);
+    console.log(` ${notifications.length} notificaciones obtenidas`);
 
     res.status(200).json(notifications);
   } catch (error) {
-    console.error('❌ Error al obtener notificaciones:', error);
+    console.error('Error al obtener notificaciones:', error);
     res.status(500).json({ 
       message: 'Error al obtener notificaciones',
       error: error.message 
@@ -61,7 +57,6 @@ const getNotifications = async (req, res) => {
   }
 };
 
-// ✅ Marcar notificación como leída
 const markAsRead = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -71,7 +66,7 @@ const markAsRead = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    console.log(`📝 Marcando notificación ${id} como leída para usuario ${userId}`);
+    console.log(`Marcando notificación ${id} como leída para usuario ${userId}`);
 
     const [result] = await db.query(
       `UPDATE notificacion 
@@ -86,12 +81,11 @@ const markAsRead = async (req, res) => {
 
     res.status(200).json({ message: 'Notificación marcada como leída' });
   } catch (error) {
-    console.error('❌ Error al marcar notificación:', error);
+    console.error('Error al marcar notificación:', error);
     res.status(500).json({ message: 'Error al actualizar notificación' });
   }
 };
 
-// ✅ Marcar todas como leídas
 const markAllAsRead = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
@@ -100,7 +94,7 @@ const markAllAsRead = async (req, res) => {
 
     const userId = req.user.id;
 
-    console.log(`📝 Marcando todas las notificaciones como leídas para usuario ${userId}`);
+    console.log(`Marcando todas las notificaciones como leídas para usuario ${userId}`);
 
     const [result] = await db.query(
       `UPDATE notificacion 
@@ -109,22 +103,21 @@ const markAllAsRead = async (req, res) => {
       [userId]
     );
 
-    console.log(`✅ ${result.affectedRows} notificaciones marcadas como leídas`);
+    console.log(`${result.affectedRows} notificaciones marcadas como leídas`);
 
     res.status(200).json({ 
       message: 'Todas las notificaciones marcadas como leídas',
       updated: result.affectedRows 
     });
   } catch (error) {
-    console.error('❌ Error al marcar todas como leídas:', error);
+    console.error('Error al marcar todas como leídas:', error);
     res.status(500).json({ message: 'Error al actualizar notificaciones' });
   }
 };
 
-// ✅ Función auxiliar para crear notificaciones
 const createNotification = async (userId, titulo, descripcion, tipo = 'general') => {
   try {
-    console.log(`📨 Creando notificación para usuario ${userId}`);
+    console.log(`Creando notificación para usuario ${userId}`);
 
     await db.query(
       `INSERT INTO notificacion (id_usuario, titulo, descripcion, tipo) 
@@ -132,9 +125,9 @@ const createNotification = async (userId, titulo, descripcion, tipo = 'general')
       [userId, titulo, descripcion, tipo]
     );
 
-    console.log(`✅ Notificación creada`);
+    console.log(`Notificación creada`);
   } catch (error) {
-    console.error('❌ Error al crear notificación:', error);
+    console.error('Error al crear notificación:', error);
   }
 };
 

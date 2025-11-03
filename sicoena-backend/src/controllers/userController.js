@@ -1,42 +1,37 @@
-// src/controllers/userController.js
-
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const { createNotification } = require('./notificationController');
 
-// ✅ FUNCIÓN 1: Crear Usuario
 const createUser = async (req, res) => {
   try {
-    // ✅ Recibir nombre y apellido por separado
+    
     const { nombre, apellidos, email, rol, telefono, estado, contrasena } = req.body;
 
     if (!nombre || !email) {
       return res.status(400).json({ message: 'Nombre y email son requeridos.' });
     }
 
-    // ✅ Hashear contraseña
+    
     const hashedPassword = await bcrypt.hash(contrasena || 'password123', 10);
 
-    console.log('📝 Creando usuario:', { nombre, apellidos, email, rol, telefono, estado });
-
-    // ✅ CORRECTO: Usar los apellidos que viene del frontend
+    console.log('Creando usuario:', { nombre, apellidos, email, rol, telefono, estado });
+    
     const [result] = await db.query(
       `INSERT INTO usuario (nombres, apellidos, correo, rol, telefono, estado, contraseña) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
-        nombre,                    // ← nombres
-        apellidos || '',           // ← apellidos (si no viene, vacío)
-        email,                     // ← correo
-        rol || 'USUARIO',          // ← rol
-        telefono || null,          // ← telefono
-        estado || 'ACTIVO',        // ← estado
-        hashedPassword             // ← contraseña
+        nombre,                    
+        apellidos || '',           
+        email,                     
+        rol || 'USUARIO',          
+        telefono || null,          
+        estado || 'ACTIVO',        
+        hashedPassword             
       ]
     );
 
-    console.log('✅ Usuario creado:', result.insertId);
-
-    // ✅ CREAR NOTIFICACIÓN PARA TODOS LOS ADMINS
+    console.log('Usuario creado:', result.insertId);
+    
     try {
       const [admins] = await db.query(
         `SELECT id_usuario FROM usuario WHERE rol = 'ADMINISTRADOR' AND estado = 'ACTIVO'`
@@ -51,9 +46,9 @@ const createUser = async (req, res) => {
         );
       }
 
-      console.log(`📨 Notificaciones enviadas a ${admins.length} administradores`);
+      console.log(`Notificaciones enviadas a ${admins.length} administradores`);
     } catch (error) {
-      console.error('⚠️ Error al crear notificaciones:', error);
+      console.error('Error al crear notificaciones:', error);
     }
 
     res.status(201).json({
@@ -66,7 +61,7 @@ const createUser = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error al crear usuario:', error);
+    console.error('Error al crear usuario:', error);
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ message: 'El email ya está registrado.' });
     }
@@ -74,7 +69,6 @@ const createUser = async (req, res) => {
   }
 };
 
-// ✅ FUNCIÓN 2: Obtener todos los usuarios
 const getAllUsers = async (req, res) => {
   try {
     const searchTerm = req.query.search || '';
@@ -124,7 +118,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// ✅ FUNCIÓN 3: Obtener usuario por ID
 const getUserById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -155,34 +148,31 @@ const getUserById = async (req, res) => {
     }
 };
 
-// ✅ MODIFICADO: FUNCIÓN 4: Actualizar usuario
 const updateUser = async (req, res) => {
     const userId = req.params.id;
-    // Extraemos todos los campos, incluyendo la contraseña
+    
     const { 
         nombre, 
         email, 
         rol, 
         telefono, 
         estado,
-        contrasena // <-- Campo clave
+        contrasena 
     } = req.body;
-
-    // Validación básica de campos
+    
     if (!nombre || !email) {
         return res.status(400).json({ message: 'Nombre y email son requeridos.' });
     }
     if (estado && estado.toUpperCase() !== 'ACTIVO' && estado.toUpperCase() !== 'INACTIVO') {
         return res.status(400).json({ message: 'Estado inválido.' });
     }
-
-    // Separamos nombre y apellidos
+    
     const nameParts = nombre ? nombre.split(' ') : [''];
     const nombres = nameParts[0] || '';
     const apellidos = nameParts.slice(1).join(' ');
 
     try {
-        // Construcción dinámica de la consulta SQL
+        
         let sqlFields = [
             'nombres = ?', 
             'apellidos = ?', 
@@ -200,25 +190,19 @@ const updateUser = async (req, res) => {
             estado ? estado.toUpperCase() : 'ACTIVO'
         ];
 
-        // --- INICIO DE LA LÓGICA CORREGIDA ---
-        // Si se proporciona una nueva contraseña en el body de la petición...
         if (contrasena && contrasena.trim() !== '') {
-            console.log(`🔑 Actualizando contraseña para el usuario ${userId}`);
-            // ...la hasheamos
+            console.log(`Actualizando contraseña para el usuario ${userId}`);
+
             const hashedPassword = await bcrypt.hash(contrasena, 10);
-            // ...y la añadimos a los campos y parámetros a actualizar
+            
             sqlFields.push('contraseña = ?');
             params.push(hashedPassword);
         }
-        // --- FIN DE LA LÓGICA CORREGIDA ---
-
-        // Unimos todos los campos en un string para la consulta SET
-        const sqlSetClause = sqlFields.join(', ');
         
-        // Añadimos el ID del usuario al final de los parámetros para el WHERE
+        const sqlSetClause = sqlFields.join(', ');
+
         params.push(userId);
 
-        // Construimos y ejecutamos la consulta final
         const sql = `UPDATE usuario SET ${sqlSetClause} WHERE id_usuario = ?`;
         
         const [result] = await db.query(sql, params);
@@ -247,8 +231,6 @@ const updateUser = async (req, res) => {
     }
 };
 
-
-// ✅ FUNCIÓN 5: Eliminar usuario
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
@@ -270,7 +252,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-// ✅ FUNCIÓN 6: Actualizar estado del usuario
 const updateUserStatus = async (req, res) => {
     const { userId } = req.params;
     const { estado } = req.body;
@@ -297,26 +278,25 @@ const updateUserStatus = async (req, res) => {
     }
 };
 
-// ✅ FUNCIÓN 7: Obtener usuarios activos
 const getActiveUsers = async (req, res) => {
     try {
-        console.log('🔍 INICIANDO getActiveUsers');
+        console.log('INICIANDO getActiveUsers');
         
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
         res.set('Content-Type', 'application/json');
-        
-        console.log('📊 Ejecutando query SQL...');
-        
+
+        console.log('Ejecutando query SQL...');
+
         const [users] = await db.query(
             'SELECT id_usuario, CONCAT(nombres, " ", COALESCE(apellidos, "")) as nombre, correo FROM usuario WHERE estado = ? ORDER BY nombres ASC',
             ['ACTIVO']
         );
 
-        console.log('✅ Query exitosa');
-        console.log('👥 Usuarios encontrados:', users.length);
-        console.log('📝 Datos de usuarios:', JSON.stringify(users));
+        console.log('Query exitosa');
+        console.log('Usuarios encontrados:', users.length);
+        console.log('Datos de usuarios:', JSON.stringify(users));
 
         const responseData = {
             message: 'Usuarios activos obtenidos exitosamente.',
@@ -328,12 +308,12 @@ const getActiveUsers = async (req, res) => {
         
         res.status(200).json(responseData);
         
-        console.log('✅ Respuesta enviada correctamente');
+        console.log('Respuesta enviada correctamente');
 
     } catch (error) {
-        console.error("❌ Error al obtener usuarios activos:", error);
-        console.error("📌 Detalles del error:", error.message);
-        console.error("🔗 Stack trace:", error.stack);
+        console.error("Error al obtener usuarios activos:", error);
+        console.error("Detalles del error:", error.message);
+        console.error("Stack trace:", error.stack);
         
         res.status(500).json({ 
             message: 'Error interno del servidor al obtener usuarios activos.',
@@ -341,29 +321,25 @@ const getActiveUsers = async (req, res) => {
         });
     }
 };
-
 const changePassword = async (req, res) => {
-  // El ID del usuario debe venir del token, no de los parámetros de la URL
+  
   const userId = req.user.id; 
   const { currentPassword, newPassword } = req.body;
 
   try {
-    // 1. Obtener el hash de la contraseña actual del usuario desde la BD
+    
     const [users] = await db.query('SELECT contraseña FROM usuario WHERE id_usuario = ?', [userId]);
     if (users.length === 0) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
     
-    // 2. Comparar la contraseña actual enviada con el hash de la BD
-    const isMatch = await bcrypt.compare(currentPassword, users[0].contraseña);
+        const isMatch = await bcrypt.compare(currentPassword, users[0].contraseña);
     if (!isMatch) {
       return res.status(400).json({ message: 'La contraseña actual es incorrecta.' });
     }
-
-    // 3. Hashear la nueva contraseña
+    
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-    // 4. Actualizar la contraseña en la BD
+    
     await db.query('UPDATE usuario SET contraseña = ? WHERE id_usuario = ?', [hashedNewPassword, userId]);
 
     res.status(200).json({ message: 'Contraseña actualizada exitosamente.' });
@@ -373,7 +349,7 @@ const changePassword = async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
-// ✅ EXPORTAR TODAS LAS FUNCIONES - ESTILO CONSISTENTE
+
 module.exports = {
   createUser,
   getAllUsers,

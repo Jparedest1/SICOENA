@@ -1,17 +1,14 @@
-// Archivo: src/pages/DashboardPage.js
-
-import React, { useState, useEffect } from 'react'; // Importa useState y useEffect
-import { Link, useNavigate } from 'react-router-dom'; // Importa useNavigate
+import React, { useState, useEffect } from 'react'; 
+import { Link, useNavigate } from 'react-router-dom'; 
 import './DashboardPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faUserPlus, faBuilding, faBox, faFileAlt, faDatabase, faTruck,
-  faExclamationTriangle, faUserCheck, faUserTimes, faChartBar, faBell // Changed faLink to faUserCheck, faUserTimes
+  faUserPlus, faBuilding, faBox, faFileAlt, faTruck,
+  faExclamationTriangle, faUserCheck, faUserTimes, faChartBar, faBell 
 } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = 'http://localhost:5000/api'; // Asegúrate que esta sea tu URL base
+const API_URL = 'http://localhost:5000/api';
 
-// --- Componentes ActionCard y StatCard (sin cambios) ---
 const ActionCard = ({ title, icon }) => (
     <div className="action-card">
       <FontAwesomeIcon icon={icon} className="action-icon" />
@@ -25,16 +22,14 @@ const StatCard = ({ title, value, detail, icon, iconBgColor, iconColor }) => (
       </div>
       <div className="stat-info">
         <span className="stat-title">{title}</span>
-        {/* Muestra '...' mientras carga */}
         <span className="stat-value">{value === null ? '...' : value}</span> 
         {detail && <span className="stat-detail">{detail}</span>}
       </div>
     </div>
 );
 
-// --- Componente Principal de la Página ---
 const DashboardPage = () => {
-  // --- ESTADOS para guardar los datos, carga y errores ---
+  
 const [stats, setStats] = useState({
     usuariosActivos: null,
     usuariosInactivos: null,
@@ -43,9 +38,8 @@ const [stats, setStats] = useState({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Para redirigir si el token falla
-
-  // --- useEffect para llamar a la API al montar ---
+  const navigate = useNavigate(); 
+  
   useEffect(() => {
     const fetchStats = async () => {
       setIsLoading(true);
@@ -53,7 +47,7 @@ const [stats, setStats] = useState({
       const token = localStorage.getItem('authToken');
 
       if (!token) {
-        navigate('/login'); // Redirige si no hay token
+        navigate('/login'); 
         return;
       }
 
@@ -71,7 +65,7 @@ const [stats, setStats] = useState({
         }
 
         const data = await response.json();
-        setStats(data); // Guarda los datos recibidos en el estado
+        setStats(data); 
 
       } catch (err) {
         setError(err.message);
@@ -84,7 +78,7 @@ const [stats, setStats] = useState({
     };
 
     fetchStats();
-  }, [navigate]); // El efecto se ejecuta una vez al montar
+  }, [navigate]); 
 
   return (
     <div className="dashboard-container">
@@ -93,12 +87,10 @@ const [stats, setStats] = useState({
         <span className="breadcrumb">Inicio &gt; Dashboard</span>
       </div>
 
-      {/* --- Muestra error si existe --- */}
       {error && <div className="page-error-message">{error}</div>}
 
-      {/* --- Sección de Acciones Rápidas (sin cambios en la lógica) --- */}
       <div className="quick-actions-grid">
-        <Link to="/usuario" className="action-link"> {/* Corregido a /usuario */}
+        <Link to="/usuario" className="action-link">
           <ActionCard title="Usuarios" icon={faUserPlus} />
         </Link>
         <Link to="/institucion" className="action-link">
@@ -113,37 +105,36 @@ const [stats, setStats] = useState({
         <Link to="/reportes" className="action-link">
           <ActionCard title="Generar Reporte" icon={faFileAlt} />
         </Link>
-        <Link to="/inventario" className="action-link"> {/* Asegúrate de tener esta ruta si es necesaria */}
+        <Link to="/inventario" className="action-link">
           <ActionCard title="Ver Alertas" icon={faExclamationTriangle} />
         </Link>
       </div>
 
-      {/* --- Sección de Estadísticas ACTUALIZADA --- */}
       <div className="stats-grid">
         <StatCard 
-          title="Usuarios Activos" // Nuevo título
-          value={stats.usuariosActivos} // Nuevo dato
-          icon={faUserCheck} // Nuevo icono
-          iconBgColor="#e6f8f0" // Verde claro
-          iconColor="#2ab57d" // Verde
+          title="Usuarios Activos" 
+          value={stats.usuariosActivos} 
+          icon={faUserCheck} 
+          iconBgColor="#e6f8f0" 
+          iconColor="#2ab57d" 
         />
         <StatCard 
-          title="Usuarios Inactivos" // Nuevo título
-          value={stats.usuariosInactivos} // Nuevo dato
-          icon={faUserTimes} // Nuevo icono
-          iconBgColor="#f8f9fa" // Gris claro
-          iconColor="#868e96" // Gris
+          title="Usuarios Inactivos" 
+          value={stats.usuariosInactivos} 
+          icon={faUserTimes} 
+          iconBgColor="#f8f9fa" 
+          iconColor="#868e96" 
         />
         <StatCard 
           title="Reportes Generados"
-          value={stats.reportesGenerados} // Mantiene dato (aún simulado)
+          value={stats.reportesGenerados} 
           icon={faChartBar}
           iconBgColor="#fdf0e7"
           iconColor="#f19a62"
         />
         <StatCard 
           title="Alertas del Sistema"
-          value={stats.alertasSistema} // Ahora dinámico (si tienes tabla producto)
+          value={stats.alertasSistema} 
           icon={faBell}
           iconBgColor="#feefef"
           iconColor="#e65353"

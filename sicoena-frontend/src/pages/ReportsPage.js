@@ -1,5 +1,3 @@
-// src/pages/ReportsPage.js
-
 import React, { useState, useEffect } from 'react';
 import './ReportsPage.css';
 import DashboardKPIs from '../components/Reports/DashboardKPIs';
@@ -10,7 +8,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartBar } from '@fortawesome/free-solid-svg-icons';
 
 const ReportsPage = () => {
-  // ✅ OBTENER LA FECHA ACTUAL EN FORMATO YYYY-MM-DD
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -21,7 +18,6 @@ const ReportsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Filtros con fecha actual
   const [dateFrom, setDateFrom] = useState(getTodayDate());
   const [dateTo, setDateTo] = useState(getTodayDate());
   const [filterEscuela, setFilterEscuela] = useState('todas');
@@ -34,18 +30,15 @@ const ReportsPage = () => {
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  // Cargar órdenes al montar
   useEffect(() => {
     fetchOrders();
     fetchFilterData();
   }, []);
 
-  // Aplicar filtros cuando cambien
   useEffect(() => {
     applyFilters();
   }, [orders, dateFrom, dateTo, filterEscuela, filterEstado, filterMenu]);
 
-  // ✅ OBTENER TODAS LAS ÓRDENES
   const fetchOrders = async () => {
     setIsLoading(true);
     setError(null);
@@ -65,7 +58,6 @@ const ReportsPage = () => {
       const data = await response.json();
       setOrders(data || []);
 
-      // ✅ Cargar detalles completos de cada orden (incluyendo productos)
       const ordersWithDetails = await Promise.all(
         (data || []).map(async (order) => {
           try {
@@ -88,7 +80,7 @@ const ReportsPage = () => {
       );
 
       setOrdersWithProducts(ordersWithDetails);
-      console.log('✅ Órdenes cargadas:', data.length);
+      console.log('Órdenes cargadas:', data.length);
     } catch (err) {
       console.error('Error:', err);
       setError('No se pudieron cargar los datos de órdenes');
@@ -98,12 +90,10 @@ const ReportsPage = () => {
     }
   };
 
-  // ✅ OBTENER DATOS PARA FILTROS (FUERA DE fetchOrders)
   const fetchFilterData = async () => {
     const token = localStorage.getItem('authToken');
 
     try {
-      // Escuelas
       const escuelasRes = await fetch(`${apiUrl}/api/institucion/active`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -112,7 +102,6 @@ const ReportsPage = () => {
         setEscuelas(data.schools || []);
       }
 
-      // Menús
       const menusRes = await fetch(`${apiUrl}/api/producto/active-menus`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -125,36 +114,29 @@ const ReportsPage = () => {
     }
   };
 
-  // ✅ APLICAR FILTROS
   const applyFilters = () => {
     let filtered = orders;
 
-    // ✅ Filtro por fecha - VERSIÓN SIMPLIFICADA
     if (dateFrom && dateTo) {
       filtered = filtered.filter(order => {
         if (!order.fecha_creacion) return false;
         
-        // Obtener solo la parte de fecha (YYYY-MM-DD)
         const orderDate = order.fecha_creacion.split('T')[0];
         
-        // Comparar directamente las strings de fecha
         return orderDate >= dateFrom && orderDate <= dateTo;
       });
 
-      console.log(`📅 Filtro de fechas: ${dateFrom} a ${dateTo} - Órdenes encontradas: ${filtered.length}`);
+      console.log(`Filtro de fechas: ${dateFrom} a ${dateTo} - Órdenes encontradas: ${filtered.length}`);
     }
 
-    // Filtro por escuela
     if (filterEscuela !== 'todas') {
       filtered = filtered.filter(o => o.id_escuela === parseInt(filterEscuela));
     }
 
-    // Filtro por estado
     if (filterEstado !== 'todos') {
       filtered = filtered.filter(o => o.estado === filterEstado);
     }
 
-    // Filtro por menú
     if (filterMenu !== 'todos') {
       filtered = filtered.filter(o => o.id_menu === parseInt(filterMenu));
     }
@@ -187,13 +169,11 @@ const ReportsPage = () => {
         </div>
       )}
 
-      {/* --- DASHBOARD DE ANÁLISIS (KPIs) --- */}
       <div className="dashboard-section">
-        <h2>📊 Dashboard de Análisis</h2>
+        <h2>Dashboard de Análisis</h2>
         <DashboardKPIs orders={filteredOrders} />
       </div>
 
-      {/* --- FILTROS --- */}
       <ReportFilters
         dateFrom={dateFrom}
         setDateFrom={setDateFrom}
@@ -209,15 +189,13 @@ const ReportsPage = () => {
         menus={menus}
       />
 
-      {/* --- GRÁFICOS --- */}
       <div className="charts-section">
-        <h2>📈 Análisis Visual</h2>
+        <h2>Análisis Visual</h2>
         <ReportCharts orders={filteredOrders} />
       </div>
 
-      {/* --- TABLA DE ÓRDENES --- */}
       <div className="table-section">
-        <h2>📋 Detalle de Órdenes</h2>
+        <h2>Detalle de Órdenes</h2>
         <OrdersReportTable orders={filteredOrders} allOrdersWithProducts={ordersWithProducts} />
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './AddUserModal.css'; // Reutilizamos el CSS del otro modal
+import './AddUserModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faKey } from '@fortawesome/free-solid-svg-icons';
 

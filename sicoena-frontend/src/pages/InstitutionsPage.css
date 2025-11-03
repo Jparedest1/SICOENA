@@ -1,5 +1,5 @@
-/* src/pages/InstitutionsPage.css */
-/* Reutilizamos y adaptamos estilos de UsersPage.css */
+
+
 .page-container {
   padding: 30px;
 }
@@ -165,8 +165,8 @@ thead th {
 .icon-edit { color: #0d6efd; }
 .icon-delete { color: #dc3545; }
 
-/* --- ESTILOS RESPONSIVE --- */
-/* Para Tablets (menos de 992px) */
+
+
 @media (max-width: 992px) {
   .page-header, .filters-bar {
     flex-direction: column;
@@ -183,15 +183,15 @@ thead th {
   }
 
   .table-container {
-    overflow-x: auto; /* Permite scroll horizontal en la tabla */
+    overflow-x: auto;
   }
 
   table {
-    min-width: 800px; /* Ancho mínimo para forzar el scroll */
+    min-width: 800px;
   }
 }
 
-/* Para Móviles (menos de 576px) */
+
 @media (max-width: 576px) {
   .page-container {
     padding: 15px;

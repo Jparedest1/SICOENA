@@ -1,7 +1,4 @@
-// src/controllers/institutionController.js
-
 const db = require('../config/db');
-
 const getAllSchools = async (req, res) => {
     try {
         const { search, ubicacion, estado } = req.query;

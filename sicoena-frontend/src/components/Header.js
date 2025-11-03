@@ -1,5 +1,3 @@
-// src/components/Header.js
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
@@ -21,7 +19,6 @@ const Header = ({ toggleSidebar, onLogout }) => {
   const notificationRef = useRef(null);
   const navigate = useNavigate();
 
-  // ✅ Cargar datos del usuario
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
@@ -37,18 +34,17 @@ const Header = ({ toggleSidebar, onLogout }) => {
     }
   }, []);
 
-  // ✅ Obtener notificaciones del backend
   const fetchNotifications = async () => {
     try {
       setLoadingNotifications(true);
       const token = localStorage.getItem('authToken');
 
       if (!token) {
-        console.log('❌ No token available');
+        console.log('No token available');
         return;
       }
 
-      console.log('📬 Fetching notifications...');
+      console.log('Fetching notifications...');
 
       const response = await fetch(`${API_URL}/notificaciones?limit=10`, {
         headers: {
@@ -67,23 +63,21 @@ const Header = ({ toggleSidebar, onLogout }) => {
       }
 
       const data = await response.json();
-      console.log('✅ Notificaciones obtenidas:', data);
+      console.log('Notificaciones obtenidas:', data);
       setNotifications(data);
     } catch (error) {
-      console.error('❌ Error fetching notifications:', error);
+      console.error('Error fetching notifications:', error);
     } finally {
       setLoadingNotifications(false);
     }
   };
 
-  // ✅ Cargar notificaciones cuando se abre el dropdown
   useEffect(() => {
     if (showNotifications && notifications.length === 0) {
       fetchNotifications();
     }
   }, [showNotifications]);
 
-  // ✅ Actualizar notificaciones cada 30 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       fetchNotifications();
@@ -92,7 +86,6 @@ const Header = ({ toggleSidebar, onLogout }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ Cerrar notificaciones al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -118,7 +111,6 @@ const Header = ({ toggleSidebar, onLogout }) => {
     setShowNotifications(!showNotifications);
   };
 
-  // ✅ Marcar todas como leídas
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('authToken');
@@ -134,16 +126,14 @@ const Header = ({ toggleSidebar, onLogout }) => {
       if (!response.ok) throw new Error('Error al marcar como leídas');
 
       const data = await response.json();
-      console.log('✅ Notificaciones marcadas como leídas:', data);
+      console.log('Notificaciones marcadas como leídas:', data);
       
-      // Actualizar notificaciones localmente
       setNotifications(notifications.map(n => ({ ...n, read: true })));
     } catch (error) {
-      console.error('❌ Error marking as read:', error);
+      console.error('Error marking as read:', error);
     }
   };
 
-  // ✅ Marcar una notificación como leída
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('authToken');
@@ -158,12 +148,11 @@ const Header = ({ toggleSidebar, onLogout }) => {
 
       if (!response.ok) throw new Error('Error al marcar como leída');
 
-      // Actualizar notificación localmente
       setNotifications(notifications.map(n => 
         n.id === notificationId ? { ...n, read: true } : n
       ));
     } catch (error) {
-      console.error('❌ Error marking notification as read:', error);
+      console.error('Error marking notification as read:', error);
     }
   };
 

@@ -1,20 +1,16 @@
-// sicoena-frontend/src/pages/SettingsPage.js
-
 import React, { useState, useEffect } from 'react';
 import './SettingsPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBuilding, 
   faShieldAlt, 
-  faEnvelope, 
-  faDatabase, 
+  faEnvelope,
   faSave,
   faCog
 } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = 'http://localhost:5000/api';
 
-// Componente para una pestaña de configuración
 const SettingsTab = ({ title, icon, children }) => (
   <div className="settings-tab-content">
     <h2><FontAwesomeIcon icon={icon} /> {title}</h2>
@@ -26,27 +22,19 @@ const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' o 'error'
-
-  // Estados para Configuración General
+  const [messageType, setMessageType] = useState('');
   const [companyName, setCompanyName] = useState('SICOENA');
   const [companyNit, setCompanyNit] = useState('');
   const [companyAddress, setCompanyAddress] = useState('');
   const [companyPhone, setCompanyPhone] = useState('');
   const [companyEmail, setCompanyEmail] = useState('');
-
-  // Estados para Configuración de Sistema
   const [backupFrequency, setBackupFrequency] = useState('diario');
   const [enableNotifications, setEnableNotifications] = useState(true);
   const [defaultCurrency, setDefaultCurrency] = useState('Q');
   const [systemLanguage, setSystemLanguage] = useState('es');
-
-  // Estados para Seguridad
   const [sessionTimeout, setSessionTimeout] = useState(30);
   const [enableTwoFactor, setEnableTwoFactor] = useState(false);
   const [passwordExpiry, setPasswordExpiry] = useState(90);
-
-  // Estados para Email
   const [smtpServer, setSmtpServer] = useState('');
   const [smtpPort, setSmtpPort] = useState(587);
   const [smtpUser, setSmtpUser] = useState('');
@@ -54,8 +42,6 @@ const SettingsPage = () => {
   const [emailFrom, setEmailFrom] = useState('');
 
   useEffect(() => {
-    // Aquí podrías cargar las configuraciones del backend
-    // fetchSettings();
   }, []);
 
   const showMessage = (text, type) => {
@@ -102,7 +88,7 @@ const SettingsPage = () => {
             smtpServer,
             smtpPort,
             smtpUser,
-            smtpPassword: smtpPassword, // ⚠️ Considerar encriptar esto
+            smtpPassword: smtpPassword, 
             emailFrom
           };
           break;
@@ -125,10 +111,10 @@ const SettingsPage = () => {
         throw new Error(data.message || 'Error al guardar');
       }
       
-      showMessage(`✅ Configuración guardada exitosamente.`, 'success');
+      showMessage(`Configuración guardada exitosamente.`, 'success');
     } catch (error) {
       console.error('Error al guardar:', error);
-      showMessage(`❌ ${error.message}`, 'error');
+      showMessage(`${error.message}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -402,7 +388,6 @@ const SettingsPage = () => {
       )}
 
       <div className="settings-layout">
-        {/* Navegación de Pestañas (Izquierda) */}
         <nav className="settings-nav">
           <ul>
             <li 
@@ -436,7 +421,6 @@ const SettingsPage = () => {
           </ul>
         </nav>
 
-        {/* Contenido de la Pestaña (Derecha) */}
         <div className="settings-content">
           {renderTabContent()}
         </div>

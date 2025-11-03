@@ -1,5 +1,3 @@
-// src/pages/UsersPage.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UsersPage.css';
@@ -16,12 +14,10 @@ const UsersPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('todos');
   const [statusFilter, setStatusFilter] = useState('ACTIVO');
 
-  // ✅ ACTUALIZADO: Ahora usa los valores actuales del estado
   const fetchUsers = useCallback(async (
     currentSearchTerm = '',
     currentRoleFilter = 'todos',
@@ -53,8 +49,8 @@ const UsersPage = () => {
     
     url += params.join('&');
 
-    console.log('📡 Fetching URL:', url);
-    console.log('🔑 Token:', token.substring(0, 20) + '...');
+    console.log('Fetching URL:', url);
+    console.log('Token:', token.substring(0, 20) + '...');
 
     try {
       const response = await fetch(url, { 
@@ -64,7 +60,7 @@ const UsersPage = () => {
         } 
       });
 
-      console.log('📊 Response status:', response.status);
+      console.log('Response status:', response.status);
 
       if (response.status === 401) {
         localStorage.removeItem('authToken');
@@ -74,15 +70,15 @@ const UsersPage = () => {
         let errorData = { message: `Error al cargar los usuarios (${response.status})` };
         try {
           errorData = await response.json();
-        } catch(e) { /* No hacer nada si no es JSON */ }
+        } catch(e) { }
         throw new Error(errorData.message);
       }
 
       const data = await response.json();
-      console.log('✅ Usuarios obtenidos:', data);
+      console.log('Usuarios obtenidos:', data);
       setUsers(data);
     } catch (err) {
-      console.error('❌ Error:', err);
+      console.error('Error:', err);
       setError(err.message);
       if (err.message.includes('Sesión inválida')) {
         navigate('/login');
@@ -91,11 +87,9 @@ const UsersPage = () => {
       setIsLoading(false);
     }
   }, [navigate]);
-
-  // ✅ ACTUALIZADO: Carga inicial con statusFilter del estado
   useEffect(() => {
     fetchUsers(searchTerm, roleFilter, statusFilter);
-  }, [statusFilter, fetchUsers]); // Ahora incluye statusFilter como dependencia
+  }, [statusFilter, fetchUsers]); 
 
   const handleSearch = () => {
     fetchUsers(searchTerm, roleFilter, statusFilter);

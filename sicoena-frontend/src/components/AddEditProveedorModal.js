@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './AddEditProveedorModal.css';
 
 const AddEditProveedorModal = ({ onClose, onSave, currentProveedor }) => {
-  // Inicializa el estado directamente con los datos del proveedor a editar o un objeto vacío.
   const [proveedor, setProveedor] = useState(
     currentProveedor
       ? {

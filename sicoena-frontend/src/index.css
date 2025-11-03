@@ -1,23 +1,23 @@
-/* src/index.css */
+
 :root {
-  /* Paleta de Colores Principales [cite: 80] */
+ 
   --color-principal: #2c3e50;
   --color-secundario: #525252;
   --color-terciario: #6c757d;
 
-  /* Fondos (Backgrounds) [cite: 84] */
+ 
   --bg-blanco: #ffffff;
   --bg-claro: #f8f9fa;
   --bg-gris: #e9ecef;
 
-  /* Bordes y Estados [cite: 88] */
+ 
   --borde-claro: #dee2e6;
   --borde-medio: #adb5bd;
   --borde-oscuro: #495057;
   
-  /* Familia Tipográfica [cite: 58] */
+ 
   --font-principal: 'Arial', 'Helvetica', sans-serif;
-  --font-monospace: 'Courier New', monospace; /* [cite: 63] */
+  --font-monospace: 'Courier New', monospace;
 }
 
 body {
@@ -29,8 +29,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Estilos para la jerarquía de texto [cite: 61] */
-h1 { font-size: 36px; font-weight: 700; } /* [cite: 65] */
-h2 { font-size: 28px; font-weight: 600; } /* [cite: 66] */
-h3 { font-size: 24px; font-weight: 600; } /* [cite: 67] */
-p { font-size: 14px; line-height: 1.5; } /* [cite: 69] */
+
+h1 { font-size: 36px; font-weight: 700; }
+h2 { font-size: 28px; font-weight: 600; }
+h3 { font-size: 24px; font-weight: 600; }
+p { font-size: 14px; line-height: 1.5; }

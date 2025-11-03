@@ -1,5 +1,3 @@
-// src/components/MainLayout.js (o tu componente principal)
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';

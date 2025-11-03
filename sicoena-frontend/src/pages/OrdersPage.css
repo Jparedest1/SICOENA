@@ -1,4 +1,4 @@
-/* src/pages/OrdersPage.css */
+
 
 .page-container {
   padding: 30px;
@@ -24,7 +24,7 @@
   gap: 10px;
 }
 
-/* Reusing button styles */
+
 .btn-primary {
   background-color: var(--color-principal);
   color: white;
@@ -148,7 +148,7 @@ thead th {
   text-transform: uppercase;
 }
 
-/* Status Badge Styles */
+
 .status-badge.entregado { background-color: #e6f8f0; color: #2ab57d; }
 .status-badge.pendiente { background-color: #fff9db; color: #fcc419; }
 .status-badge.en-proceso { background-color: #e7f5ff; color: #339af0; }
@@ -160,11 +160,11 @@ thead th {
 .icon-edit { color: #0d6efd; }
 .icon-delete { color: #dc3545; }
 
-/* --- ESTILOS RESPONSIVE --- */
-/* Para Tablets (menos de 992px) */
+
+
 @media (max-width: 992px) {
   .stats-cards-container {
-    grid-template-columns: repeat(3, 1fr); /* 3 tarjetas por fila */
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .page-header, .filters-bar {
@@ -185,14 +185,14 @@ thead th {
     overflow-x: auto;
   }
   table {
-    min-width: 1200px; /* Ancho mínimo para la tabla de inventario/órdenes */
+    min-width: 1200px;
   }
 }
 
-/* Para Móviles (menos de 768px) */
+
 @media (max-width: 768px) {
   .stats-cards-container {
-    grid-template-columns: repeat(2, 1fr); /* 2 tarjetas por fila */
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .pagination {
@@ -201,13 +201,13 @@ thead th {
   }
 }
 
-/* Para Móviles Pequeños (menos de 576px) */
+
 @media (max-width: 576px) {
   .page-container {
     padding: 15px;
   }
    .stats-cards-container {
-    grid-template-columns: 1fr; /* 1 tarjeta por fila */
+    grid-template-columns: 1fr;
   }
 }
 

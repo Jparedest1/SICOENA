@@ -1,7 +1,4 @@
-// src/controllers/logController.js
-
 const db = require('../config/db');
-
 const createLog = async (level, message, context = {}) => {
   try {
     const query = 'INSERT INTO logs (level, message, context) VALUES (?, ?, ?)';

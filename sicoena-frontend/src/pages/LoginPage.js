@@ -6,7 +6,7 @@ import sicoenaLogo from '../assets/logo-sicoena.png';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-console.log('🔗 API URL:', API_URL);
+console.log('API URL:', API_URL);
 
 const LoginPage = ({ onLoginSuccess }) => {
   const [usuario, setUsuario] = useState('');
@@ -16,10 +16,10 @@ const LoginPage = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('📄 LoginPage montado');
+    console.log('LoginPage montado');
     const userInfo = sessionStorage.getItem('userInfo');
     if (userInfo) {
-      console.log('✅ Sesión activa detectada, redirigiendo...');
+      console.log('Sesión activa detectada, redirigiendo...');
       navigate('/dashboard');
     }
   }, [navigate]);
@@ -37,7 +37,7 @@ const LoginPage = ({ onLoginSuccess }) => {
 
       sessionStorage.setItem('userData', JSON.stringify(data.user));
 
-      console.log('✅ Usuario logueado exitosamente:', {
+      console.log('Usuario logueado exitosamente:', {
         email: data.user?.email,
         rol: data.user?.rol || 'USUARIO'
       });
@@ -46,7 +46,7 @@ const LoginPage = ({ onLoginSuccess }) => {
         onLoginSuccess();
       }
     } catch (err) {
-      console.error('❌ Error guardando datos de usuario:', err);
+      console.error('Error guardando datos de usuario:', err);
       setError('Error guardando datos. Intente de nuevo.');
     }
   };
@@ -69,12 +69,12 @@ const LoginPage = ({ onLoginSuccess }) => {
         throw new Error(data.message || 'Credenciales incorrectas. Por favor, intente de nuevo.');
       }
 
-      console.log('✅ Login exitoso:', data);
+      console.log('Login exitoso:', data);
       
       saveUserData(data);
 
     } catch (error) {
-      console.error('❌ Error en login:', error);
+      console.error('Error en login:', error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -86,7 +86,7 @@ const LoginPage = ({ onLoginSuccess }) => {
     setIsLoading(true);
     
     try {
-      console.log('🔐 Iniciando login con Google...');
+      console.log('Iniciando login con Google...');
       
       const response = await fetch(`${API_URL}/auth/google/verify`, {
         method: 'POST',
@@ -97,7 +97,7 @@ const LoginPage = ({ onLoginSuccess }) => {
         body: JSON.stringify({ token: credentialResponse.credential }),
       });
 
-      console.log('📡 Respuesta de Google - Status:', response.status);
+      console.log('Respuesta de Google - Status:', response.status);
 
       let data;
       try {
@@ -110,15 +110,15 @@ const LoginPage = ({ onLoginSuccess }) => {
         throw new Error(data.message || `Error ${response.status}: No se pudo iniciar sesión con Google.`);
       }
 
-      console.log('✅ Login Google exitoso:', data);
+      console.log('Login Google exitoso:', data);
       saveUserData(data);
       onLoginSuccess?.();
 
     } catch (err) {
-      console.error('❌ Error en login Google:', err);
+      console.error('Error en login Google:', err);
       
       if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
-        setError('❌ No se pudo conectar al servidor.');
+        setError('No se pudo conectar al servidor.');
       } else {
         setError(err.message);
       }
@@ -128,7 +128,7 @@ const LoginPage = ({ onLoginSuccess }) => {
   };
 
   const handleGoogleError = () => {
-    setError('❌ El inicio de sesión con Google falló. Por favor, intente de nuevo.');
+    setError('El inicio de sesión con Google falló. Por favor, intente de nuevo.');
     console.error('Google login error');
   };
 
@@ -182,7 +182,7 @@ const LoginPage = ({ onLoginSuccess }) => {
             />
           </div>
           <button type="submit" className="login-button" disabled={isLoading}>
-            {isLoading ? '⏳ Ingresando...' : 'Ingresar al Sistema'}
+            {isLoading ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
           <a href="#" className="forgot-password">¿Olvidó su contraseña?</a>
         </form>

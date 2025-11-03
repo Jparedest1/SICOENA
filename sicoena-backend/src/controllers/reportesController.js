@@ -1,22 +1,20 @@
-// src/controllers/reportesController.js
-
 const pool = require('../config/db');
 const { jsPDF } = require("jspdf");
 const { default: autoTable } = require("jspdf-autotable");
 const ExcelJS = require('exceljs');
 
 const registrarReporte = async (tipo, modulo, usuarioId) => {
-  console.log(`➡️  Registrando reporte: Tipo=${tipo}, Módulo=${modulo}, UsuarioID=${usuarioId}`);
+  console.log(`Registrando reporte: Tipo=${tipo}, Módulo=${modulo}, UsuarioID=${usuarioId}`);
   if (!usuarioId) {
-    console.error('🔴 ¡FALLO! No se puede registrar porque el ID de Usuario es nulo.');
+    console.error('¡FALLO! No se puede registrar porque el ID de Usuario es nulo.');
     return;
   }
   try {
     const sql = 'INSERT INTO reportes_generados (tipo, modulo, generado_por_id) VALUES (?, ?, ?)';
     await pool.query(sql, [tipo, modulo, usuarioId]);
-    console.log(`✅ ¡ÉXITO! Reporte registrado en la BD.`);
+    console.log(`¡ÉXITO! Reporte registrado en la BD.`);
   } catch (error) {
-    console.error('🔴 ¡FALLO CRÍTICO! Error al insertar en la BD:', error);
+    console.error('¡FALLO CRÍTICO! Error al insertar en la BD:', error);
   }
 };
 
@@ -32,21 +30,18 @@ const generarReporte = async (req, res) => {
 
     switch (modulo) {
       case 'inventario':
-        // ... (código existente)
+        
         break;
 
       case 'ordenes':
-        // ... (código existente)
+        
         break;
 
       case 'orden_individual':
         if (!id) {
           return res.status(400).json({ message: 'Se requiere el ID de la orden para este reporte.' });
         }
-
-        // --- ¡CORRECCIÓN FINAL CON LOS NOMBRES DE TU TABLA! ---
-        // Se usa la tabla 'escuela' y se une por 'id_escuela'.
-        // Se selecciona 'nombre_escuela' de la tabla 'escuela'.
+        
         const [orderInfoRows] = await pool.query(`
           SELECT o.*, esc.nombre_escuela, p.nombre_producto AS nombre_menu
           FROM orden o
@@ -80,7 +75,7 @@ const generarReporte = async (req, res) => {
         return res.status(400).json({ message: `El módulo de reporte '${modulo}' no es válido.` });
     }
 
-    // --- LÓGICA DE GENERACIÓN (PDF/EXCEL) ---
+    
     if (format.toLowerCase() === 'excel') {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet(titulo);
@@ -96,7 +91,7 @@ const generarReporte = async (req, res) => {
         const buffer = await workbook.xlsx.writeBuffer();
         return res.send(buffer);
 
-    } else { // PDF por defecto
+    } else { 
         const doc = new jsPDF({ orientation: 'portrait' });
         doc.text(titulo, 14, 22);
 
@@ -112,7 +107,7 @@ const generarReporte = async (req, res) => {
     }
 
   } catch (error) {
-    console.error(`🔴 Error general al generar el reporte de ${modulo}:`, error);
+    console.error(`Error general al generar el reporte de ${modulo}:`, error);
     res.status(500).json({ message: 'Error interno al generar el reporte.' });
   }
 };

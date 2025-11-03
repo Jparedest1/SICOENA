@@ -1,4 +1,4 @@
-/* src/pages/LogsPage.css */
+
 .logs-page .page-header {
   border-bottom: 1px solid var(--borde-claro);
   margin-bottom: 25px;
@@ -52,7 +52,7 @@
 }
 
 
-/* --- Tabla de Logs --- */
+
 .log-table-container {
   overflow-x: auto;
 }
@@ -91,10 +91,10 @@
   color: white;
   text-transform: uppercase;
 }
-.level-info { background-color: #339af0; }    /* Azul */
-.level-warn { background-color: #fcc419; }    /* Amarillo */
-.level-error { background-color: #e03131; }   /* Rojo */
-.level-debug { background-color: #868e96; }   /* Gris */
+.level-info { background-color: #339af0; }   
+.level-warn { background-color: #fcc419; }   
+.level-error { background-color: #e03131; }  
+.level-debug { background-color: #868e96; }  
 
 .log-message {
   font-weight: 500;
@@ -107,7 +107,7 @@
   background-color: #f1f3f5;
   padding: 8px;
   border-radius: 4px;
-  white-space: pre-wrap; /* Asegura que el JSON no desborde la celda */
+  white-space: pre-wrap;
   word-break: break-all;
 }
 
@@ -123,11 +123,11 @@
 }
 
 
-/* Colores para las filas */
+
 .log-level-warn { background-color: #fff9db; }
 .log-level-error { background-color: #ffe3e3; }
 
-/* --- ESTILOS RESPONSIVE --- */
+
 
 @media (max-width: 768px) {
   .log-filters-bar {

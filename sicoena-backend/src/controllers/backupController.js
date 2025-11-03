@@ -1,17 +1,14 @@
-// sicoena-backend/src/controllers/backupController.js
 const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process');
 const util = require('util');
 const execPromise = util.promisify(exec);
 
-// --- Constantes ---
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const BACKUPS_DIR = path.join(__dirname, '..', '..', 'backups');
 const BACKUP_METADATA_FILE = path.join(DATA_DIR, 'backups.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'backup-settings.json');
 
-// --- Funciones de Utilidad ---
 const ensureFilesAndDirs = async () => {
     await fs.mkdir(DATA_DIR, { recursive: true });
     await fs.mkdir(BACKUPS_DIR, { recursive: true });
@@ -23,7 +20,6 @@ const readBackups = async () => JSON.parse(await fs.readFile(BACKUP_METADATA_FIL
 
 const writeBackups = async (backups) => await fs.writeFile(BACKUP_METADATA_FILE, JSON.stringify(backups, null, 2));
 
-// ¡LA FUNCIÓN QUE FALTABA!
 const updateBackupStatus = async (backupId, newStatus, details = {}) => {
     try {
         console.log(`[updateBackupStatus] Intentando actualizar ${backupId} a ${newStatus}`);
@@ -37,14 +33,11 @@ const updateBackupStatus = async (backupId, newStatus, details = {}) => {
 
         allBackups[backupIndex] = { ...allBackups[backupIndex], ...details, status: newStatus };
         await writeBackups(allBackups);
-        console.log(`[updateBackupStatus] ✅ Respaldo ${backupId} actualizado exitosamente a ${newStatus}.`);
+        console.log(`[updateBackupStatus] Respaldo ${backupId} actualizado exitosamente a ${newStatus}.`);
     } catch (error) {
-        console.error(`[updateBackupStatus] ❌ Falló la actualización del estado para ${backupId}:`, error);
+        console.error(`[updateBackupStatus] Falló la actualización del estado para ${backupId}:`, error);
     }
 };
-
-
-// --- Controladores ---
 
 exports.getBackups = async (req, res) => {
     await ensureFilesAndDirs();
@@ -101,7 +94,7 @@ exports.createBackup = async (req, res) => {
         await updateBackupStatus(backupId, 'COMPLETADO', { size: `${sizeInMB} MB` });
 
     } catch (error) {
-        console.error(`[createBackup] ❌ Error durante el proceso de mysqldump para ${backupId}:`, error);
+        console.error(`[createBackup] Error durante el proceso de mysqldump para ${backupId}:`, error);
         await updateBackupStatus(backupId, 'FALLIDO');
     }
 };

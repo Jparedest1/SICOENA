@@ -1,5 +1,3 @@
-// src/components/Reports/DashboardKPIs.js
-
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,7 +12,6 @@ import {
 import './DashboardKPIs.css';
 
 const DashboardKPIs = ({ orders }) => {
-  // Cálculos
   const totalOrders = orders.length;
   const completedOrders = orders.filter(o => o.estado === 'ENTREGADO').length;
   const pendingOrders = orders.filter(o => o.estado === 'PENDIENTE').length;
@@ -23,16 +20,12 @@ const DashboardKPIs = ({ orders }) => {
   const totalValue = orders.reduce((sum, o) => sum + (parseFloat(o.valor_total) || 0), 0);
   const totalStudents = orders.reduce((sum, o) => sum + (parseInt(o.cantidad_alumnos) || 0), 0);
 
-  // Escuelas únicas
   const uniqueSchools = new Set(orders.map(o => o.id_escuela)).size;
 
-  // Promedio de valor por orden
   const averageOrderValue = totalOrders > 0 ? totalValue / totalOrders : 0;
 
-  // Tasa de completitud
   const completionRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
 
-  // Alertas
   const hasAlert = pendingOrders > 0 || inProcessOrders > 0;
 
   const KPICard = ({ icon, title, value, subtitle, color, trend }) => (
@@ -52,7 +45,6 @@ const DashboardKPIs = ({ orders }) => {
   return (
     <div className="kpis-container">
       <div className="kpis-grid">
-        {/* Total Órdenes */}
         <KPICard
           icon={faShoppingCart}
           title="Total de Órdenes"
@@ -60,7 +52,6 @@ const DashboardKPIs = ({ orders }) => {
           color="primary"
         />
 
-        {/* Órdenes Completadas */}
         <KPICard
           icon={faCheckCircle}
           title="Completadas"
@@ -69,7 +60,6 @@ const DashboardKPIs = ({ orders }) => {
           color="success"
         />
 
-        {/* Órdenes Pendientes */}
         <KPICard
           icon={faClock}
           title="Pendientes/En Proceso"
@@ -77,7 +67,6 @@ const DashboardKPIs = ({ orders }) => {
           color={hasAlert ? 'warning' : 'info'}
         />
 
-        {/* Valor Total */}
         <KPICard
           icon={faCoins}
           title="Valor Total Invertido"
@@ -86,7 +75,6 @@ const DashboardKPIs = ({ orders }) => {
           color="primary"
         />
 
-        {/* Estudiantes Atendidos */}
         <KPICard
           icon={faUsers}
           title="Estudiantes Atendidos"
@@ -94,7 +82,6 @@ const DashboardKPIs = ({ orders }) => {
           color="info"
         />
 
-        {/* Escuelas */}
         <KPICard
           icon={faBox}
           title="Escuelas Atendidas"
@@ -103,7 +90,6 @@ const DashboardKPIs = ({ orders }) => {
         />
       </div>
 
-      {/* Sección de Alertas */}
       {hasAlert && (
         <div className="alerts-section">
           <h3>

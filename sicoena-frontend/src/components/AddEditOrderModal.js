@@ -4,41 +4,28 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBox, faTrash, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 
 const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
-  // --- Estados para todos los campos del formulario ---
   const [codigoOrden, setCodigoOrden] = useState('');
   const [fechaOrden, setFechaOrden] = useState(new Date().toISOString().slice(0, 10));
-  const [responsable, setResponsable] = useState('');
-  
+  const [responsable, setResponsable] = useState('');  
   const [escuela, setEscuela] = useState('');
-  const [tipoMenu, setTipoMenu] = useState('');
-  
+  const [tipoMenu, setTipoMenu] = useState('');  
   const [diasDuracion, setDiasDuracion] = useState(1);
   const [cantidadAlumnos, setCantidadAlumnos] = useState(0);
-  const [fechaEntrega, setFechaEntrega] = useState('');
-  
+  const [fechaEntrega, setFechaEntrega] = useState('');  
   const [selectedProducts, setSelectedProducts] = useState([]);
-
-  // --- Estados para datos dinámicos de la base de datos ---
   const [activeUsers, setActiveUsers] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
-
   const [activeSchools, setActiveSchools] = useState([]);
   const [isLoadingSchools, setIsLoadingSchools] = useState(false);
-
   const [activeMenus, setActiveMenus] = useState([]);
   const [isLoadingMenus, setIsLoadingMenus] = useState(false);
-
   const [menuProducts, setMenuProducts] = useState([]);
   const [isLoadingMenuProducts, setIsLoadingMenuProducts] = useState(false);
-
-  // ✅ NUEVO: Estado para cargar datos de la orden a editar
   const [orderDetails, setOrderDetails] = useState(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(false);
-
   const isEditMode = currentOrder !== null;
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  // ✅ CARGAR DETALLES DE LA ORDEN SI ESTÁ EN MODO EDICIÓN
   useEffect(() => {
     if (isEditMode && currentOrder?.id_orden) {
       const fetchOrderToEdit = async () => {
@@ -57,11 +44,9 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
           if (!response.ok) throw new Error('Error al obtener orden');
 
           const data = await response.json();
-          console.log('📝 Datos de la orden a editar:', data);
+          console.log('Datos de la orden a editar:', data);
 
-          setOrderDetails(data.order);
-          
-          // Pre-llenar los campos
+          setOrderDetails(data.order);          
           setCodigoOrden(data.order.codigo_orden || '');
           setFechaOrden(data.order.fecha_creacion ? data.order.fecha_creacion.split('T')[0] : new Date().toISOString().slice(0, 10));
           setResponsable(data.order.id_usuario?.toString() || '');
@@ -71,7 +56,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
           setCantidadAlumnos(parseInt(data.order.cantidad_alumnos) || 0);
           setFechaEntrega(data.order.fecha_entrega ? data.order.fecha_entrega.split('T')[0] : '');
 
-          // Cargar los productos del menú
           if (data.order.id_menu) {
             await fetchMenuProducts(data.order.id_menu);
           }
@@ -85,12 +69,10 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
 
       fetchOrderToEdit();
     } else {
-      // Modo creación
       setCodigoOrden(`ORD-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`);
     }
   }, [isEditMode, currentOrder]);
 
-  // Cargar usuarios activos
   const fetchActiveUsers = async () => {
     setIsLoadingUsers(true);
     try {
@@ -111,7 +93,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
   };
 
-  // Cargar escuelas activas
   const fetchActiveSchools = async () => {
     setIsLoadingSchools(true);
     try {
@@ -132,7 +113,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
   };
 
-  // Cargar menús activos
   const fetchActiveMenus = async () => {
     setIsLoadingMenus(true);
     try {
@@ -153,7 +133,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
   };
 
-  // ✅ Cargar productos del menú
   const fetchMenuProducts = async (menuId) => {
     if (!menuId) {
       setMenuProducts([]);
@@ -172,12 +151,10 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       const data = await response.json();
       setMenuProducts(data.products || []);
       
-      // ✅ Si es modo edición, seleccionar los productos que ya estaban
       if (isEditMode && orderDetails) {
         const productIds = orderDetails.productos?.map(p => p.id_producto) || [];
         setSelectedProducts(productIds);
       } else {
-        // Modo creación: auto-seleccionar todos
         setSelectedProducts(data.products?.map(p => p.id_producto) || []);
       }
     } catch (error) {
@@ -188,7 +165,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
   };
 
-  // Cargar todos los datos al montar el componente
   useEffect(() => {
     fetchActiveUsers();
     fetchActiveSchools();
@@ -216,7 +192,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
 
     try {
-      // Preparar los datos de productos
       const productosData = menuProducts
         .filter(p => selectedProducts.includes(p.id_producto))
         .map(p => ({
@@ -225,7 +200,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
           unidad_medida: p.unidad_medida
         }));
 
-      // ✅ Calcular valor total
       const valorTotal = menuProducts
         .filter(p => selectedProducts.includes(p.id_producto))
         .reduce((sum, p) => {
@@ -235,7 +209,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
           return sum + subtotal;
         }, 0);
 
-      // Datos de la orden
       const orderData = {
         codigo_orden: codigoOrden,
         id_escuela: parseInt(escuela),
@@ -249,7 +222,7 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
         observaciones: ''
       };
 
-      console.log(`${isEditMode ? '🖊️ Actualizando' : '📤 Creando'} orden:`, orderData);
+      console.log(`${isEditMode ? 'Actualizando' : 'Creando'} orden:`, orderData);
 
       const url = isEditMode
         ? `${apiUrl}/api/orden/${currentOrder.id_orden}`
@@ -271,15 +244,15 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
         throw new Error(data.message || 'Error al guardar la orden');
       }
 
-      console.log(`✅ Orden ${isEditMode ? 'actualizada' : 'creada'}:`, data);
-      alert(`✅ Orden ${isEditMode ? 'actualizada' : 'creada'} exitosamente`);
-      
+      console.log(`Orden ${isEditMode ? 'actualizada' : 'creada'}:`, data);
+      alert(`Orden ${isEditMode ? 'actualizada' : 'creada'} exitosamente`);
+
       onClose();
       onSave(orderData);
 
     } catch (error) {
-      console.error('❌ Error al guardar orden:', error);
-      alert('❌ Error: ' + error.message);
+      console.error('Error al guardar orden:', error);
+      alert('Error: ' + error.message);
     }
   };
 
@@ -297,14 +270,12 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
   };
 
-  // ✅ CALCULAR SUBTOTAL POR PRODUCTO
   const calcularSubtotal = (product) => {
     const precioUnitario = parseFloat(product.precio_unitario) || 0;
     const cantidad = parseFloat(product.cantidad) || 0;
     return precioUnitario * cantidad * diasDuracion * cantidadAlumnos;
   };
 
-  // ✅ CALCULAR TOTAL DE LA ORDEN
   const calcularTotalOrden = () => {
     return menuProducts
       .filter(p => selectedProducts.includes(p.id_producto))
@@ -335,7 +306,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
         </div>
         <form onSubmit={handleSubmit} className="modal-body">
           
-          {/* --- INFORMACIÓN DE LA ORDEN --- */}
           <div className="form-section">
             <h3>INFORMACIÓN DE LA ORDEN</h3>
             <div className="form-row">
@@ -369,7 +339,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
             </div>
           </div>
 
-          {/* --- INFORMACIÓN DE LA ESCUELA --- */}
           <div className="form-section">
             <h3>INFORMACIÓN DE LA ESCUELA</h3>
             <div className="form-row">
@@ -414,7 +383,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
             </div>
           </div>
 
-          {/* --- DURACIÓN Y CANTIDAD --- */}
           <div className="form-section">
             <h3>DURACIÓN Y CANTIDAD</h3>
             <div className="form-row">
@@ -443,7 +411,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
             </div>
           </div>
 
-          {/* --- SELECCIÓN DE PRODUCTOS CON PRECIOS --- */}
           <div className="form-section">
             <div className="section-header-with-button">
               <h3><FontAwesomeIcon icon={faBox} className="section-icon" /> SELECCIÓN DE PRODUCTOS Y PRECIOS</h3>
@@ -469,7 +436,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
               </p>
             ) : (
               <>
-                {/* ✅ TABLA DE PRODUCTOS CON PRECIOS */}
                 <div className="products-table-container">
                   <table className="products-table">
                     <thead>
@@ -519,7 +485,6 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
                   </table>
                 </div>
 
-                {/* ✅ RESUMEN DEL TOTAL */}
                 <div className="order-summary">
                   <div className="summary-row">
                     <span className="summary-label">Productos Seleccionados:</span>

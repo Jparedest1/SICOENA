@@ -1,9 +1,8 @@
-import React from 'react'; // MODIFICADO: useEffect y useState ya no son necesarios
+import React from 'react'; 
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-// Importa cada ícono que vas a usar
 import { 
   faTachometerAlt, 
   faUsers, 
@@ -17,12 +16,10 @@ import {
   faFileAlt
 } from '@fortawesome/free-solid-svg-icons';
 
-// ✅ MODIFICADO: El componente ahora recibe userRole como prop
 const Sidebar = ({ userRole }) => {
-
-  // Definir módulos disponibles por rol
+  
   const modules = {
-    // 🔴 ADMINISTRADOR - Acceso total
+    
     ADMINISTRADOR: [
       { path: '/dashboard', icon: faTachometerAlt, label: 'Dashboard' },
       { path: '/usuario', icon: faUsers, label: 'Gestión de Usuarios' },
@@ -36,17 +33,16 @@ const Sidebar = ({ userRole }) => {
       { path: '/respaldos', icon: faDatabase, label: 'Respaldos' },
       { path: '/logs', icon: faFileAlt, label: 'Logs del Sistema' }
     ],
-    // 🟢 USUARIO - Acceso limitado
+    
     USUARIO: [
       { path: '/dashboard', icon: faTachometerAlt, label: 'Dashboard' },
-      // ✅ MODIFICACIÓN CLAVE: Se añade el módulo de Órdenes para el rol de Usuario
+      
       { path: '/ordenes', icon: faTruck, label: 'Gestión de Entregas' },
       { path: '/reportes', icon: faChartBar, label: 'Reportes y Análisis' },
       { path: '/ayuda', icon: faQuestionCircle, label: 'Ayuda' }
     ],
   };
-
-  // ✅ MODIFICADO: Se usa directamente la prop userRole. Si no existe, se usa 'USUARIO' por defecto.
+  
   const userModules = modules[userRole] || modules['USUARIO'];
 
   return (

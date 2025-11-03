@@ -1,7 +1,5 @@
-// sicoena-backend/src/controllers/proveedorController.js
 const db = require('../config/db');
 
-// --- Obtener todos los proveedores ---
 exports.getAllProveedores = async (req, res) => {
     try {
         const [proveedores] = await db.query(`
@@ -25,7 +23,6 @@ exports.getAllProveedores = async (req, res) => {
     }
 };
 
-// --- Crear Proveedor ---
 exports.createProveedor = async (req, res) => {
     const { nombre_proveedor, nit,  direccion, telefono, estado } = req.body;
 

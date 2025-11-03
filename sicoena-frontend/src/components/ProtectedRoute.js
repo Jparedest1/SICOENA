@@ -1,5 +1,3 @@
-// src/components/ProtectedRoute.js
-
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
@@ -8,7 +6,6 @@ const ProtectedRoute = ({ children, allowedRoles, userRole }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ Normalizar ambos a mayúsculas para comparación
   const normalizedUserRole = (userRole || '').toUpperCase().trim();
   const normalizedAllowedRoles = (allowedRoles || []).map(role => 
     (role || '').toUpperCase().trim()
@@ -40,7 +37,7 @@ const ProtectedRoute = ({ children, allowedRoles, userRole }) => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           maxWidth: '500px'
         }}>
-          <h1 style={{ color: '#dc3545', marginTop: 0 }}>⛔ Acceso Denegado</h1>
+          <h1 style={{ color: '#dc3545', marginTop: 0 }}>Acceso Denegado</h1>
           <p style={{ fontSize: '16px', color: '#666' }}>
             Rol insuficiente.
           </p>

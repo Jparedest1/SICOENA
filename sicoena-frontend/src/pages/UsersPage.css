@@ -1,4 +1,4 @@
-/* src/pages/UsersPage.css */
+
 .users-page-container {
   padding: 30px;
 }
@@ -134,7 +134,7 @@ tbody tr:hover {
 
 .action-buttons {
   display: flex;
-  gap: 15px; /* Aumenta el espacio entre iconos */
+  gap: 15px;
   align-items: center;
 }
 
@@ -143,19 +143,19 @@ tbody tr:hover {
   border: none;
   cursor: pointer;
   padding: 5px;
-  font-size: 16px; /* Aumenta el tamaño del icono */
+  font-size: 16px;
   transition: transform 0.2s;
 }
 
 .action-btn:hover {
-  transform: scale(1.2); /* Efecto de zoom al pasar el mouse */
+  transform: scale(1.2);
 }
 
-.icon-edit { color: #0d6efd; } /* Azul para editar */
-.icon-delete { color: #dc3545; } /* Rojo para eliminar */
+.icon-edit { color: #0d6efd; }
+.icon-delete { color: #dc3545; }
 
-/* --- ESTILOS RESPONSIVE --- */
-/* Para Tablets (menos de 992px) */
+
+
 @media (max-width: 992px) {
   .page-header, .filters-bar {
     flex-direction: column;
@@ -172,15 +172,15 @@ tbody tr:hover {
   }
 
   .table-container {
-    overflow-x: auto; /* Permite scroll horizontal en la tabla */
+    overflow-x: auto;
   }
 
   table {
-    min-width: 800px; /* Ancho mínimo para forzar el scroll */
+    min-width: 800px;
   }
 }
 
-/* Para Móviles (menos de 576px) */
+
 @media (max-width: 576px) {
   .page-container {
     padding: 15px;

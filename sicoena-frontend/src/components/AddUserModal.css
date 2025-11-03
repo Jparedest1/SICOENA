@@ -1,4 +1,3 @@
-/* src/components/AddUserModal.css */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -11,7 +10,7 @@
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
-  overflow-y: auto; /* Permite scroll si el modal es muy alto */
+  overflow-y: auto; 
   padding: 20px 0;
 }
 
@@ -24,10 +23,10 @@
   background-color: white;
   border-radius: 8px;
   width: 90%;
-  max-width: 700px; /* Ancho aumentado para el nuevo diseño */
+  max-width: 700px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   animation: slideIn 0.3s ease-out;
-  margin: auto; /* Centra verticalmente cuando hay scroll */
+  margin: auto;
 }
 
 @keyframes slideIn {
@@ -81,7 +80,7 @@
 }
 
 .section-icon {
-  color: #f59f00; /* Color naranja/dorado para los iconos */
+  color: #f59f00;
 }
 
 .form-row {
@@ -91,7 +90,7 @@
 }
 
 .form-group {
-  flex: 1; /* Ocupa el espacio disponible equitativamente */
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -127,7 +126,7 @@
 }
 
 .password-wrapper input {
-  padding-right: 40px; /* Espacio para el icono */
+  padding-right: 40px;
 }
 
 .password-toggle-icon {
@@ -141,7 +140,7 @@
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  margin-top: 25px; /* Alinea con el campo del lado */
+  margin-top: 25px;
 }
 
 .checkbox-group input[type="checkbox"] {
@@ -155,7 +154,7 @@
 }
 
 .checkbox-group .helper-text {
-  position: absolute; /* Posiciona el helper text debajo */
+  position: absolute;
   bottom: -20px;
   left: 25px;
 }
@@ -198,12 +197,12 @@
 }
 
 .section-header-with-button h3 {
-  margin-bottom: 0; /* Quitamos el margen que tenía antes */
+  margin-bottom: 0;
 }
 
 .generate-password-btn {
-  background-color: #e7f5ff; /* Fondo azul claro */
-  color: #1c7ed6; /* Texto azul */
+  background-color: #e7f5ff;
+  color: #1c7ed6;
   border: 1px solid #a5d8ff;
   padding: 6px 12px;
   border-radius: 6px;
@@ -232,10 +231,10 @@
     top: 50%;
     transform: translateY(-50%);
     color: var(--color-terciario);
-    pointer-events: none; /* Asegura que el clic en el icono no interfiera con el input */
+    pointer-events: none;
 }
 
-/* Punto verde para el helper text de stock mínimo */
+
 .helper-text .dot {
   display: inline-block;
   width: 8px;
@@ -246,7 +245,7 @@
 }
 
 .helper-text .dot.green {
-  background-color: #2ab57d; /* Un verde similar al que usamos para ACTIVO */
+  background-color: #2ab57d;
 }
 
 .modal-header .breadcrumb {
@@ -254,7 +253,7 @@
   color: var(--color-tertiario);
 }
 
-/* Number input with plus/minus buttons */
+
 .number-input-stepper {
   display: flex;
   align-items: center;
@@ -289,7 +288,7 @@
   border-radius: 0 5px 5px 0;
 }
 
-/* Product Selection Section */
+
 .product-selection-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

@@ -1,4 +1,4 @@
-/* src/App.css */
+
 
 * {
   margin: 0;
@@ -11,7 +11,7 @@ body {
   background-color: #f5f5f5;
 }
 
-/* ✅ CONTENEDOR PRINCIPAL - FLEX COLUMN (arriba hacia abajo) */
+
 .app-layout-container {
   display: flex;
   flex-direction: column;
@@ -19,13 +19,13 @@ body {
   width: 100%;
 }
 
-/* ✅ HEADER FIJO ARRIBA */
+
 header {
   flex-shrink: 0;
   z-index: 100;
 }
 
-/* ✅ CONTENEDOR DE CONTENIDO (Sidebar izquierda, Contenido derecha) */
+
 .app-layout-content {
   display: flex;
   flex: 1;
@@ -33,7 +33,7 @@ header {
   gap: 0;
 }
 
-/* ✅ WRAPPER DEL SIDEBAR CON ANIMACIÓN SUAVE */
+
 .sidebar-wrapper {
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -51,7 +51,7 @@ header {
   flex-shrink: 1;
 }
 
-/* ✅ SIDEBAR A LA IZQUIERDA */
+
 .sidebar {
   flex-shrink: 0;
   overflow-y: auto;
@@ -60,7 +60,7 @@ header {
   animation: slideInLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) ease-out;
 }
 
-/* ✅ ANIMACIÓN DE ENTRADA DEL SIDEBAR */
+
 @keyframes slideInLeft {
   from {
     transform: translateX(-100%);
@@ -72,7 +72,7 @@ header {
   }
 }
 
-/* ✅ ANIMACIÓN DE SALIDA DEL SIDEBAR */
+
 @keyframes slideOutLeft {
   from {
     transform: translateX(0);
@@ -84,12 +84,12 @@ header {
   }
 }
 
-/* ✅ APLICAR ANIMACIÓN DE SALIDA */
+
 .sidebar-wrapper.closed .sidebar {
   animation: slideOutLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) ease-in forwards;
 }
 
-/* ✅ CONTENIDO PRINCIPAL - CON TRANSICIÓN SUAVE */
+
 .page-content {
   flex: 1;
   overflow-y: auto;
@@ -98,7 +98,7 @@ header {
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Scrollbar personalizado */
+
 .page-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -116,7 +116,7 @@ header {
   background: #555;
 }
 
-/* ✅ ANIMACIÓN DEL BOTÓN TOGGLE */
+
 .navbar-toggle-btn {
   transition: transform 0.3s ease;
 }
@@ -153,7 +153,7 @@ header {
     display: block;
   }
 
-  /* ✅ SOMBREADO CUANDO EL SIDEBAR ESTÁ ABIERTO EN MÓVIL */
+ 
   .sidebar-wrapper.open::after {
     content: '';
     position: fixed;
@@ -167,7 +167,7 @@ header {
   }
 }
 
-/* ✅ ANIMACIÓN DE FADE IN/OUT */
+
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -1,4 +1,3 @@
-// sicoena-frontend/src/pages/InventoryPage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './InventoryPage.css';
@@ -365,7 +364,7 @@ const InventoryPage = () => {
       }
 
       setIsProveedorModalOpen(false);
-      setCurrentProveedorToEdit(null); // Limpiar estado al guardar
+      setCurrentProveedorToEdit(null); 
       alert(`Proveedor ${isEditing ? 'actualizado' : 'creado'} con éxito.`);
       fetchProveedores();
       
@@ -432,7 +431,7 @@ const InventoryPage = () => {
       }
 
       setIsBodegaModalOpen(false);
-      setCurrentBodegaToEdit(null); // Limpiar estado al guardar
+      setCurrentBodegaToEdit(null);
       alert(`Bodega ${isEditing ? 'actualizada' : 'creada'} con éxito.`);
       fetchBodegas();
 

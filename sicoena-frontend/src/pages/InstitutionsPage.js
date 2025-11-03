@@ -1,34 +1,30 @@
-// src/pages/InstitutionsPage.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './InstitutionsPage.css'; // Asegúrate de tener los estilos
-import AddInstitutionModal from '../components/AddInstitutionModal'; // Modal
+import './InstitutionsPage.css'; 
+import AddInstitutionModal from '../components/AddInstitutionModal'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faBuilding, faSearch } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = 'http://localhost:5000/api'; // URL de tu backend
+const API_URL = 'http://localhost:5000/api';
 
 const InstitutionsPage = () => {
-  const [institutions, setInstitutions] = useState([]); // Inicia vacío
+  const [institutions, setInstitutions] = useState([]); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentInstitutionToEdit, setCurrentInstitutionToEdit] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // --- ESTADOS PARA FILTROS ---
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('todos');
   const [locationFilter, setLocationFilter] = useState('todos');
-  const [statusFilter, setStatusFilter] = useState('ACTIVA'); // Filtro de estado
+  const [statusFilter, setStatusFilter] = useState('ACTIVA'); 
 
-  // --- FUNCIÓN PARA OBTENER INSTITUCIONES DEL BACKEND ---
   const fetchInstitutions = useCallback(async (
     currentSearchTerm = '',
     currentTypeFilter = 'todos',
     currentLocationFilter = 'todos',
-    currentStatusFilter = 'ACTIVA' // Añadido filtro de estado
+    currentStatusFilter = 'ACTIVA' 
   ) => {
     setIsLoading(true);
     setError(null);
@@ -41,21 +37,19 @@ const InstitutionsPage = () => {
         return;
     }
 
-    // Construye la URL con query parameters
-    // Asume que tu endpoint de backend es /api/escuela
     let url = `${API_URL}/institucion?`;
     const params = [];
     if (currentSearchTerm) {
       params.push(`search=${encodeURIComponent(currentSearchTerm)}`);
     }
     if (currentTypeFilter !== 'todos') {
-      params.push(`tipo=${encodeURIComponent(currentTypeFilter)}`); // 'tipo' según tu tabla
+      params.push(`tipo=${encodeURIComponent(currentTypeFilter)}`); 
     }
     if (currentLocationFilter !== 'todos') {
-      params.push(`ubicacion=${encodeURIComponent(currentLocationFilter)}`); // 'direccion' o 'municipio'? Ajusta según backend
+      params.push(`ubicacion=${encodeURIComponent(currentLocationFilter)}`); 
     }
     if (currentStatusFilter !== 'todos') {
-        params.push(`estado=${encodeURIComponent(currentStatusFilter)}`); // Añadido
+        params.push(`estado=${encodeURIComponent(currentStatusFilter)}`); 
     }
     url += params.join('&');
 
@@ -64,21 +58,19 @@ const InstitutionsPage = () => {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
-      if (response.status === 401) { /* ... (manejo de token inválido) ... */
+      if (response.status === 401) { 
         localStorage.removeItem('authToken');
         throw new Error('Sesión inválida o expirada.');
       }
-      if (!response.ok) { /* ... (manejo de otros errores de fetch) ... */
+      if (!response.ok) { 
         throw new Error(`Error al cargar las instituciones (${response.status})`);
       }
 
       const data = await response.json();
-      // Mapea los nombres de columna del backend a los esperados por el frontend si son diferentes
-      // Ejemplo: si el backend devuelve id_escuela, nombre_escuela
       const mappedData = data.map(inst => ({
-          id: inst.id_escuela, // Mapea id_escuela a id
-          codigo: inst.codigo_escuela, // Mapea codigo_escuela a codigo
-          nombre: inst.nombre_escuela, // Mapea nombre_escuela a nombre
+          id: inst.id_escuela, 
+          codigo: inst.codigo_escuela, 
+          nombre: inst.nombre_escuela, 
           direccion: inst.direccion,
           municipio: inst.municipio,
           departamento: inst.departamento,
@@ -88,11 +80,6 @@ const InstitutionsPage = () => {
           estudiantes: inst.cant_estudiantes,
           observaciones: inst.observaciones,
           estado: inst.estado,
-          
-          // Añade otros campos necesarios para la tabla o el modal de edición
-          
-          
-          // ...otros campos...
       }));
       setInstitutions(mappedData);
 
@@ -106,40 +93,35 @@ const InstitutionsPage = () => {
     }
   }, [navigate]);
 
-  // Carga inicial (filtrando por activos)
   useEffect(() => {
     fetchInstitutions(searchTerm, typeFilter, locationFilter, statusFilter);
-  }, [fetchInstitutions]); // fetchInstitutions es estable
+  }, [fetchInstitutions]); 
 
-  // --- FUNCIÓN PARA BUSCAR/FILTRAR ---
   const handleSearch = () => {
     fetchInstitutions(searchTerm, typeFilter, locationFilter, statusFilter);
   };
 
   const handleEdit = (institution) => {
-    // Pasa la institución mapeada al modal
     setCurrentInstitutionToEdit(institution);
     setIsModalOpen(true);
   };
 
-  // --- FUNCIÓN PARA CAMBIAR ESTADO A INACTIVO ---
   const handleDelete = async (institutionId) => {
     if (window.confirm('¿Está seguro de que desea cambiar el estado de esta institución a INACTIVA?')) {
       const token = localStorage.getItem('authToken');
       setError(null);
       try {
-        // Asume un endpoint PUT /api/escuela/:id/status
         const response = await fetch(`${API_URL}/institucion/${institutionId}/status`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ estado: 'INACTIVO' }), // Envía INACTIVO
+          body: JSON.stringify({ estado: 'INACTIVO' }), 
         });
         if (!response.ok) throw new Error('Error al desactivar la institución.');
 
-        fetchInstitutions(searchTerm, typeFilter, locationFilter, statusFilter); // Recarga la lista
+        fetchInstitutions(searchTerm, typeFilter, locationFilter, statusFilter); 
         alert('Institución desactivada con éxito.');
 
       } catch (err) {
@@ -153,29 +135,27 @@ const InstitutionsPage = () => {
     setIsModalOpen(true);
   };
 
-  // --- FUNCIÓN PARA GUARDAR (CREAR/EDITAR) ---
   const handleSaveInstitution = async (institutionDataFromModal) => {
     const token = localStorage.getItem('authToken');
     setError(null);
     
-    // Mapea los nombres del modal a los esperados por el backend (según tu tabla escuela)
     const payload = {
         nombre_escuela: institutionDataFromModal.nombre,
         codigo_escuela: institutionDataFromModal.codigo,
         telefono: institutionDataFromModal.telefono,
-        correo: institutionDataFromModal.email, // Asume que el modal usa 'email' para 'correo'
+        correo: institutionDataFromModal.email, 
         direccion: institutionDataFromModal.direccion,
         departamento: institutionDataFromModal.departamento,
         municipio: institutionDataFromModal.municipio,
         cant_estudiantes: institutionDataFromModal.estudiantes,
         director: institutionDataFromModal.director,
         observaciones: institutionDataFromModal.observaciones,
-        estado: institutionDataFromModal.estado.toUpperCase(), // Asegura mayúsculas
+        estado: institutionDataFromModal.estado.toUpperCase(), 
     };
 
     const url = currentInstitutionToEdit
-                ? `${API_URL}/institucion/${currentInstitutionToEdit.id}` // PUT para editar
-                : `${API_URL}/institucion`; // POST para crear
+                ? `${API_URL}/institucion/${currentInstitutionToEdit.id}` 
+                : `${API_URL}/institucion`; 
     const method = currentInstitutionToEdit ? 'PUT' : 'POST';
 
     try {
@@ -194,7 +174,7 @@ const InstitutionsPage = () => {
       
       if (!response.ok) throw new Error(data.message || `Error al ${currentInstitutionToEdit ? 'actualizar' : 'crear'} la institución.`);
       
-      fetchInstitutions(searchTerm, typeFilter, locationFilter, statusFilter); // Recarga
+      fetchInstitutions(searchTerm, typeFilter, locationFilter, statusFilter);
       setIsModalOpen(false);
       alert(`Institución ${currentInstitutionToEdit ? 'actualizada' : 'creada'} con éxito.`);
 
@@ -203,11 +183,9 @@ const InstitutionsPage = () => {
     }
   };
 
-  // --- Cálculos Estadísticas --- (Ajustados)
-  // Nota: Estos cálculos ahora dependen de los datos *después* del mapeo
-  const totalInstitutions = institutions.length; // Podrías obtener el total real del backend si hay paginación
+  const totalInstitutions = institutions.length; 
   const activeInstitutions = institutions.filter(inst => inst.estado === 'ACTIVA').length;
-  const inactiveInstitutions = institutions.filter(inst => inst.estado === 'INACTIVA').length; // Cambiado
+  const inactiveInstitutions = institutions.filter(inst => inst.estado === 'INACTIVA').length; 
 
   return (
     <div className="page-container">
@@ -220,7 +198,6 @@ const InstitutionsPage = () => {
 
       {error && <div className="page-error-message">{error}</div>}
 
-      {/* --- Filtros --- */}
       <div className="filters-bar">
         <input 
           type="text" 
@@ -234,7 +211,6 @@ const InstitutionsPage = () => {
             <option value="todos">Todas las ubicaciones</option>
             <option value="Sumpango">Sumpango</option>
             <option value="Antigua Guatemala">Antigua Guatemala</option>
-            {/* Añade más ubicaciones */}
         </select>
          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="ACTIVA">Activas</option>
@@ -244,14 +220,13 @@ const InstitutionsPage = () => {
         <button className="btn-primary" onClick={handleSearch}><FontAwesomeIcon icon={faSearch} /> Aplicar Filtro</button>
         <button className="btn-tertiary" onClick={() => {
             setSearchTerm(''); setTypeFilter('todos'); setLocationFilter('todos'); setStatusFilter('ACTIVA');
-            fetchInstitutions('', 'todos', 'todos', 'ACTIVA'); // Limpia y recarga activos
+            fetchInstitutions('', 'todos', 'todos', 'ACTIVA'); 
         }}>Limpiar</button>
       </div>
 
-      {/* --- Estadísticas --- */}
       <div className="stats-cards-container">
         <div className="stat-card-item">
-          <span className="stat-value">{isLoading ? '...' : totalInstitutions}</span> {/* Muestra total (puede ser de la página actual si hay paginación) */}
+          <span className="stat-value">{isLoading ? '...' : totalInstitutions}</span> 
           <span className="stat-label">Total Instituciones</span>
         </div>
         <div className="stat-card-item">
@@ -260,11 +235,10 @@ const InstitutionsPage = () => {
         </div>
         <div className="stat-card-item">
           <span className="stat-value">{isLoading ? '...' : inactiveInstitutions}</span> 
-          <span className="stat-label">Inactivas</span> {/* Cambiado */}
+          <span className="stat-label">Inactivas</span> 
         </div>
       </div>
 
-      {/* --- Tabla --- */}
       <div className="table-container">
          <div className="table-header">
             <span>Lista de Instituciones</span>
@@ -273,11 +247,11 @@ const InstitutionsPage = () => {
           <table>
             <thead>
               <tr>
-                <th>Codigo Institucion</th> {/* Ajustado a tabla */}
+                <th>Codigo Institucion</th> 
                 <th>Nombre Institución</th>
                 <th>Encargado</th>
-                <th>Dirección</th> {/* Ajustado a tabla */}
-                <th>Teléfono</th> {/* Ajustado a tabla */}
+                <th>Dirección</th> 
+                <th>Teléfono</th> 
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -291,7 +265,6 @@ const InstitutionsPage = () => {
                   <td>{inst.direccion}</td>
                   <td>{inst.telefono}</td>
                   <td>
-                    {/* Asegúrate que el CSS tenga clase 'inactiva' */}
                     <span className={`status-badge ${inst.estado.toLowerCase().replace(' ', '-')}`}>
                       {inst.estado}
                     </span>
@@ -301,14 +274,11 @@ const InstitutionsPage = () => {
                       <button className="action-btn icon-edit" title="Editar" onClick={() => handleEdit(inst)}>
                         <FontAwesomeIcon icon={faEdit} />
                       </button>
-                      {/* Mostrar desactivar solo si está ACTIVA */}
                       {inst.estado === 'ACTIVA' && (
                         <button className="action-btn icon-delete" title="Desactivar" onClick={() => handleDelete(inst.id)}>
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
                       )}
-                      {/* Opcional: Botón para Reactivar */}
-                      {/* {inst.estado === 'INACTIVA' && ( <button>Reactivar</button> )} */}
                     </div>
                   </td>
                 </tr>
@@ -325,12 +295,11 @@ const InstitutionsPage = () => {
         )}
       </div>
       
-      {/* Modal (sin cambios en cómo se llama) */}
       {isModalOpen && (
         <AddInstitutionModal
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveInstitution}
-          currentInstitution={currentInstitutionToEdit} // Pasa el objeto mapeado
+          currentInstitution={currentInstitutionToEdit} 
         />
       )}
     </div>

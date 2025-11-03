@@ -1,5 +1,3 @@
-// src/components/Reports/OrdersReportTable.js
-
 import React, { useState } from 'react';
 import './OrdersReportTable.css';
 
@@ -9,11 +7,8 @@ const OrdersReportTable = ({ orders }) => {
   
   const itemsPerPage = 10;
 
-  // --- ¡LÍNEA CLAVE! ASEGÚRATE DE QUE ESTA LÍNEA EXISTA ---
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-
-  // Paginación
   const totalPages = Math.ceil(orders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = orders.slice(startIndex, startIndex + itemsPerPage);
@@ -23,7 +18,6 @@ const OrdersReportTable = ({ orders }) => {
   };
 
   const handleExport = async (format) => {
-    // --- PRUEBA DE ACTUALIZACIÓN ---
     console.log('--- USANDO LA VERSIÓN CORRECTA DEL ARCHIVO (CON GUION_BAJO) ---');
 
     if (selectedOrders.length === 0) {
@@ -38,7 +32,6 @@ const OrdersReportTable = ({ orders }) => {
       return;
     }
 
-    // La URL con guion_bajo
     const url = `${apiUrl}/api/reportes/orden_individual/${orderId}?format=${format}`;
     
     console.log('Llamando a la URL de exportación:', url);
@@ -87,7 +80,6 @@ const OrdersReportTable = ({ orders }) => {
             )}
           </h2>
         </div>
-        {/* --- BOTONES MODIFICADOS PARA LLAMAR A handleExport --- */}
         <div className="export-buttons">
           <button 
             className="btn-export pdf" 
@@ -156,7 +148,6 @@ const OrdersReportTable = ({ orders }) => {
             </table>
           </div>
 
-          {/* Paginación */}
           {totalPages > 1 && (
             <div className="pagination">
               <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>Primera</button>

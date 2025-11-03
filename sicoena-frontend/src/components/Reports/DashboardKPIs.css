@@ -1,4 +1,4 @@
-/* src/components/Reports/DashboardKPIs.css */
+
 
 .kpis-container {
   width: 100%;
@@ -102,7 +102,7 @@
   font-weight: 600;
 }
 
-/* --- ALERTAS --- */
+
 .alerts-section {
   background-color: #fff9e6;
   border: 2px solid #ffc107;
@@ -158,7 +158,7 @@
   color: #666;
 }
 
-/* --- RESPONSIVE --- */
+
 @media (max-width: 768px) {
   .kpis-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

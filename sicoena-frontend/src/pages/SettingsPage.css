@@ -1,7 +1,7 @@
-/* src/pages/SettingsPage.css */
+
 
 .settings-page .page-header {
-  border-bottom: none; /* Quitamos el borde para un look más limpio */
+  border-bottom: none;
   margin-bottom: 10px;
 }
 
@@ -14,7 +14,7 @@
   min-height: 60vh;
 }
 
-/* --- Navegación de Pestañas (izquierda) --- */
+
 .settings-nav {
   width: 200px;
   flex-shrink: 0;
@@ -36,7 +36,7 @@
   gap: 12px;
   font-weight: 500;
   color: var(--color-secundario);
-  border-left: 3px solid transparent; /* Indicador visual */
+  border-left: 3px solid transparent;
   transition: all 0.2s ease;
 }
 
@@ -51,7 +51,7 @@
   border-left-color: var(--color-principal);
 }
 
-/* --- Contenido de la Pestaña (derecha) --- */
+
 .settings-content {
   flex-grow: 1;
   padding: 30px;
@@ -74,7 +74,7 @@
   max-width: 600px;
 }
 
-/* Estilos de formulario reutilizados */
+
 .settings-tab-content .form-row {
   display: flex;
   gap: 20px;
@@ -129,11 +129,11 @@
     gap: 8px;
 }
 
-/* --- ESTILOS RESPONSIVE --- */
+
 
 @media (max-width: 992px) {
   .settings-layout {
-    flex-direction: column; /* Cambia de lado a lado a arriba-abajo */
+    flex-direction: column;
   }
 
   .settings-nav {
@@ -141,8 +141,8 @@
     border-right: none;
     border-bottom: 1px solid var(--borde-claro);
     padding: 0;
-    display: flex; /* Muestra las pestañas en una fila horizontal */
-    overflow-x: auto; /* Permite scroll si no caben */
+    display: flex;
+    overflow-x: auto;
   }
 
   .settings-nav ul {
@@ -154,7 +154,7 @@
     border-left: none;
     border-bottom: 3px solid transparent;
     justify-content: center;
-    flex-shrink: 0; /* Evita que las pestañas se encojan */
+    flex-shrink: 0;
   }
   
   .settings-nav li.active {

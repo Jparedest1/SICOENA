@@ -1,5 +1,3 @@
-// src/components/Reports/ReportCharts.js
-
 import React from 'react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -8,7 +6,6 @@ import {
 import './ReportCharts.css';
 
 const ReportCharts = ({ orders }) => {
-  // Datos por estado
   const statusData = [
     {
       name: 'PENDIENTE',
@@ -32,7 +29,6 @@ const ReportCharts = ({ orders }) => {
     }
   ].filter(item => item.value > 0);
 
-  // Órdenes por día
   const ordersByDay = {};
   orders.forEach(order => {
     const date = new Date(order.fecha_creacion).toLocaleDateString('es-GT');
@@ -45,9 +41,8 @@ const ReportCharts = ({ orders }) => {
       date,
       ordenes: count
     }))
-    .slice(-7); // Últimos 7 días
+    .slice(-7);
 
-  // Valor por escuela (Top 5)
   const valueBySchool = {};
   orders.forEach(order => {
     const key = order.nombre_escuela || 'Sin escuela';
@@ -67,7 +62,6 @@ const ReportCharts = ({ orders }) => {
   return (
     <div className="charts-container">
       <div className="charts-grid">
-        {/* Pie Chart - Estados */}
         <div className="chart-box">
           <h3>Distribución por Estado</h3>
           {statusData.length > 0 ? (
@@ -95,7 +89,6 @@ const ReportCharts = ({ orders }) => {
           )}
         </div>
 
-        {/* Line Chart - Órdenes por día */}
         <div className="chart-box">
           <h3>Órdenes por Día (Últimos 7 días)</h3>
           {dayData.length > 0 ? (
@@ -122,7 +115,6 @@ const ReportCharts = ({ orders }) => {
         </div>
       </div>
 
-      {/* Bar Chart - Valor por escuela */}
       <div className="chart-box full-width">
         <h3>Escuelas con Mayor Valor de Órdenes (Top 5)</h3>
         {schoolData.length > 0 ? (

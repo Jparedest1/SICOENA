@@ -1,4 +1,4 @@
-/* src/pages/RespaldosPage.css */
+
 .respaldos-page .page-header {
   border-bottom: 1px solid var(--borde-claro);
   margin-bottom: 25px;
@@ -11,7 +11,7 @@
 
 .respaldos-layout {
   display: grid;
-  grid-template-columns: 1fr 1.5fr; /* Columna de acciones más pequeña */
+  grid-template-columns: 1fr 1.5fr;
   gap: 25px;
   margin-bottom: 25px;
 }
@@ -116,4 +116,4 @@
     color: #e03131;
 }
 
-.icon-restore { color: #fcc419; } /* Amarillo/Naranja para restaurar (advertencia) */
+.icon-restore { color: #fcc419; }

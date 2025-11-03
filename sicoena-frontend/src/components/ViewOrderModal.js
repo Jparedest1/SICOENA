@@ -1,4 +1,3 @@
-// src/components/ViewOrderModal.js
 import React, { useState, useEffect } from 'react';
 import './ViewOrderModal.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,7 +11,6 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
 
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  // Cargar detalles de la orden
   useEffect(() => {
     const fetchOrderDetails = async () => {
       setIsLoading(true);
@@ -31,7 +29,7 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
         if (!response.ok) throw new Error('Error al obtener orden');
 
         const data = await response.json();
-        console.log('📦 Datos de la orden:', data);
+        console.log('Datos de la orden:', data);
         
         setOrderDetails(data.order);
         setProductos(data.productos || []);
@@ -49,13 +47,11 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
     }
   }, [orderId, apiUrl]);
 
-  // Obtener clase CSS para el estado
   const getStatusClass = (estado) => {
     if (!estado) return 'pendiente';
     return estado.toLowerCase().replace(' ', '-');
   };
 
-  // Calcular subtotal por producto
   const calcularSubtotal = (product) => {
     const precioUnitario = parseFloat(product.precio_unitario) || 0;
     const cantidad = parseFloat(product.cantidad) || 0;
@@ -64,7 +60,6 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
     return precioUnitario * cantidad * dias * alumnos;
   };
 
-  // Calcular total
   const calcularTotal = () => {
     if (productos.length === 0) return 0;
     return productos.reduce((sum, p) => sum + calcularSubtotal(p), 0);
@@ -99,7 +94,7 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
             </button>
           </div>
           <div style={{ padding: '40px', textAlign: 'center', color: '#c00' }}>
-            <p>❌ {error || 'No se pudo cargar la orden'}</p>
+            <p>{error || 'No se pudo cargar la orden'}</p>
           </div>
         </div>
       </div>
@@ -120,7 +115,6 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
 
         <div className="modal-body view-order-body">
           
-          {/* --- INFORMACIÓN GENERAL --- */}
           <div className="info-section">
             <h3>Información General</h3>
             <div className="info-grid">
@@ -165,7 +159,6 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
             </div>
           </div>
 
-          {/* --- INFORMACIÓN DE ESCUELA Y MENÚ --- */}
           <div className="info-section">
             <h3>Detalles de la Entrega</h3>
             <div className="info-grid">
@@ -196,7 +189,6 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
             </div>
           </div>
 
-          {/* --- PRODUCTOS SELECCIONADOS --- */}
           <div className="info-section">
             <h3>
               <FontAwesomeIcon icon={faList} /> Productos Seleccionados ({productos.length})
@@ -237,7 +229,6 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
                   </table>
                 </div>
 
-                {/* --- RESUMEN TOTAL --- */}
                 <div className="order-summary">
                   <div className="summary-row">
                     <span className="summary-label">Total de Productos:</span>
@@ -264,7 +255,6 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
             )}
           </div>
 
-          {/* --- OBSERVACIONES --- */}
           {orderDetails.observaciones && (
             <div className="info-section">
               <h3>Observaciones</h3>

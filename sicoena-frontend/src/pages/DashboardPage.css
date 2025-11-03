@@ -1,6 +1,6 @@
 .dashboard-container {
   padding: 30px;
-  background-color: var(--bg-claro, #f8f9fa); /* Fondo general */
+  background-color: var(--bg-claro, #f8f9fa);
   height: 100%;
 }
 
@@ -57,7 +57,7 @@
   color: var(--color-principal, #2c3e50);
 }
 
-/* --- Grid de Estadísticas --- */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -127,7 +127,7 @@
   color: var(--color-principal, #2c3e50);
 }
 
-/* --- Responsividad para móviles --- */
+
 @media (max-width: 1200px) {
   .quick-actions-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -155,25 +155,25 @@
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px); /* Comienza 20px más abajo */
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0); /* Termina en su posición normal */
+    transform: translateY(0);
   }
 }
 
-/* 2. Aplica la animación a AMBOS tipos de tarjetas */
+
 .action-card,
 .stat-card {
-  /* ... (conserva los estilos que ya tenías para cada una) ... */
+ 
   
-  /* --- AÑADE ESTAS LÍNEAS a cada regla (.action-card y .stat-card) o crea una nueva como esta --- */
-  opacity: 0; /* Empieza invisible */
-  animation: fadeInUp 0.5s ease-out forwards; /* Aplica la animación */
+ 
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
-/* Efecto escalonado para las ActionCards */
+
 .quick-actions-grid .action-card:nth-child(1) {
   animation-delay: 0.1s;
 }
@@ -193,7 +193,7 @@
   animation-delay: 0.6s;
 }
 
-/* Efecto escalonado para las StatCards */
+
 .stats-grid .stat-card:nth-child(1) {
   animation-delay: 0.7s;
 }

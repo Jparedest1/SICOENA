@@ -1,4 +1,4 @@
-/* src/components/Reports/OrdersReportTable.css */
+
 
 .report-table-container {
   background-color: white;
@@ -121,7 +121,7 @@
   color: #721c24;
 }
 
-/* --- PAGINACIÓN --- */
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -348,7 +348,7 @@
   color: #721c24;
 }
 
-/* --- PAGINACIÓN --- */
+
 .pagination {
   display: flex;
   justify-content: center;

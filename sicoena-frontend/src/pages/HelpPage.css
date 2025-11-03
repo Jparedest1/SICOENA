@@ -1,4 +1,4 @@
-/* src/pages/HelpPage.css */
+
 
 .help-page .page-header {
   border-bottom: 1px solid var(--borde-claro);
@@ -13,7 +13,7 @@
 
 .help-layout {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* Columna principal más ancha que la lateral */
+  grid-template-columns: 2fr 1fr;
   gap: 30px;
   align-items: start;
 }
@@ -24,7 +24,7 @@
   gap: 25px;
 }
 
-/* Reutilizamos el estilo de tarjeta de reportes */
+
 .card-container {
   background-color: var(--bg-blanco);
   border: 1px solid var(--borde-claro);
@@ -42,7 +42,7 @@
   gap: 10px;
 }
 
-/* --- Acordeón de FAQ --- */
+
 .accordion-item {
   border-bottom: 1px solid var(--borde-claro);
 }
@@ -93,7 +93,7 @@
     margin: 10px 0 0;
 }
 
-/* --- Guías por Módulo --- */
+
 .guides-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -119,7 +119,7 @@
     border-color: var(--borde-medio);
 }
 
-/* --- Formulario de Soporte --- */
+
 .support-form .form-group {
     margin-bottom: 15px;
 }
@@ -142,7 +142,7 @@
     padding: 12px;
 }
 
-/* --- Info del Sistema --- */
+
 .system-info p {
     margin: 10px 0;
     line-height: 1.5;
@@ -156,7 +156,7 @@
     text-decoration: underline;
 }
 
-/* Añadir al final de HelpPage.css */
+
 
 .guide-item {
   cursor: pointer;
@@ -305,7 +305,7 @@
   text-align: right;
 }
 
-/* Animaciones para el modal */
+
 @keyframes slideIn {
   from {
     transform: translateY(-50px);

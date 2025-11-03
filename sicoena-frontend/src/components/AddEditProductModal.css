@@ -266,7 +266,6 @@ form {
   opacity: 0.9;
 }
 
-/* ===== ESTADOS DESHABILITADOS ===== */
 .form-group input:disabled,
 .form-group select:disabled,
 .form-group textarea:disabled {
@@ -276,7 +275,6 @@ form {
   border-color: #bdc3c7;
 }
 
-/* ===== SCROLLBAR PERSONALIZADO ===== */
 .modal-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -294,7 +292,6 @@ form {
   background: #95a5a6;
 }
 
-/* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 600px) {
   .modal-content {
     width: 95%;
