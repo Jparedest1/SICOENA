@@ -1,5 +1,3 @@
-// src/components/AddUserModal.js
-
 import React, { useState, useEffect } from 'react';
 import './AddUserModal.css'; // Assuming you have this CSS file
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -82,8 +80,8 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Validate passwords only if creating a new user
-    if (!isEditMode && contrasena !== confirmarContrasena) {
+    // Validate passwords only if a new password is being set
+    if (contrasena && contrasena !== confirmarContrasena) {
       alert('Las contraseñas no coinciden.');
       return;
     }
@@ -96,9 +94,12 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
       rol: rol || 'Usuario', // Default role if not selected
       telefono: telefono || null, // Send null if empty
       estado: estado, // Send state ('Activo' or 'Inactivo')
-      // Password is only sent when creating a new user
-      ...( !isEditMode && { contrasena: contrasena } ) 
     };
+
+    // MODIFICATION: Include password if it's not empty. This works for both create and edit mode.
+    if (contrasena) {
+      userData.contrasena = contrasena;
+    }
 
     onSave(userData); // Call the save function passed from UsersPage
   };
@@ -163,42 +164,51 @@ const AddUserModal = ({ onClose, onSave, currentUser }) => {
             </div>
           </div>
 
-          {/* --- CONFIGURACIÓN DE SEGURIDAD (Only for New Users) --- */}
-          {!isEditMode && ( 
-            <div className="form-section">
-              <div className="section-header-with-button">
-                <h3><FontAwesomeIcon icon={faLock} className="section-icon" /> CONFIGURACIÓN DE SEGURIDAD</h3>
-                <button type="button" className="generate-password-btn" onClick={generateRandomPassword}>
-                  <FontAwesomeIcon icon={faKey} /> Generar Contraseña
-                </button>
+          {/* MODIFICATION: The security section is now always visible, but fields are not required in edit mode. */}
+          <div className="form-section">
+            <div className="section-header-with-button">
+              <h3><FontAwesomeIcon icon={faLock} className="section-icon" /> CONFIGURACIÓN DE SEGURIDAD</h3>
+              <button type="button" className="generate-password-btn" onClick={generateRandomPassword}>
+                <FontAwesomeIcon icon={faKey} /> Generar Contraseña
+              </button>
+            </div>
+            {isEditMode && (
+              <p className="helper-text">Deje los campos de contraseña en blanco si no desea cambiarla.</p>
+            )}
+            <div className="form-row">
+              <div className="form-group">
+                {/* MODIFICATION: The 'required' attribute is now conditional */}
+                <label htmlFor="contrasena">Contraseña {isEditMode ? '(Opcional)' : '*'}</label>
+                <div className="password-wrapper">
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    id="contrasena" 
+                    placeholder={isEditMode ? "Ingrese la nueva contraseña" : "Ingrese la contraseña"} 
+                    value={contrasena} 
+                    onChange={(e) => setContrasena(e.target.value)} 
+                    required={!isEditMode} // Only required when creating a new user
+                  />
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)} />
+                </div>
+                <small className="helper-text">Mínimo 8 caracteres, incluya mayúsculas, minúsculas y números</small>
               </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="contrasena">Contraseña *</label>
-                  <div className="password-wrapper">
-                    <input type={showPassword ? "text" : "password"} id="contrasena" placeholder="Ingrese la contraseña" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />
-                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className="password-toggle-icon" onClick={() => setShowPassword(!showPassword)} />
-                  </div>
-                  <small className="helper-text">Mínimo 8 caracteres, incluya mayúsculas, minúsculas y números</small>
+              <div className="form-group">
+                <label htmlFor="confirmarContrasena">Confirmar Contraseña {isEditMode ? '(Opcional)' : '*'}</label>
+                <div className="password-wrapper">
+                  <input 
+                    type={showConfirmPassword ? "text" : "password"} 
+                    id="confirmarContrasena" 
+                    placeholder="Confirme la contraseña" 
+                    value={confirmarContrasena} 
+                    onChange={(e) => setConfirmarContrasena(e.target.value)} 
+                    required={!isEditMode || (isEditMode && contrasena)} // Required in edit mode only if new password is set
+                  />
+                  <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} className="password-toggle-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="confirmarContrasena">Confirmar Contraseña *</label>
-                  <div className="password-wrapper">
-                    <input type={showConfirmPassword ? "text" : "password"} id="confirmarContrasena" placeholder="Confirme la contraseña" value={confirmarContrasena} onChange={(e) => setConfirmarContrasena(e.target.value)} required />
-                    <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} className="password-toggle-icon" onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
-                  </div>
-                  <small className="helper-text">Repita la contraseña para confirmar</small>
-                </div>
+                <small className="helper-text">Repita la contraseña para confirmar</small>
               </div>
             </div>
-          )}
-          {isEditMode && ( // Optional: Add a note about password changes in edit mode
-            <div className="form-section">
-                 <h3><FontAwesomeIcon icon={faLock} className="section-icon" /> CONFIGURACIÓN DE SEGURIDAD</h3>
-                 <p className="helper-text">La gestión de contraseñas (restablecimiento) se realiza por separado.</p>
-            </div>
-          )}
-
+          </div>
 
           {/* --- CONFIGURACIONES ADICIONALES --- */}
           <div className="form-section">

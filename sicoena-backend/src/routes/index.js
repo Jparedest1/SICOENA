@@ -12,10 +12,8 @@ const bodegaRoutes = require('./bodegaRoutes');
 const settingsRoutes = require('./settingsRoutes');
 const ordenRoutes = require('./ordenRoutes');
 const notificationRoutes = require('./notificationRoutes');
-
-// 1. Importa las nuevas rutas de respaldos
 const backupRoutes = require('./backupRoutes'); 
-
+const logRoutes = require('./logRoutes');
 const router = express.Router();
 
 router.use('/usuario', userRoutes);
@@ -30,12 +28,8 @@ router.use('/orden', ordenRoutes);
 router.get('/dashboard/stats', protect, dashboardController.getStats);
 router.use('/notificaciones', notificationRoutes);
 router.use('/reportes', require('./reportesRoutes'));
-
-// 2. Añade las nuevas rutas para la gestión de respaldos
-// Monta las operaciones principales (listar, crear, borrar, etc.) en /respaldos
 router.use('/respaldos', backupRoutes);
-// Monta solo las operaciones de configuración en /settings/respaldos para que coincida con el frontend
 router.use('/settings/respaldos', backupRoutes);
-
+router.use('/logs', logRoutes);
 
 module.exports = router;

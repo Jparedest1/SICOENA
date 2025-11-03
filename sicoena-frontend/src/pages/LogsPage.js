@@ -1,41 +1,134 @@
 // src/pages/LogsPage.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './LogsPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileAlt, faFilter, faSearch, faDownload } from '@fortawesome/free-solid-svg-icons';
 
-// Datos de ejemplo simulando logs del sistema
-const mockLogs = [
-  { timestamp: '2025-10-15 16:30:05.123', level: 'INFO', message: "Inicio de sesión exitoso para el usuario 'admin@sistema.com'", context: { user: 'admin@sistema.com', ip: '192.168.1.10' } },
-  { timestamp: '2025-10-15 16:28:10.456', level: 'INFO', message: "Respaldo manual 'BKP-20251015-1628' completado exitosamente.", context: { user: 'admin@sistema.com' } },
-  { timestamp: '2025-10-15 16:25:01.789', level: 'WARN', message: "Intento de acceso no autorizado a la página de configuración.", context: { user: 'usuario@sistema.com', ip: '200.5.8.1' } },
-  { timestamp: '2025-10-15 16:20:45.912', level: 'ERROR', message: "Fallo al procesar la orden 'ORD-2025-004': stock insuficiente para el producto 'PRD-004'.", context: { orderId: 'ORD-2025-004', productId: 'PRD-004' } },
-  { timestamp: '2025-10-15 16:15:22.345', level: 'INFO', message: "Usuario 'supervisor@sistema.com' creó un nuevo producto 'PRD-005'.", context: { user: 'supervisor@sistema.com', productId: 'PRD-005' } },
-  { timestamp: '2025-10-15 16:10:11.678', level: 'DEBUG', message: "Payload recibido para la actualización de institución.", context: { institutionId: 'INST-002', data: '{...}' } },
-];
+// Simulación de una llamada a la API que podría fallar o tardar
+const fetchLogsFromAPI = () => {
+  console.log("Fetching logs from REAL API...");
+
+  // 1. Obtener el token directamente desde la clave 'authToken'.
+  const token = localStorage.getItem('authToken'); // <-- LA CLAVE CORRECTA
+  
+  if (!token) {
+    // Si no hay token, no podemos continuar.
+    // Rechazamos la promesa para que el .catch() del componente se active.
+    return Promise.reject(new Error("No se encontró el token de autenticación. Por favor, inicie sesión."));
+  }
+
+  // 2. Realizar la petición con el token correcto.
+  return fetch('/api/logs', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    if (response.status === 401) {
+      throw new Error(`Error 401: No autorizado. Verifique sus permisos de administrador.`);
+    }
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: No se pudieron cargar los logs.`);
+    }
+    return response.json();
+  });
+};
+
 
 const LogsPage = () => {
-  const [logs, setLogs] = useState(mockLogs);
-  const [filteredLogs, setFilteredLogs] = useState(mockLogs);
+  const [logs, setLogs] = useState([]);
+  const [filteredLogs, setFilteredLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // Estados para los filtros
   const [levelFilter, setLevelFilter] = useState('Todos');
   const [dateFilter, setDateFilter] = useState('Hoy');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Simula el filtrado de logs cuando cambian los filtros
+  // Cargar logs desde el API al montar el componente
   useEffect(() => {
+    setLoading(true);
+    fetchLogsFromAPI()
+      .then(data => {
+        setLogs(data);
+        setError(null);
+      })
+      .catch(err => {
+        console.error("Error fetching logs:", err);
+        setError(err.message);
+        setLogs([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  // Filtrado de logs
+  const filterLogs = useCallback(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+    const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+
     let tempLogs = logs.filter(log => {
+      const logDate = new Date(log.timestamp);
+      
       const matchesLevel = levelFilter === 'Todos' || log.level === levelFilter;
-      const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      
+      const matchesSearch = searchTerm === '' || 
+                            log.message.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             JSON.stringify(log.context).toLowerCase().includes(searchTerm.toLowerCase());
-      // Lógica de fecha (simplificada para el ejemplo)
-      const matchesDate = dateFilter === 'Hoy' ? new Date(log.timestamp).getDate() === new Date().getDate() : true;
+
+      let matchesDate = false;
+      switch (dateFilter) {
+        case 'Hoy':
+          matchesDate = logDate >= today;
+          break;
+        case 'Últimas 24 horas':
+          matchesDate = logDate >= twentyFourHoursAgo;
+          break;
+        case 'Últimos 7 días':
+          matchesDate = logDate >= sevenDaysAgo;
+          break;
+        default:
+          matchesDate = true;
+      }
+
       return matchesLevel && matchesSearch && matchesDate;
     });
     setFilteredLogs(tempLogs);
   }, [levelFilter, dateFilter, searchTerm, logs]);
+
+  useEffect(() => {
+    filterLogs();
+  }, [filterLogs]);
+
+  // Función para exportar logs a CSV
+  const handleExport = () => {
+    const headers = ["Timestamp", "Nivel", "Mensaje", "Contexto"];
+    const csvRows = [
+      headers.join(','),
+      ...filteredLogs.map(log => {
+        const timestamp = `"${log.timestamp}"`;
+        const level = `"${log.level}"`;
+        const message = `"${log.message.replace(/"/g, '""')}"`;
+        const context = `"${JSON.stringify(log.context).replace(/"/g, '""')}"`;
+        return [timestamp, level, message, context].join(',');
+      })
+    ];
+    
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `logs-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   return (
     <div className="page-container logs-page">
@@ -57,7 +150,7 @@ const LogsPage = () => {
             />
           </div>
           <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)}>
-            <option>Todos los niveles</option>
+            <option value="Todos">Todos los niveles</option>
             <option>INFO</option>
             <option>WARN</option>
             <option>ERROR</option>
@@ -68,7 +161,7 @@ const LogsPage = () => {
             <option>Últimas 24 horas</option>
             <option>Últimos 7 días</option>
           </select>
-          <button className="btn-secondary">
+          <button className="btn-secondary" onClick={handleExport} disabled={filteredLogs.length === 0}>
             <FontAwesomeIcon icon={faDownload} /> Exportar
           </button>
         </div>
@@ -86,9 +179,13 @@ const LogsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredLogs.length > 0 ? filteredLogs.map((log, index) => (
+              {loading ? (
+                <tr><td colSpan="4" className="status-message">Cargando logs...</td></tr>
+              ) : error ? (
+                <tr><td colSpan="4" className="status-message error">{error}</td></tr>
+              ) : filteredLogs.length > 0 ? filteredLogs.map((log, index) => (
                 <tr key={index} className={`log-level-${log.level.toLowerCase()}`}>
-                  <td className="log-timestamp">{log.timestamp}</td>
+                  <td className="log-timestamp">{new Date(log.timestamp).toLocaleString()}</td>
                   <td>
                     <span className={`log-level-badge level-${log.level.toLowerCase()}`}>
                       {log.level}
