@@ -69,9 +69,9 @@ const LoginPage = ({ onLoginSuccess }) => {
         throw new Error(data.message || 'Credenciales incorrectas. Por favor, intente de nuevo.');
       }
 
-      console.log('Login exitoso:', data);
-      
+      console.log('Login exitoso:', data);      
       saveUserData(data);
+      navigate('/dashboard');
 
     } catch (error) {
       console.error('Error en login:', error);
@@ -113,6 +113,7 @@ const LoginPage = ({ onLoginSuccess }) => {
       console.log('Login Google exitoso:', data);
       saveUserData(data);
       onLoginSuccess?.();
+      navigate('/dashboard');
 
     } catch (err) {
       console.error('Error en login Google:', err);
