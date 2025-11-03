@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react'; // MODIFICADO: useEffect y useState ya no son necesarios
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-// 2. Importa cada ícono que vas a usar
+// Importa cada ícono que vas a usar
 import { 
   faTachometerAlt, 
   faUsers, 
@@ -17,26 +17,10 @@ import {
   faFileAlt
 } from '@fortawesome/free-solid-svg-icons';
 
-// Versión más completa con más roles
+// ✅ MODIFICADO: El componente ahora recibe userRole como prop
+const Sidebar = ({ userRole }) => {
 
-const Sidebar = ({ onLogout }) => {
-  const [userRole, setUserRole] = useState(null);
-
-  useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
-    if (userInfo) {
-      try {
-        const user = JSON.parse(userInfo);
-        const normalizedRole = (user.rol || 'USUARIO').toUpperCase().trim();
-        setUserRole(normalizedRole);
-        console.log('👤 Sidebar - Rol del usuario:', normalizedRole);
-      } catch (error) {
-        console.error('Error parsing user info:', error);
-      }
-    }
-  }, []);
-
-  // ✅ Definir módulos disponibles por rol
+  // Definir módulos disponibles por rol
   const modules = {
     // 🔴 ADMINISTRADOR - Acceso total
     ADMINISTRADOR: [
@@ -55,14 +39,14 @@ const Sidebar = ({ onLogout }) => {
     // 🟢 USUARIO - Acceso limitado
     USUARIO: [
       { path: '/dashboard', icon: faTachometerAlt, label: 'Dashboard' },
+      // ✅ MODIFICACIÓN CLAVE: Se añade el módulo de Órdenes para el rol de Usuario
+      { path: '/ordenes', icon: faTruck, label: 'Gestión de Entregas' },
       { path: '/reportes', icon: faChartBar, label: 'Reportes y Análisis' },
       { path: '/ayuda', icon: faQuestionCircle, label: 'Ayuda' }
     ],
-    // 🟡 Puedes agregar más roles aquí
-    // GESTOR: [ ... ],
-    // SUPERVISOR: [ ... ]
   };
 
+  // ✅ MODIFICADO: Se usa directamente la prop userRole. Si no existe, se usa 'USUARIO' por defecto.
   const userModules = modules[userRole] || modules['USUARIO'];
 
   return (

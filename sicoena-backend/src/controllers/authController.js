@@ -76,7 +76,7 @@ const login = async (req, res) => {
   }
 };
 
-// ✅ GOOGLE VERIFY
+// ✅ MODIFICADO: GOOGLE VERIFY
 const googleVerify = async (req, res) => {
   try {
     const { token } = req.body;
@@ -97,39 +97,26 @@ const googleVerify = async (req, res) => {
     
     const email = decoded.email;
 
-    // Buscar usuario existente
+    // Buscar si el usuario existe en la base de datos
     const [users] = await db.query(
       'SELECT id_usuario, nombres, apellidos, correo, rol, estado FROM usuario WHERE correo = ?',
       [email]
     );
 
-    let user;
+    // --- INICIO DE LA LÓGICA CORREGIDA ---
+    // Si no se encuentra ningún usuario con ese correo, se deniega el acceso.
     if (users.length === 0) {
-      // Crear nuevo usuario
-      const nombres = decoded.name || email.split('@')[0];
-      
-      const [result] = await db.query(
-        `INSERT INTO usuario (nombres, correo, rol, estado) 
-         VALUES (?, ?, ?, 'ACTIVO')`,
-        [nombres, email, 'USUARIO']
-      );
-
-      user = {
-        id_usuario: result.insertId,
-        nombres: nombres,
-        apellidos: '',
-        correo: email,
-        rol: 'USUARIO',
-        estado: 'ACTIVO'
-      };
-
-      // 🪵 LOG: Nuevo usuario creado vía Google
-      await createLog('INFO', `Nuevo usuario creado a través de Google`, { userId: user.id_usuario, email, ip });
-
-    } else {
-      user = users[0];
+      // 🪵 LOG: Intento de login con Google de un correo no registrado
+      await createLog('WARN', `Intento de login con Google fallido: Email no registrado`, { email, ip });
+      // Enviamos un error 403 (Forbidden) para indicar que el usuario no tiene permiso.
+      return res.status(403).json({ message: 'El correo electrónico no está autorizado para acceder a este sistema.' });
     }
+    // --- FIN DE LA LÓGICA CORREGIDA ---
 
+    // Si el usuario existe, lo seleccionamos
+    const user = users[0];
+
+    // Verificamos si el usuario está activo (igual que en el login normal)
     if (user.estado !== 'ACTIVO') {
       // 🪵 LOG: Intento de login de usuario inactivo vía Google
       await createLog('WARN', `Intento de login con Google bloqueado: Usuario inactivo`, { userId: user.id_usuario, email, ip });
@@ -169,10 +156,12 @@ const googleVerify = async (req, res) => {
   } catch (error) {
     console.error('❌ Error en googleVerify:', error);
     // 🪵 LOG: Error del servidor en Google Verify
-    await createLog('ERROR', 'Error interno en la autenticación con Google', { errorMessage: error.message, stack: error.stack, email: req.body.decoded?.email });
+    const email = req.body.token ? jwt.decode(req.body.token)?.email : 'desconocido';
+    await createLog('ERROR', 'Error interno en la autenticación con Google', { errorMessage: error.message, stack: error.stack, email: email });
     res.status(500).json({ message: 'Error en la autenticación con Google' });
   }
 };
+
 
 module.exports = {
   login,

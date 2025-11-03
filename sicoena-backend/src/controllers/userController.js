@@ -342,6 +342,37 @@ const getActiveUsers = async (req, res) => {
     }
 };
 
+const changePassword = async (req, res) => {
+  // El ID del usuario debe venir del token, no de los parámetros de la URL
+  const userId = req.user.id; 
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    // 1. Obtener el hash de la contraseña actual del usuario desde la BD
+    const [users] = await db.query('SELECT contraseña FROM usuario WHERE id_usuario = ?', [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+    
+    // 2. Comparar la contraseña actual enviada con el hash de la BD
+    const isMatch = await bcrypt.compare(currentPassword, users[0].contraseña);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'La contraseña actual es incorrecta.' });
+    }
+
+    // 3. Hashear la nueva contraseña
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // 4. Actualizar la contraseña en la BD
+    await db.query('UPDATE usuario SET contraseña = ? WHERE id_usuario = ?', [hashedNewPassword, userId]);
+
+    res.status(200).json({ message: 'Contraseña actualizada exitosamente.' });
+
+  } catch (error) {
+    console.error("Error al cambiar contraseña:", error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
 // ✅ EXPORTAR TODAS LAS FUNCIONES - ESTILO CONSISTENTE
 module.exports = {
   createUser,

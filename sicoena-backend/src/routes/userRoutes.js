@@ -48,4 +48,5 @@ router.delete('/:id',
   userController.deleteUser
 );
 
+//router.patch('/change-password', authMiddleware, userController.changePassword);
 module.exports = router;

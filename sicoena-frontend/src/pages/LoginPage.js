@@ -1,5 +1,3 @@
-// src/pages/LoginPage.js
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
@@ -17,33 +15,27 @@ const LoginPage = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ NO hacer fetch al cargar el componente
   useEffect(() => {
     console.log('📄 LoginPage montado');
-    
-    // Solo verificar si ya hay sesión activa
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = sessionStorage.getItem('userInfo');
     if (userInfo) {
       console.log('✅ Sesión activa detectada, redirigiendo...');
       navigate('/dashboard');
     }
   }, [navigate]);
 
-  /**
-   * ✅ Función auxiliar para guardar datos del usuario
-   */
   const saveUserData = (data) => {
     try {
-      localStorage.setItem('authToken', data.token);
+      sessionStorage.setItem('authToken', data.token);
       
-      localStorage.setItem('userInfo', JSON.stringify({
+      sessionStorage.setItem('userInfo', JSON.stringify({
         id_usuario: data.user?.id_usuario || data.user?.id,
         nombres: data.user?.nombres || data.user?.name,
         email: data.user?.email,
         rol: data.user?.rol || 'USUARIO'
       }));
 
-      localStorage.setItem('userData', JSON.stringify(data.user));
+      sessionStorage.setItem('userData', JSON.stringify(data.user));
 
       console.log('✅ Usuario logueado exitosamente:', {
         email: data.user?.email,
@@ -51,27 +43,20 @@ const LoginPage = ({ onLoginSuccess }) => {
       });
 
       if (onLoginSuccess) {
-        onLoginSuccess(); // ✅ Notifica a App.js que el login fue exitoso
+        onLoginSuccess();
       }
-      
-      // navigate('/dashboard'); // ✅ MODIFICADO: Elimina o comenta esta línea. ¡App.js se encargará de esto!
-
     } catch (err) {
       console.error('❌ Error guardando datos de usuario:', err);
       setError('Error guardando datos. Intente de nuevo.');
     }
   };
 
-  /**
-   * Handles standard form login
-   */
   const handleLogin = async (event) => {
-    event.preventDefault(); // ✅ MODIFICADO: Previene la recarga de la página.
+    event.preventDefault();
     setError(null);
     setIsLoading(true);
 
     try {
-      // ✅ MODIFICADO: Usa los estados 'usuario' y 'contrasena' en lugar de parámetros.
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,28 +66,21 @@ const LoginPage = ({ onLoginSuccess }) => {
       const data = await response.json();
 
       if (!response.ok) {
-        // Lanza un error con el mensaje del backend si está disponible.
         throw new Error(data.message || 'Credenciales incorrectas. Por favor, intente de nuevo.');
       }
 
       console.log('✅ Login exitoso:', data);
       
-      // ✅ MODIFICADO: Reutiliza la función saveUserData para consistencia.
       saveUserData(data);
 
     } catch (error) {
       console.error('❌ Error en login:', error);
-      // ✅ MODIFICADO: Muestra el mensaje de error en la UI.
       setError(error.message);
     } finally {
-      // ✅ MODIFICADO: Se asegura de detener la carga.
       setIsLoading(false);
     }
   };
 
-  /**
-   * Handles successful Google login
-   */
   const handleGoogleSuccess = async (credentialResponse) => {
     setError(null);
     setIsLoading(true);
@@ -115,7 +93,7 @@ const LoginPage = ({ onLoginSuccess }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // ✅ Incluir cookies/credenciales
+        credentials: 'include',
         body: JSON.stringify({ token: credentialResponse.credential }),
       });
 
@@ -149,9 +127,6 @@ const LoginPage = ({ onLoginSuccess }) => {
     }
   };
 
-  /**
-   * Handles Google login errors
-   */
   const handleGoogleError = () => {
     setError('❌ El inicio de sesión con Google falló. Por favor, intente de nuevo.');
     console.error('Google login error');
@@ -169,7 +144,6 @@ const LoginPage = ({ onLoginSuccess }) => {
 
         <h3>Iniciar Sesión</h3>
 
-        {/* --- Error Message --- */}
         {error && (
           <div className="login-error-message" style={{
             backgroundColor: '#fee',
@@ -184,7 +158,6 @@ const LoginPage = ({ onLoginSuccess }) => {
           </div>
         )}
 
-        {/* --- Standard Form --- */}
         <form onSubmit={handleLogin}>
           <div className="input-group">
             <label>Usuario (Email)</label>
