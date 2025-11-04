@@ -6,7 +6,7 @@ import { faFileAlt, faFilter, faSearch, faDownload } from '@fortawesome/free-sol
 const fetchLogsFromAPI = () => {
   console.log("Fetching logs from REAL API...");
   
-  const token = localStorage.getItem('authToken'); 
+  const token = sessionStorage.getItem('authToken'); 
   
   if (!token) {     
     return Promise.reject(new Error("No se encontró el token de autenticación. Por favor, inicie sesión."));

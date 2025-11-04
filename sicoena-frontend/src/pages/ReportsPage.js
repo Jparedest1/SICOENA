@@ -28,7 +28,7 @@ const ReportsPage = () => {
   const [menus, setMenus] = useState([]);
   const [ordersWithProducts, setOrdersWithProducts] = useState([]);
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/api';
 
   useEffect(() => {
     fetchOrders();
@@ -42,7 +42,7 @@ const ReportsPage = () => {
   const fetchOrders = async () => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     try {
       const response = await fetch(`${apiUrl}/api/orden`, {
@@ -91,7 +91,7 @@ const ReportsPage = () => {
   };
 
   const fetchFilterData = async () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     try {
       const escuelasRes = await fetch(`${apiUrl}/api/institucion/active`, {

@@ -5,7 +5,7 @@ import AddUserModal from '../components/AddUserModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faSearch } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
@@ -25,7 +25,7 @@ const UsersPage = () => {
   ) => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     if (!token) {
       setError('No autorizado. Por favor, inicie sesión.');
@@ -63,7 +63,7 @@ const UsersPage = () => {
       console.log('Response status:', response.status);
 
       if (response.status === 401) {
-        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
         throw new Error('Sesión inválida o expirada. Por favor, inicie sesión de nuevo.');
       }
       if (!response.ok) {
@@ -102,7 +102,7 @@ const UsersPage = () => {
   
   const handleDelete = async (userId) => {
     if (window.confirm('¿Está seguro de que desea cambiar el estado de este usuario a INACTIVO?')) {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       setError(null);
       try {
         const response = await fetch(`${API_URL}/usuario/${userId}/status`, {
@@ -128,7 +128,7 @@ const UsersPage = () => {
   };
 
   const handleSaveUser = async (userDataFromModal) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     setError(null);
     const url = currentUserToEdit 
                 ? `${API_URL}/usuario/${currentUserToEdit.id}` 

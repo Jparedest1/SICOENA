@@ -27,7 +27,7 @@ const OrdersPage = () => {
   const [menus, setMenus] = useState([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState(false);
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/api';
 
   useEffect(() => {
     fetchOrders();
@@ -42,7 +42,7 @@ const OrdersPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       const response = await fetch(`${apiUrl}/api/orden`, {
         method: 'GET',
         headers: {
@@ -69,7 +69,7 @@ const OrdersPage = () => {
 
   const fetchFiltersData = async () => {
     setIsLoadingFilters(true);
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     try {
       const escuelasResponse = await fetch(`${apiUrl}/api/institucion/active`, {

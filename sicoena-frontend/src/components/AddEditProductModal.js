@@ -21,12 +21,12 @@ const AddEditProductModal = ({ onClose, onSave, currentProduct }) => {
   const [categorias, setCategorias] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = process.env.REACT_APP_API_URL || '/api';
   const isEditMode = currentProduct !== null;
 
   useEffect(() => {
     const fetchDropdownData = async () => {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       if (!token) return;
 
       setIsLoadingData(true);

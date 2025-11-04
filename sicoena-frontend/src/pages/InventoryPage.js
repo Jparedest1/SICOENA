@@ -10,7 +10,7 @@ import { faEdit, faTrash, faTruckLoading, faBox, faBoxes, faChartLine, faExclama
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
@@ -51,7 +51,7 @@ const InventoryPage = () => {
   ) => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     if (!token) {
       setError('No autorizado. Por favor, inicie sesión.');
@@ -113,7 +113,7 @@ const InventoryPage = () => {
   }, [navigate]);
 
   const fetchMovementsToday = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     if (!token) return;
 
     try {
@@ -137,7 +137,7 @@ const InventoryPage = () => {
   }, []);
 
   const fetchBodegas = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     if (!token) return;
     try {
       const response = await fetch(`${API_URL}/bodega`, {
@@ -153,7 +153,7 @@ const InventoryPage = () => {
   }, []);
 
   const fetchProveedores = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     if (!token) return;
     try {
       const response = await fetch(`${API_URL}/proveedor`, {
@@ -170,7 +170,7 @@ const InventoryPage = () => {
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       if (!token) return;
 
       try {
@@ -225,7 +225,7 @@ const InventoryPage = () => {
   
   const handleDelete = async (productId) => {
     if (window.confirm('¿Está seguro de que desea cambiar el estado a INACTIVO?')) {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       setError(null);
       try {
         const response = await fetch(`${API_URL}/producto/${productId}/status`, {
@@ -253,7 +253,7 @@ const InventoryPage = () => {
   };
 
   const handleSaveProduct = async (productDataFromModal) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     setError(null);
 
     const payload = {
@@ -320,7 +320,7 @@ const InventoryPage = () => {
 
   const handleDeleteProveedor = async (proveedorId) => {
     if (window.confirm('¿Está seguro de que desea cambiar el estado a INACTIVO?')) {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       try {
         const response = await fetch(`${API_URL}/proveedor/${proveedorId}/status`, {
           method: 'PUT',
@@ -340,7 +340,7 @@ const InventoryPage = () => {
   };
 
   const handleSaveProveedor = async (proveedorData) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     setError(null);
     const isEditing = !!currentProveedorToEdit;
     const url = isEditing ? `${API_URL}/proveedor/${currentProveedorToEdit.id_proveedor}` : `${API_URL}/proveedor`;
@@ -387,7 +387,7 @@ const InventoryPage = () => {
   
   const handleDeleteBodega = async (bodegaId) => {
     if (window.confirm('¿Está seguro de que desea cambiar el estado a INACTIVO?')) {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       try {
         const response = await fetch(`${API_URL}/bodega/${bodegaId}/status`, {
           method: 'PUT',
@@ -407,7 +407,7 @@ const InventoryPage = () => {
   };
 
   const handleSaveBodega = async (bodegaData) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     setError(null);
     const isEditing = !!currentBodegaToEdit;
     const url = isEditing ? `${API_URL}/bodega/${currentBodegaToEdit.id_bodega}` : `${API_URL}/bodega`;
@@ -444,7 +444,7 @@ const InventoryPage = () => {
   const handleExportPDF = async () => {
     console.log('Botón "Exportar PDF" presionado. Llamando al backend...');
     
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     if (!token) {
       alert('Sesión expirada. Por favor, inicie sesión de nuevo.');
       return;
@@ -484,7 +484,7 @@ const InventoryPage = () => {
   const handleExportExcel = async () => {
     console.log('Botón "Exportar Excel" presionado. Llamando al backend...');
     
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     if (!token) {
       alert('Sesión expirada. Por favor, inicie sesión de nuevo.');
       return;

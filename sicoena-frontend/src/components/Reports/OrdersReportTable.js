@@ -7,7 +7,7 @@ const OrdersReportTable = ({ orders }) => {
   
   const itemsPerPage = 10;
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/api';
 
   const totalPages = Math.ceil(orders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -25,7 +25,7 @@ const OrdersReportTable = ({ orders }) => {
       return;
     }
     const orderId = selectedOrders[0];
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     if (!token) {
       alert('Sesión no válida. Por favor, inicie sesión de nuevo.');

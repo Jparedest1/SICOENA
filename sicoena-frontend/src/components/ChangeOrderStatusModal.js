@@ -8,7 +8,7 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/api';
 
   const estadosPosibles = [
     { valor: 'PENDIENTE', label: 'Pendiente', color: '#FFC107', bgColor: '#FFF3CD' },
@@ -25,7 +25,7 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
 
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     try {
       const response = await fetch(`${apiUrl}/api/orden/${order.id_orden}/status`, {

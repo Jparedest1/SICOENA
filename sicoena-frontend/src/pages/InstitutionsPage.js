@@ -5,7 +5,7 @@ import AddInstitutionModal from '../components/AddInstitutionModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faBuilding, faSearch } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const InstitutionsPage = () => {
   const [institutions, setInstitutions] = useState([]); 
@@ -28,7 +28,7 @@ const InstitutionsPage = () => {
   ) => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
 
     if (!token) {
         setError('No autorizado. Por favor, inicie sesión.');
@@ -59,7 +59,7 @@ const InstitutionsPage = () => {
       });
 
       if (response.status === 401) { 
-        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
         throw new Error('Sesión inválida o expirada.');
       }
       if (!response.ok) { 
@@ -108,7 +108,7 @@ const InstitutionsPage = () => {
 
   const handleDelete = async (institutionId) => {
     if (window.confirm('¿Está seguro de que desea cambiar el estado de esta institución a INACTIVA?')) {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       setError(null);
       try {
         const response = await fetch(`${API_URL}/institucion/${institutionId}/status`, {
@@ -136,7 +136,7 @@ const InstitutionsPage = () => {
   };
 
   const handleSaveInstitution = async (institutionDataFromModal) => {
-    const token = localStorage.getItem('authToken');
+    const token = sessionStorage.getItem('authToken');
     setError(null);
     
     const payload = {

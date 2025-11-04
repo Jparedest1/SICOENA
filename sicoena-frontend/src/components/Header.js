@@ -9,7 +9,7 @@ import {
   faCheck
 } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const Header = ({ toggleSidebar, onLogout }) => {
   const [userData, setUserData] = useState(null);
@@ -20,7 +20,7 @@ const Header = ({ toggleSidebar, onLogout }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = sessionStorage.getItem('userInfo');
     if (userInfo) {
       try {
         setUserData(JSON.parse(userInfo));
@@ -28,7 +28,7 @@ const Header = ({ toggleSidebar, onLogout }) => {
         console.error("Error parsing user data:", error);
         handleLogoutClick();
       }
-    } else if (localStorage.getItem('authToken')) {
+    } else if (sessionStorage.getItem('authToken')) {
       console.warn("Token found but no user data. Logging out.");
       handleLogoutClick();
     }
@@ -37,7 +37,7 @@ const Header = ({ toggleSidebar, onLogout }) => {
   const fetchNotifications = async () => {
     try {
       setLoadingNotifications(true);
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
 
       if (!token) {
         console.log('No token available');
@@ -55,7 +55,7 @@ const Header = ({ toggleSidebar, onLogout }) => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem('authToken');
+          sessionStorage.removeItem('authToken');
           navigate('/login');
           return;
         }
@@ -113,7 +113,7 @@ const Header = ({ toggleSidebar, onLogout }) => {
 
   const markAllAsRead = async () => {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
 
       const response = await fetch(`${API_URL}/notificaciones/read-all`, {
         method: 'PUT',
@@ -136,7 +136,7 @@ const Header = ({ toggleSidebar, onLogout }) => {
 
   const markAsRead = async (notificationId) => {
     try {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
 
       const response = await fetch(`${API_URL}/notificaciones/${notificationId}/read`, {
         method: 'PUT',

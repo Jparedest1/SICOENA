@@ -9,13 +9,13 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/api';
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
       setIsLoading(true);
       setError(null);
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
 
       try {
         const response = await fetch(`${apiUrl}/api/orden/${orderId}`, {

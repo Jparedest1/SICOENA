@@ -24,13 +24,13 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(false);
   const isEditMode = currentOrder !== null;
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiUrl = process.env.REACT_APP_API_URL || '/api';
 
   useEffect(() => {
     if (isEditMode && currentOrder?.id_orden) {
       const fetchOrderToEdit = async () => {
         setIsLoadingOrder(true);
-        const token = localStorage.getItem('authToken');
+        const token = sessionStorage.getItem('authToken');
 
         try {
           const response = await fetch(`${apiUrl}/api/orden/${currentOrder.id_orden}`, {

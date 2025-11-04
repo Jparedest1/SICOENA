@@ -3,10 +3,10 @@ import './BackupsPage.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDatabase, faSave, faSync, faDownload, faTrash, faHistory, faPlayCircle, faClock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = '/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 const POLLING_INTERVAL = 5000;
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('authToken');
+  const token = sessionStorage.getItem('authToken');
   const headers = { 'Content-Type': 'application/json' };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -139,7 +139,7 @@ const RespaldosPage = () => {
   };
   
   const handleDownload = (backupId) => {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       if (token) {
         fetch(`${API_URL}/respaldos/${backupId}/download`, {
           headers: { 'Authorization': `Bearer ${token}` }

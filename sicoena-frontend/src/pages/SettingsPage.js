@@ -9,7 +9,7 @@ import {
   faCog
 } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const SettingsTab = ({ title, icon, children }) => (
   <div className="settings-tab-content">
@@ -54,7 +54,7 @@ const SettingsPage = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
       
       let payload = {};
 

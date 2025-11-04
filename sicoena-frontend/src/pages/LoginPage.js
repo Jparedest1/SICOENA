@@ -4,7 +4,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
 import sicoenaLogo from '../assets/logo-sicoena.png'; 
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 console.log('API URL:', API_URL);
 
