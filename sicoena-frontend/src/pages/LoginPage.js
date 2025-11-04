@@ -17,6 +17,7 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   useEffect(() => {
     console.log('LoginPage montado');
+    console.log('ESTA ES LA VERSIÓN NUEVA CON LOCALSTORAGE');
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
       console.log('Sesión activa detectada, redirigiendo...');
