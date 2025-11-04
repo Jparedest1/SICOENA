@@ -26,7 +26,7 @@ const generarReporte = async (req, res) => {
   console.log(`--- Iniciando reporte: Módulo=${modulo}, Formato=${format}, ID=${id} ---`);
 
   try {
-    let data, columns, headers, titulo;
+    let data, columns, headers, titulo, order; 
 
     switch (modulo) {
       case 'inventario':
@@ -81,7 +81,8 @@ const generarReporte = async (req, res) => {
         if (orderInfoRows.length === 0) {
           return res.status(404).json({ message: 'Orden no encontrada.' });
         }
-        const order = orderInfoRows[0];
+        
+        order = orderInfoRows[0]; 
         
         const [productsRows] = await pool.query(`
           SELECT p.*, op.cantidad 
@@ -106,7 +107,10 @@ const generarReporte = async (req, res) => {
         return res.status(400).json({ message: `El módulo de reporte '${modulo}' no es válido.` });
     }
 
+    
+
     if (format.toLowerCase() === 'excel') {
+        
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet(titulo);
         worksheet.columns = columns;
@@ -122,11 +126,51 @@ const generarReporte = async (req, res) => {
         return res.send(buffer);
 
     } else { 
+        
         const doc = new jsPDF({ orientation: 'portrait' });
+
+        
+        doc.setFontSize(18);
         doc.text(titulo, 14, 22);
 
+        
+        if (modulo === 'orden_individual' && order) {
+          doc.setFontSize(10);
+          doc.text(`Fecha de Emisión: ${new Date(order.fecha_creacion).toLocaleDateString('es-GT')}`, 14, 30);
+          doc.text(`Estado: ${order.estado}`, 196, 30, { align: 'right' }); 
+
+          doc.setFontSize(12);
+          doc.text('Información de la Entrega:', 14, 40);
+          doc.setFontSize(10);
+          doc.text(`Institución: ${order.nombre_escuela || 'N/A'}`, 14, 46);
+          doc.text(`Fecha de Entrega: ${new Date(order.fecha_entrega).toLocaleDateString('es-GT')}`, 14, 52);
+          doc.text(`Responsable: ${order.nombre_responsable || 'N/A'}`, 14, 58);
+          doc.text(`Menú Aplicado: ${order.nombre_menu || 'N/A'}`, 14, 64);
+        }
+
+        
         const body = data.map(item => columns.map(col => item[col.key] || ''));
-        autoTable(doc, { startY: 35, head: headers, body });
+        autoTable(doc, { 
+          startY: (modulo === 'orden_individual' && order) ? 70 : 35, 
+          head: headers, 
+          body 
+        });
+
+        
+        if (modulo === 'orden_individual' && order) {
+            const totalGeneral = parseFloat(order.valor_total) || data.reduce((sum, item) => {
+                const precio = parseFloat(item.precio_unitario) || 0;
+                const cantidad = parseFloat(item.cantidad) || 0;
+                return sum + (precio * cantidad);
+            }, 0);
+
+            const finalY = doc.lastAutoTable.finalY + 10; 
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('Total de la Orden:', 150, finalY, { align: 'right' });
+            doc.text(`Q${totalGeneral.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 196, finalY, { align: 'right' });
+        }
+        
 
         await registrarReporte('PDF', `${modulo} ${id || ''}`.trim(), usuarioId);
 
