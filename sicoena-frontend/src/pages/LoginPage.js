@@ -21,7 +21,6 @@ const LoginPage = ({ onLoginSuccess }) => {
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
       console.log('Sesión activa detectada, redirigiendo...');
-      navigate('/dashboard');
     }
   }, [navigate]);
 
