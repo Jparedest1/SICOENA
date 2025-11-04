@@ -96,6 +96,8 @@ const googleVerify = async (req, res) => {
       return res.status(403).json({ message: 'El correo electrónico no está autorizado para acceder a este sistema.' });
     }
 
+    const user = users[0];
+    
     if (user.estado !== 'ACTIVO') {
       await createLog('WARN', `Intento de login con Google bloqueado: Usuario inactivo`, { userId: user.id_usuario, email, ip });
       return res.status(403).json({ message: 'Usuario inactivo' });
