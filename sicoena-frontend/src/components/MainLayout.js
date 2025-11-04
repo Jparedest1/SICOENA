@@ -8,6 +8,7 @@ const MainLayout = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('MAINLAYOUT: Verificando sesión con localStorage');
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
       try {
