@@ -17,8 +17,8 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   useEffect(() => {
     console.log('LoginPage montado');
-    console.log('ESTA ES LA VERSIÓN NUEVA CON LOCALSTORAGE');
-    const userInfo = localStorage.getItem('userInfo');
+    console.log('ESTA ES LA VERSIÓN NUEVA CON SESSIONSTORAGE');
+    const userInfo = sessionStorage.getItem('userInfo');
     if (userInfo) {
       console.log('Sesión activa detectada, redirigiendo...');
     }
@@ -26,16 +26,16 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   const saveUserData = (data) => {
     try {
-      localStorage.setItem('authToken', data.token);
+      sessionStorage.setItem('authToken', data.token);
       
-      localStorage.setItem('userInfo', JSON.stringify({
+      sessionStorage.setItem('userInfo', JSON.stringify({
         id_usuario: data.user?.id_usuario || data.user?.id,
         nombres: data.user?.nombres || data.user?.name,
         email: data.user?.email,
         rol: data.user?.rol || 'USUARIO'
       }));
 
-      localStorage.setItem('userData', JSON.stringify(data.user));
+      sessionStorage.setItem('userData', JSON.stringify(data.user));
 
       console.log('Usuario logueado exitosamente:', {
         email: data.user?.email,

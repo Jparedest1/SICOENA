@@ -8,8 +8,8 @@ const MainLayout = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('MAINLAYOUT: Verificando sesión con localStorage');
-    const userInfo = localStorage.getItem('userInfo');
+    console.log('MAINLAYOUT: Verificando sesión con sessionStorage');
+    const userInfo = sessionStorage.getItem('userInfo');
     if (userInfo) {
       try {
         const user = JSON.parse(userInfo);
@@ -23,8 +23,8 @@ const MainLayout = ({ children }) => {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('userInfo');
     navigate('/login');
   };
 
