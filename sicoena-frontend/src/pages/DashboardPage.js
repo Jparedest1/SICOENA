@@ -7,7 +7,7 @@ import {
   faExclamationTriangle, faUserCheck, faUserTimes, faChartBar, faBell 
 } from '@fortawesome/free-solid-svg-icons';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const ActionCard = ({ title, icon }) => (
     <div className="action-card">
@@ -44,7 +44,7 @@ const [stats, setStats] = useState({
     const fetchStats = async () => {
       setIsLoading(true);
       setError(null);
-      const token = localStorage.getItem('authToken');
+      const token = sessionStorage.getItem('authToken');
 
       if (!token) {
         navigate('/login'); 
@@ -57,7 +57,7 @@ const [stats, setStats] = useState({
         });
 
         if (response.status === 401) {
-          localStorage.removeItem('authToken');
+          sessionStorage.removeItem('authToken');
           throw new Error('Sesión inválida o expirada.');
         }
         if (!response.ok) {
