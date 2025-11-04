@@ -45,7 +45,7 @@ const ReportsPage = () => {
     const token = sessionStorage.getItem('authToken');
 
     try {
-      const response = await fetch(`${apiUrl}/api/orden`, {
+      const response = await fetch(`${apiUrl}/orden`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -61,7 +61,7 @@ const ReportsPage = () => {
       const ordersWithDetails = await Promise.all(
         (data || []).map(async (order) => {
           try {
-            const detailResponse = await fetch(`${apiUrl}/api/orden/${order.id_orden}`, {
+            const detailResponse = await fetch(`${apiUrl}/orden/${order.id_orden}`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             if (detailResponse.ok) {
@@ -94,7 +94,7 @@ const ReportsPage = () => {
     const token = sessionStorage.getItem('authToken');
 
     try {
-      const escuelasRes = await fetch(`${apiUrl}/api/institucion/active`, {
+      const escuelasRes = await fetch(`${apiUrl}/institucion/active`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (escuelasRes.ok) {
@@ -102,7 +102,7 @@ const ReportsPage = () => {
         setEscuelas(data.schools || []);
       }
 
-      const menusRes = await fetch(`${apiUrl}/api/producto/active-menus`, {
+      const menusRes = await fetch(`${apiUrl}/producto/active-menus`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (menusRes.ok) {

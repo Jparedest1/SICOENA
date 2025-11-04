@@ -32,7 +32,7 @@ const OrdersReportTable = ({ orders }) => {
       return;
     }
 
-    const url = `${apiUrl}/api/reportes/orden_individual/${orderId}?format=${format}`;
+    const url = `${apiUrl}/reportes/orden_individual/${orderId}?format=${format}`;
     
     console.log('Llamando a la URL de exportación:', url);
 
