@@ -30,11 +30,40 @@ const generarReporte = async (req, res) => {
 
     switch (modulo) {
       case 'inventario':
+        console.log('Generando reporte de Inventario...');
         
+        titulo = 'Reporte de Inventario General';
+
+        columns = [
+          { header: 'ID', key: 'id_producto', width: 10 },
+          { header: 'Producto', key: 'nombre_producto', width: 35 },
+          { header: 'Categoría', key: 'categoria', width: 20 },
+          { header: 'Stock Disp.', key: 'stock_disponible', width: 15, style: { numFmt: '#,##0' } },
+          { header: 'Stock Mín.', key: 'stock_minimo', width: 15, style: { numFmt: '#,##0' } },
+          { header: 'Unidad', key: 'unidad_medida', width: 15 },
+          { header: 'Precio Unit.', key: 'precio_unitario', width: 20, style: { numFmt: '"Q"#,##0.00' } }
+        ];
+        headers = [['ID', 'Producto', 'Categoría', 'Stock Disp.', 'Stock Mín.', 'Unidad', 'Precio Unit.']];
+
+        const [rows] = await pool.query(`
+          SELECT 
+            id_producto, 
+            nombre_producto, 
+            categoria, 
+            stock_disponible, 
+            stock_minimo, 
+            unidad_medida, 
+            precio_unitario 
+          FROM producto 
+          WHERE estado = 'ACTIVO'
+          ORDER BY nombre_producto ASC
+        `);
+        
+        data = rows;
+        console.log(`Se encontraron ${data.length} productos para el reporte.`);
         break;
 
       case 'ordenes':
-        
         break;
 
       case 'orden_individual':
@@ -62,20 +91,21 @@ const generarReporte = async (req, res) => {
         order.productos = productsRows;
         
         titulo = `Orden de Entrega - ${order.codigo_orden}`;
+
+        data = order.productos || []; 
+
         columns = [
           { header: 'Producto', key: 'nombre_producto', width: 40 },
           { header: 'Cantidad', key: 'cantidad', width: 15 },
           { header: 'Precio Unitario', key: 'precio_unitario', width: 20, style: { numFmt: '"Q"#,##0.00' } }
         ];
         headers = [['Producto', 'Cantidad', 'Precio Unitario']];
-        data = order.productos;
         break;
       
       default:
         return res.status(400).json({ message: `El módulo de reporte '${modulo}' no es válido.` });
     }
 
-    
     if (format.toLowerCase() === 'excel') {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet(titulo);

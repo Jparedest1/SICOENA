@@ -18,7 +18,7 @@ const ViewOrderModal = ({ onClose, orderId, orderData }) => {
       const token = sessionStorage.getItem('authToken');
 
       try {
-        const response = await fetch(`${apiUrl}/api/orden/${orderId}`, {
+        const response = await fetch(`${apiUrl}/orden/${orderId}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
