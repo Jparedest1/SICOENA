@@ -43,7 +43,7 @@ const OrdersPage = () => {
     setError(null);
     try {
       const token = sessionStorage.getItem('authToken');
-      const response = await fetch(`${apiUrl}/api/orden`, {
+      const response = await fetch(`${apiUrl}/orden`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -72,7 +72,7 @@ const OrdersPage = () => {
     const token = sessionStorage.getItem('authToken');
 
     try {
-      const escuelasResponse = await fetch(`${apiUrl}/api/institucion/active`, {
+      const escuelasResponse = await fetch(`${apiUrl}/institucion/active`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (escuelasResponse.ok) {
@@ -80,7 +80,7 @@ const OrdersPage = () => {
         setEscuelas(escuelasData.schools || []);
       }
 
-      const menusResponse = await fetch(`${apiUrl}/api/producto/active-menus`, {
+      const menusResponse = await fetch(`${apiUrl}/producto/active-menus`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (menusResponse.ok) {
