@@ -75,10 +75,14 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
 
   const fetchActiveUsers = async () => {
     setIsLoadingUsers(true);
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${apiUrl}/usuario/active`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
+        headers: { 
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -95,10 +99,14 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
 
   const fetchActiveSchools = async () => {
     setIsLoadingSchools(true);
+    const token = sessionStorage.getItem('authToken'); // <-- AÑADIR ESTO
     try {
       const response = await fetch(`${apiUrl}/institucion/active`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
+        headers: { 
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}` // <-- AÑADIR ESTO
+        }
       });
       
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -115,10 +123,14 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
 
   const fetchActiveMenus = async () => {
     setIsLoadingMenus(true);
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${apiUrl}/producto/active-menus`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
+        headers: { 
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -140,10 +152,14 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
     }
 
     setIsLoadingMenuProducts(true);
+    const token = sessionStorage.getItem('authToken');
     try {
       const response = await fetch(`${apiUrl}/producto/menu/${menuId}`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
+        headers: { 
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
       
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -225,15 +241,18 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
       console.log(`${isEditMode ? 'Actualizando' : 'Creando'} orden:`, orderData);
 
       const url = isEditMode
-        ? `${apiUrl}/api/orden/${currentOrder.id_orden}`
-        : `${apiUrl}/api/orden`;
+        ? `${apiUrl}/orden/${currentOrder.id_orden}`
+        : `${apiUrl}/orden`;
       const method = isEditMode ? 'PUT' : 'POST';
+
+      const token = sessionStorage.getItem('authToken');
 
       const response = await fetch(url, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(orderData)
       });
