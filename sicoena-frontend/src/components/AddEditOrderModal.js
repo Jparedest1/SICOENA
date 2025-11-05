@@ -33,7 +33,7 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
         const token = sessionStorage.getItem('authToken');
 
         try {
-          const response = await fetch(`${apiUrl}/api/orden/${currentOrder.id_orden}`, {
+          const response = await fetch(`${apiUrl}/orden/${currentOrder.id_orden}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -76,7 +76,7 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   const fetchActiveUsers = async () => {
     setIsLoadingUsers(true);
     try {
-      const response = await fetch(`${apiUrl}/api/usuario/active`, {
+      const response = await fetch(`${apiUrl}/usuario/active`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
@@ -96,7 +96,7 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   const fetchActiveSchools = async () => {
     setIsLoadingSchools(true);
     try {
-      const response = await fetch(`${apiUrl}/api/institucion/active`, {
+      const response = await fetch(`${apiUrl}/institucion/active`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
@@ -116,7 +116,7 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
   const fetchActiveMenus = async () => {
     setIsLoadingMenus(true);
     try {
-      const response = await fetch(`${apiUrl}/api/producto/active-menus`, {
+      const response = await fetch(`${apiUrl}/producto/active-menus`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
@@ -141,7 +141,7 @@ const AddEditOrderModal = ({ onClose, onSave, currentOrder }) => {
 
     setIsLoadingMenuProducts(true);
     try {
-      const response = await fetch(`${apiUrl}/api/producto/menu/${menuId}`, {
+      const response = await fetch(`${apiUrl}/producto/menu/${menuId}`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
