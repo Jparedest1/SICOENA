@@ -28,7 +28,7 @@ const ChangeOrderStatusModal = ({ onClose, onStatusChanged, order }) => {
     const token = sessionStorage.getItem('authToken');
 
     try {
-      const response = await fetch(`${apiUrl}/api/orden/${order.id_orden}/status`, {
+      const response = await fetch(`${apiUrl}/orden/${order.id_orden}/status`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
