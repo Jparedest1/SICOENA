@@ -6,6 +6,11 @@ const userController = require('../controllers/userController');
 console.log('Cargando userRoutes');
 console.log('userController funciones:', Object.keys(userController));
 
+router.get('/active',
+  authMiddleware,
+  userController.getActiveUsers
+);
+
 router.get('/', 
   authMiddleware, 
   roleMiddleware(['ADMINISTRADOR']),  
